@@ -1,4 +1,4 @@
-import ToyLangVisitor from '../parser/ToyLangVisitor.js';
+import ToyLangVisitor from './parser/ToyLangVisitor.js';
 
 export default class MyInterpreter extends ToyLangVisitor {
   // Matches 'program: statement+'

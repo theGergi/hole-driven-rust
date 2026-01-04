@@ -22,7 +22,4 @@ export default class ToyLangVisitor extends antlr4.tree.ParseTreeVisitor {
 	visitExpression(ctx) {
 	  return this.visitChildren(ctx);
 	}
-
-
-
 }

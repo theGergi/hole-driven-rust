@@ -1,7 +1,4 @@
 {
-  "dependencies": {
-    "antlr4": "^4.13.2"
-  },
   "name": "toy-language-extension",
   "version": "1.0.0",
   "description": "",
@@ -15,7 +12,7 @@
 	"activationEvents": [
 		"onLanguage:plaintext"
 	],
-	"main": "./client/out/extension",
+	"main": "./client/out/extension.js",
 	"contributes": {
 		"configuration": {
 			"type": "object",

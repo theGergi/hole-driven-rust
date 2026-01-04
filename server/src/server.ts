@@ -18,6 +18,26 @@ import {
     TextDocument
 } from 'vscode-languageserver-textdocument';
 
+import * as antlr4 from 'antlr4';
+import ToyLangLexer from './parser/ToyLangLexer.js';
+import ToyLangParser from './parser/ToyLangParser.js';
+import MyInterpreter from './MyInterpreter.js';
+
+
+const interpreter = new MyInterpreter() as any;
+
+function parseDocument(code: string) {
+    const chars = new antlr4.InputStream(code);
+    const lexer = new ToyLangLexer(chars);
+    const tokens = new antlr4.CommonTokenStream(lexer as unknown as antlr4.Lexer);
+    const parser = new ToyLangParser(tokens);
+
+    const tree = parser.program(); 
+
+    return interpreter.visit(tree);
+}
+
+
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 const connection: Connection = createConnection(ProposedFeatures.all);
 
@@ -58,7 +78,7 @@ connection.onInitialized(() => {
     if (hasConfigurationCapability) {
         // Register for configuration changes if needed
     }
-    connection.console.log('Language Server initialized and ready.');
+    connection.console.log('Language Server initialized and ready.3');
 });
 
 
@@ -79,6 +99,10 @@ connection.onCompletion(
         // Check if the text immediately preceding the cursor matches the trigger
         if (line.endsWith(triggerSequence)) {
 			console.log("I am here");
+            console.log("I am here333333333333");
+            let res = parseDocument(document.getText())
+            console.log(res);
+            console.log("I am here44444444444444");
             const startChar = position.character - triggerSequence.length;
             
             // Define the range to replace (the {|?} symbols themselves)
@@ -125,7 +149,7 @@ connection.onCompletionResolve(
             ].join('\n');
 
             // Populate the detailed fields now that the user has selected the item
-            item.detail = 'Expands {|?} into a boilerplate function.';
+            item.detail = 'Expands {?} into a boilerplate function.';
             
             // CRUCIAL: TextEdit is used for multi-line insertions AND for replacing existing text.
             item.textEdit = TextEdit.replace(replaceRange, codeSnippet);

@@ -9,11 +9,11 @@
 		"sourceMap": true,
 		"strict": true,
 		"outDir": "out",
-		"rootDir": "src"
+		"rootDir": "src",
+		"allowJs": true,
+		"composite": true,
 	},
-	"include": [
-		"src"
-	],
+	"include": ["src/**/*"],
 	"exclude": [
 		"node_modules",
 		".vscode-test"
