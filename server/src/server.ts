@@ -18,21 +18,25 @@ import {
     TextDocument
 } from 'vscode-languageserver-textdocument';
 
-import * as antlr4 from 'antlr4';
-import ToyLangLexer from './parser/ToyLangLexer.js';
-import ToyLangParser from './parser/ToyLangParser.js';
+import { RustLexer } from './parser/RustLexer';
+import { RustParser } from './parser/RustParser';
 import MyInterpreter from './MyInterpreter.js';
+import { CharStream, CommonTokenStream } from 'antlr4ng';
 
 
 const interpreter = new MyInterpreter() as any;
 
 function parseDocument(code: string) {
-    const chars = new antlr4.InputStream(code);
-    const lexer = new ToyLangLexer(chars);
-    const tokens = new antlr4.CommonTokenStream(lexer as unknown as antlr4.Lexer);
-    const parser = new ToyLangParser(tokens);
+    const inputStream = CharStream.fromString(code);
 
-    const tree = parser.program(); 
+    // 1. Lexer: Breaks text into tokens
+    const lexer = new RustLexer(inputStream);
+    const tokenStream = new CommonTokenStream(lexer);
+
+    // 2. Parser: Builds the logic tree
+    const parser = new RustParser(tokenStream);
+    
+    const tree = parser.crate(); 
 
     return interpreter.visit(tree);
 }
@@ -92,7 +96,7 @@ connection.onCompletion(
 
         const position = textDocumentPosition.position;
         const line = document.getText({ start: { line: position.line, character: 0 }, end: position });
-        const triggerSequence = '?';
+        const triggerSequence = '??';
         
         // --- Core Logic to Detect Trigger Sequence ---
         
@@ -105,7 +109,7 @@ connection.onCompletion(
             console.log("I am here44444444444444");
             const startChar = position.character - triggerSequence.length;
             
-            // Define the range to replace (the {|?} symbols themselves)
+            // Define the range to replace (the {?} symbols themselves)
             const replaceRange: Range = {
                 start: { line: position.line, character: startChar },
                 end: position
