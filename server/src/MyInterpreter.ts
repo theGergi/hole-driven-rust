@@ -3,6 +3,14 @@ import { ArithmeticOrLogicalExpressionContext, HoleExpressionContext } from './p
 import { ParserRuleContext, ParseTree, Token } from 'antlr4ng';
 import { get } from 'http';
 
+export enum NodeType {
+    ROOT = "ROOT",
+    FUNCTION = "FUNCTION",
+    INT = "INT",
+    HOLE = "HOLE",
+    UNKNOWN = "UNKNOWN",
+}
+
 export interface SourceLocation {
     line: number;
     column: number;
@@ -13,7 +21,7 @@ export interface SourceLocation {
 export interface BaseNode {
     kind: string;
     location: SourceLocation;
-    type?: string; // Populated during type checking
+    type?: NodeType; // Populated during type checking
 }
 
 export interface BlockExpressionNode extends BaseNode {
@@ -60,25 +68,21 @@ function getLocation(ctx: ParserRuleContext): SourceLocation {
 
 
 export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
-    // // Handle binary operations: e.g., x + 5
-    // visit = (ctx: any): BinaryExpression => {
-    //     return {
-    //         kind: "BinaryExpression",
-    //         operator: ctx.op.text,
-    //         left: this.visit(ctx.expression(0)) as ExpressionNode,
-    //         right: this.visit(ctx.expression(1)) as ExpressionNode,
-    //         location: getLocation(ctx),
-    //         // type is left undefined here; it's filled in during the Type Checking pass
-    //     };
-    // };
+    private typeStack: NodeType[] = [NodeType.ROOT];
+    
+    private get currentParentType(): NodeType {
+        return this.typeStack[this.typeStack.length - 1];
+    }
 
     visitCrate = (ctx: any): BaseNode => {
+        console.log("Crate")
         const items = ctx.item();
         // Map over every item and visit it; filter out nulls if some items aren't implemented
         return items.map((item: ParseTree) => this.visit(item) as BaseNode).filter((n: ParseTree | null) => n !== null);
     };
 
     visitItem = (ctx: any): BaseNode | null => {
+        console.log("Item")
         const visItem = ctx.visItem();
         if (visItem) {
             return this.visit(visItem) as BaseNode;
@@ -88,15 +92,104 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     };
 
     visitVisItem = (ctx: any): BaseNode | null => {
+        console.log("Vis item")
+
+
         // This acts as a router. ANTLR provides methods for each possible child rule.
         if (ctx.function_()) {
+            console.log(ctx.function_())
             return this.visit(ctx.function_()!);
         }
+        console.log("hey")
         
         // Add other checks as you implement them (structs, modules, etc.)
         // if (ctx.struct_()) return this.visit(ctx.struct_()!);
         
         return null;
+    };
+    
+    visitFunctionReturnType = (ctx: any): BaseNode | null => {
+        console.log(ctx.type_().typeNoBounds().traitObjectTypeOneBound().traitBound().typePath().typePathSegment(0).pathIdentSegment().identifier(0).NON_KEYWORD_IDENTIFIER())
+        return null;
+    }
+
+    // visitType_ = (ctx: any): BaseNode | null => {
+        //     console.log(ctx.type_())
+    //     return null;
+    // }
+
+    visitFunction_ = (ctx: any): FunctionDeclarationNode => {
+        console.log("Function");
+        // console.log(ctx.functionReturnType())
+        
+        let type = NodeType.UNKNOWN;
+        
+        if (ctx.functionReturnType().type_().getText() === 'i32') {
+            type = NodeType.INT;
+        }
+
+        this.typeStack.push(type);
+        
+        // 1. Get the function name
+        // The identifier rule is a child of the function rule
+        const name = ctx.identifier().getText();
+        
+        // 2. Handle the body (blockExpression or SEMI)
+        const blockCtx = ctx.blockExpression();
+        
+        const blockNode = blockCtx ? this.visit(blockCtx) as BlockExpressionNode : {kind: "Literal", type: NodeType.UNKNOWN} as LiteralNode; 
+        
+        this.typeStack.pop()
+        
+        return {
+            kind: "FunctionDeclarationNode",
+            block: blockNode,
+            location: getLocation(ctx),
+            type: type
+        };
+    };
+
+    visitBlockExpression = (ctx: any): BlockExpressionNode => {
+        console.log("BlockExpression");
+        
+        const statementsNode = ctx.statements();
+        
+        const type = this.currentParentType
+        
+        if (statementsNode) {
+            // Visit the statements rule
+            
+        }
+        const visitedStatements = statementsNode ? this.visit(statementsNode) as BaseNode : {kind: "Literal", type: NodeType.UNKNOWN } as LiteralNode;
+        
+        return {
+            kind: "Block",
+            statements: visitedStatements,
+            location: getLocation(ctx),
+            type: type
+        };
+    };
+    
+    visitStatements = (ctx: any): StatementsNode => {
+        console.log("Statements");
+        const nodes: BaseNode[] = [];
+        
+        const type = this.currentParentType
+
+        // 1. Visit all individual 'statement' children
+        //
+        
+        // 2. Visit the optional trailing 'expression'
+        const expr = ctx.expression();
+        const expressionNode = expr ? this.visit(expr) as ExpressionNode : {kind: "Literal", type: NodeType.UNKNOWN } as LiteralNode;
+
+        return {
+            kind: "Statements",
+            statements: nodes,
+            expression: expressionNode,
+            location: getLocation(ctx),
+            type: type
+        }
     };
 
     visitArithmeticOrLogicalExpression = (ctx: ArithmeticOrLogicalExpressionContext): ExpressionNode => {
@@ -117,8 +210,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         let type;
 
-        if (left.type === 'hole' || right.type === 'hole') {
-            type = 'hole';
+        if (left.type === NodeType.HOLE || right.type === NodeType.HOLE) {
+            type = NodeType.HOLE;
         } else if (left.type === right.type) {
             type = left.type;
         }
@@ -141,45 +234,45 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             return {
                 kind: "Literal",
                 value: parseInt(ctx.INTEGER_LITERAL()!.getText(), 10),
-                type: "integer",
+                type: NodeType.INT,
                 location: getLocation(ctx)
             };
         }
 
-        if (ctx.FLOAT_LITERAL()) {
-            return {
-                kind: "Literal",
-                value: parseFloat(ctx.FLOAT_LITERAL()!.getText()),
-                type: "float",
-                location: getLocation(ctx)
-            };
-        }
+        // if (ctx.FLOAT_LITERAL()) {
+        //     return {
+        //         kind: "Literal",
+        //         value: parseFloat(ctx.FLOAT_LITERAL()!.getText()),
+        //         type: "float",
+        //         location: getLocation(ctx)
+        //     };
+        // }
 
-        if (ctx.STRING_LITERAL() || ctx.RAW_STRING_LITERAL()) {
-            const rawValue = (ctx.STRING_LITERAL() ?? ctx.RAW_STRING_LITERAL())!.getText();
-            return {
-                kind: "Literal",
-                // You might want a helper to strip quotes: rawValue.slice(1, -1)
-                value: rawValue, 
-                type: "string",
-                location: getLocation(ctx)
-            };
-        }
+        // if (ctx.STRING_LITERAL() || ctx.RAW_STRING_LITERAL()) {
+        //     const rawValue = (ctx.STRING_LITERAL() ?? ctx.RAW_STRING_LITERAL())!.getText();
+        //     return {
+        //         kind: "Literal",
+        //         // You might want a helper to strip quotes: rawValue.slice(1, -1)
+        //         value: rawValue, 
+        //         type: "string",
+        //         location: getLocation(ctx)
+        //     };
+        // }
 
-        if (ctx.CHAR_LITERAL()) {
-            return {
-                kind: "Literal",
-                value: ctx.CHAR_LITERAL()!.getText(),
-                type: "char",
-                location: getLocation(ctx)
-            };
-        }
+        // if (ctx.CHAR_LITERAL()) {
+        //     return {
+        //         kind: "Literal",
+        //         value: ctx.CHAR_LITERAL()!.getText(),
+        //         type: "char",
+        //         location: getLocation(ctx)
+        //     };
+        // }
 
         // Default fallback or handling for Byte literals
         return {
             kind: "Literal",
             value: ctx.getText(),
-            type: "unknown",
+            type: NodeType.UNKNOWN,
             location: getLocation(ctx)
         };
 
@@ -187,70 +280,16 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     visitHoleExpression = (ctx: any): LiteralNode => {
         console.log("Hole expression")
+        console.log("Type shold be", this.currentParentType)
         return {
             kind: "Literal",
             value: ctx.getText(),
-            type: "hole",
+            type: NodeType.HOLE,
             location: getLocation(ctx)
         };
     }
 
-    visitFunction = (ctx: any): FunctionDeclarationNode => {
-        console.log("Function");
-        // 1. Get the function name
-        // The identifier rule is a child of the function rule
-        const name = ctx.identifier().getText();
-
-        // 2. Handle the body (blockExpression or SEMI)
-        const blockCtx = ctx.blockExpression();
-
-        const blockNode = blockCtx ? this.visit(blockCtx) as BlockExpressionNode : {kind: "Literal", type: "uknown"} as LiteralNode; 
-
-        return {
-            kind: "FunctionDeclarationNode",
-            block: blockNode,
-            location: getLocation(ctx)
-        };
-    };
-
-    visitBlockExpression = (ctx: any): BlockExpressionNode => {
-        console.log("BlockExpression");
-
-        const statementsNode = ctx.statements();
-        let results: BaseNode[] = [];
-
-        if (statementsNode) {
-            // Visit the statements rule
-            
-        }
-        const visitedStatements = statementsNode ? this.visit(statementsNode) as BaseNode : {kind: "Literal", type: "uknown"} as LiteralNode;
-        return {
-            kind: "Block",
-            statements: visitedStatements,
-            location: getLocation(ctx)
-        };
-    };
-
-    visitStatements = (ctx: any): StatementsNode => {
-        console.log("Statements");
-        const nodes: BaseNode[] = [];
-
-        // 1. Visit all individual 'statement' children
-        //
-
-        // 2. Visit the optional trailing 'expression'
-        const expr = ctx.expression();
-        const expressionNode = expr ? this.visit(expr) as ExpressionNode : {kind: "Literal", type: "uknown"} as LiteralNode;
-
-        return {
-            kind: "Statements",
-            statements: nodes,
-            expression: expressionNode,
-            location: getLocation(ctx)
-        }
-    };
-
-    // protected defaultResult(): BaseNode {
+// protected defaultResult(): BaseNode {
     //     throw new Error("Node not implemented");
     // }
 }
