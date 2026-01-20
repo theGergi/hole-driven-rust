@@ -23,7 +23,7 @@ function parseDocument(code: string) {
 // --- Test Case ---
 const rustCode = `
     fn main() -> i32 {
-        ??
+        let x;
     }
 `;
 

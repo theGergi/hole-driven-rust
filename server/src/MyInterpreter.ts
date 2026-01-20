@@ -11,6 +11,12 @@ export enum NodeType {
     UNKNOWN = "UNKNOWN",
 }
 
+export interface Variable {
+    name: string;
+    location: SourceLocation;
+    type?: NodeType;
+}
+
 export interface SourceLocation {
     line: number;
     column: number;
@@ -69,6 +75,7 @@ function getLocation(ctx: ParserRuleContext): SourceLocation {
 
 export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     private typeStack: NodeType[] = [NodeType.ROOT];
+    private variables: Variable[] = [];
     
     private get currentParentType(): NodeType {
         return this.typeStack[this.typeStack.length - 1];
@@ -91,13 +98,37 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return null; 
     };
 
+    visitLetStatement = (ctx: any): BaseNode | null => {
+        console.log("Let statement")
+        const variable = ctx.patternNoTopAlt().getText();
+        const declaredType = this.parseType(ctx.type_()?.getText());
+        const expression = ctx.expression();
+        let inferedType = NodeType.UNKNOWN;
+        if (expression) {
+            inferedType = this.visit(expression)?.type as NodeType;
+        }
+        console.log(inferedType)
+        console.log(declaredType)
+        if (inferedType !== NodeType.UNKNOWN && declaredType !== NodeType.UNKNOWN && declaredType !== inferedType) {
+            throw new Error("Declared type is different from infered type");
+        }
+
+        if (inferedType === NodeType.UNKNOWN && declaredType === NodeType.UNKNOWN) {
+            throw new Error("No type");
+        }
+
+        this.variables.push({name: variable, type: declaredType !== NodeType.UNKNOWN ? declaredType : inferedType, location: getLocation(ctx)})
+        console.log(this.variables)
+        return null;
+    }
+
     visitVisItem = (ctx: any): BaseNode | null => {
         console.log("Vis item")
 
 
         // This acts as a router. ANTLR provides methods for each possible child rule.
         if (ctx.function_()) {
-            console.log(ctx.function_())
+            // console.log(ctx.function_())
             return this.visit(ctx.function_()!);
         }
         console.log("hey")
@@ -109,7 +140,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     };
     
     visitFunctionReturnType = (ctx: any): BaseNode | null => {
-        console.log(ctx.type_().typeNoBounds().traitObjectTypeOneBound().traitBound().typePath().typePathSegment(0).pathIdentSegment().identifier(0).NON_KEYWORD_IDENTIFIER())
+        // console.log(ctx.type_().typeNoBounds().traitObjectTypeOneBound().traitBound().typePath().typePathSegment(0).pathIdentSegment().identifier(0).NON_KEYWORD_IDENTIFIER())
         return null;
     }
 
@@ -117,16 +148,18 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         //     console.log(ctx.type_())
     //     return null;
     // }
+    parseType = (typeString: string): NodeType => {
+        if (typeString === 'i32') {
+            return NodeType.INT;
+        }
+        return NodeType.UNKNOWN;
+    }
 
     visitFunction_ = (ctx: any): FunctionDeclarationNode => {
         console.log("Function");
         // console.log(ctx.functionReturnType())
         
-        let type = NodeType.UNKNOWN;
-        
-        if (ctx.functionReturnType().type_().getText() === 'i32') {
-            type = NodeType.INT;
-        }
+        let type = this.parseType(ctx.functionReturnType().type_().getText());
 
         this.typeStack.push(type);
         
@@ -178,6 +211,10 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         // 1. Visit all individual 'statement' children
         //
+        const statements = ctx.statement()
+        statements.forEach((statement: ParseTree) => {
+            this.visit(statement)
+        });
         
         // 2. Visit the optional trailing 'expression'
         const expr = ctx.expression();
