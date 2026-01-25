@@ -1,7 +1,7 @@
 import { CharStream, CommonTokenStream } from 'antlr4ng';
 import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
-import MyInterpreter from './MyInterpreter.js';
+import MyInterpreter, { Hole, SourceLocation, Variable } from './MyInterpreter.js';
 
 const interpreter = new MyInterpreter() as any;
 
@@ -17,15 +17,18 @@ function parseDocument(code: string) {
 	
 	const tree = parser.crate(); 
 
-	return interpreter.visit(tree);
+	const result = interpreter.visit(tree);
+
+	return result;
 }
 
 // --- Test Case ---
 const rustCode = `
     fn main() -> i32 {
-        let x;
+        let x = 2;
+		??
     }
 `;
 
 const result = parseDocument(rustCode);
-console.log(result)
+// console.log(result)

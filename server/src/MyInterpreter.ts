@@ -17,6 +17,11 @@ export interface Variable {
     type?: NodeType;
 }
 
+export interface Hole {
+    location: SourceLocation;
+    type: NodeType;
+}
+
 export interface SourceLocation {
     line: number;
     column: number;
@@ -58,6 +63,8 @@ export interface LiteralNode extends BaseNode {
     value: any;
 }
 
+
+
 export type ExpressionNode = BinaryExpressionNode | LiteralNode | BlockExpressionNode; // Add others as needed
 
 function getLocation(ctx: ParserRuleContext): SourceLocation {
@@ -76,7 +83,8 @@ function getLocation(ctx: ParserRuleContext): SourceLocation {
 export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     private typeStack: NodeType[] = [NodeType.ROOT];
     private variables: Variable[] = [];
-    
+    private holes: Hole[] = [];
+
     private get currentParentType(): NodeType {
         return this.typeStack[this.typeStack.length - 1];
     }
@@ -317,13 +325,41 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     visitHoleExpression = (ctx: any): LiteralNode => {
         console.log("Hole expression")
-        console.log("Type shold be", this.currentParentType)
+        
+        const location = getLocation(ctx)
+        const type = this.currentParentType;
+
+        console.log("Type shold be", type)
+        this.holes.push({location:location, type: type})
+
         return {
             kind: "Literal",
             value: ctx.getText(),
             type: NodeType.HOLE,
-            location: getLocation(ctx)
+            location: location
         };
+    }
+
+    public getFinalResult(): Map<SourceLocation, Variable> {
+        const holes = this.holes;
+        const variables = this.variables;
+
+        console.log("Variables:")
+        console.log(variables)
+
+        console.log("Holes:")
+        console.log(holes)
+        let holeSuggestions = new Map<SourceLocation, Variable>();
+        variables.forEach((variable: Variable) => {
+            holes.forEach((hole: Hole) => {
+                if (variable.type === hole.type) {
+                    holeSuggestions.set(hole.location, variable);
+                }
+            });
+        });
+        console.log("Suggestions:")
+        console.log(holeSuggestions)
+        return holeSuggestions;
     }
 
 // protected defaultResult(): BaseNode {
