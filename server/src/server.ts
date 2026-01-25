@@ -181,6 +181,7 @@ connection.onCompletionResolve(
     }
 );
 
+
 connection.onHover((params: HoverParams): Hover | null => {
     const { textDocument, position } = params;
     const document = documents.get(textDocument.uri);
@@ -226,13 +227,27 @@ connection.onHover((params: HoverParams): Hover | null => {
                 };
                 console.log(replaceRange)
                 if (isSameLocation) {
+                    const args = [
+                        textDocument.uri,
+                        replaceRange,
+                        variable.name
+                    ];
 
+                    const commandUri = `command:myExtension.applySuggestion?${encodeURIComponent(JSON.stringify(args))}`;
+                    console.log("hey")
                     return {
                         contents: {
                             kind: 'markdown',
-                            value: `**Suggestion:** Replace with \`${variable.name}\`\n\n*Matches parsed location at col ${location.column}*`
+                            // Use [Text](command:...) syntax
+                            value: [
+                                `**Suggestion:** Replace with \`${variable.name}\``,
+                                `\n\n[Click here to replace with ${variable.name}](${commandUri})`
+                            ].join('\n\n')
                         },
-                        range: replaceRange
+                        range: {
+                            start: { line: position.line, character: startIndex },
+                            end: { line: position.line, character: startIndex + triggerSequence.length }
+                        }
                     };
                 }
             }

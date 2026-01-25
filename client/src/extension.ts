@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from 'path';
-import { workspace, ExtensionContext } from 'vscode';
+import { workspace, ExtensionContext, commands, Range, WorkspaceEdit, Uri } from 'vscode';
 
 import {
 	LanguageClient,
@@ -19,6 +19,15 @@ export function activate(context: ExtensionContext) {
 	// The server is implemented in node
 	const serverModule = context.asAbsolutePath(
 		path.join('server', 'out', 'server.js')
+	);
+
+
+	context.subscriptions.push(
+		commands.registerCommand('myExtension.applySuggestion', (uri: string, range: Range, newText: string) => {
+			const edit = new WorkspaceEdit();
+			edit.replace(Uri.parse(uri), range, newText);
+			workspace.applyEdit(edit);
+		})
 	);
 
 	// If the extension is launched in debug mode then the debug server options are used
@@ -38,6 +47,10 @@ export function activate(context: ExtensionContext) {
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+		},
+		markdown: {
+			isTrusted: true,
+			supportHtml: true
 		}
 	};
 
