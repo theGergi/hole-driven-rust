@@ -22,13 +22,13 @@ import {
 
 import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
-import MyInterpreter, { SourceLocation, Variable } from './MyInterpreter.js';
+import MyInterpreter, { getSourceLocationKey, SourceLocation, Variable } from './MyInterpreter.js';
 import { CharStream, CommonTokenStream } from 'antlr4ng';
 
 
-const interpreter = new MyInterpreter() as any;
 
 function parseDocument(code: string) {
+    const interpreter = new MyInterpreter() as any;
     const inputStream = CharStream.fromString(code);
 
     // 1. Lexer: Breaks text into tokens
@@ -90,96 +90,91 @@ connection.onInitialized(() => {
 });
 
 
-// Handler for the core feature: textDocument/completion (Step 1: Return minimal data quickly)
-connection.onCompletion(
-    (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-        const document = documents.get(textDocumentPosition.textDocument.uri);
-        if (!document) {
-            return [];
-        }
+// // Handler for the core feature: textDocument/completion (Step 1: Return minimal data quickly)
+// connection.onCompletion(
+//     (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+//         const document = documents.get(textDocumentPosition.textDocument.uri);
+//         if (!document) {
+//             return [];
+//         }
 
-        const position = textDocumentPosition.position;
-        const line = document.getText({ start: { line: position.line, character: 0 }, end: position });
-        const triggerSequence = '??';
+//         const position = textDocumentPosition.position;
+//         const line = document.getText({ start: { line: position.line, character: 0 }, end: position });
+//         const triggerSequence = '??';
         
-        // --- Core Logic to Detect Trigger Sequence ---
+//         // --- Core Logic to Detect Trigger Sequence ---
         
-        // Check if the text immediately preceding the cursor matches the trigger
-        if (line.endsWith(triggerSequence)) {
-            const startChar = position.character - triggerSequence.length;
+//         // Check if the text immediately preceding the cursor matches the trigger
+//         if (line.endsWith(triggerSequence)) {
+//             const startChar = position.character - triggerSequence.length;
 
-            // Define the range to replace (the {?} symbols themselves)
+//             // Define the range to replace (the {?} symbols themselves)
 
-            const replaceRange: Range = {
-                start: { line: position.line, character: startChar },
-                end: position
-            };
+//             const replaceRange: Range = {
+//                 start: { line: position.line, character: startChar },
+//                 end: position
+//             };
 
-            let results = parseDocument(document.getText())
-            results.forEach((variable: Variable, location: SourceLocation) => {
-                const { line, column, length } = location;
+//             let results = parseDocument(document.getText())
+//             results.forEach((variable: Variable, location: SourceLocation) => {
+//                 const { line, column, length } = location;
 
-                // Note: Many parsers use 1-based indexing for lines/columns. 
-                // VS Code uses 0-based indexing. Adjust if necessary (e.g., line - 1).
-                const isSameLocation = 
-                    position.line + 1 === line && 
-                    startChar === column && 
-                    triggerSequence.length === length;
-                console.log("hey")
-                console.log(position)
-                console.log(location)
-                console.log(variable)
-                console.log(isSameLocation)
-                if (isSameLocation) {
+//                 // Note: Many parsers use 1-based indexing for lines/columns. 
+//                 // VS Code uses 0-based indexing. Adjust if necessary (e.g., line - 1).
+//                 const isSameLocation = 
+//                     position.line + 1 === line && 
+//                     startChar === column && 
+//                     triggerSequence.length === length;
+//                 if (isSameLocation) {
 
-                    const snippetCompletion: CompletionItem = {
-                        label: `Replace with ${variable.name}`,
-                        kind: CompletionItemKind.Snippet,
-                        // insertText is what actually gets put into the document
-                        insertText: variable.name, 
+//                     const snippetCompletion: CompletionItem = {
+//                         label: `Replace with ${variable.name}`,
+//                         kind: CompletionItemKind.Snippet,
+//                         // insertText is what actually gets put into the document
+//                         insertText: variable.name, 
                         
-                        data: { 
-                            id: 'function-snippet-replacement',
-                            range: replaceRange,
-                        }
-                    };
-                    console.log("hey2")
+//                         data: { 
+//                             id: 'function-snippet-replacement',
+//                             range: replaceRange,
+//                         }
+//                     };
+//                     console.log("hey2")
 
-                    return [snippetCompletion];
-                }
-            });
-        }
+//                     return [snippetCompletion];
+//                 }
+//             });
+//         }
 
-        return [];
-    }
-);
+//         return [];
+//     }
+// );
 
-// Handler for completion item resolution (Step 2: Populate expensive details when item is selected)
-connection.onCompletionResolve(
-    (item: CompletionItem): CompletionItem => {
-        console.log("I am here as well");
-        // Ensure this item is one we created
-        if (item.data && item.data.id === 'function-snippet-replacement') {
-            console.log("I am here as well");
-            // Retrieve the replacement range stored in the data field
-            const replaceRange = item.data.range as Range;
-            const codeSnippet = item.insertText as string;
+// // Handler for completion item resolution (Step 2: Populate expensive details when item is selected)
+// connection.onCompletionResolve(
+//     (item: CompletionItem): CompletionItem => {
+//         console.log("I am here as well");
+//         // Ensure this item is one we created
+//         if (item.data && item.data.id === 'function-snippet-replacement') {
+//             console.log("I am here as well");
+//             // Retrieve the replacement range stored in the data field
+//             const replaceRange = item.data.range as Range;
+//             const codeSnippet = item.insertText as string;
 
-            // Populate the detailed fields now that the user has selected the item
-            item.detail = 'Expands {?} into a boilerplate function.';
+//             // Populate the detailed fields now that the user has selected the item
+//             item.detail = 'Expands {?} into a boilerplate function.';
             
-            // CRUCIAL: TextEdit is used for multi-line insertions AND for replacing existing text.
-            item.textEdit = TextEdit.replace(replaceRange, codeSnippet);
+//             // CRUCIAL: TextEdit is used for multi-line insertions AND for replacing existing text.
+//             item.textEdit = TextEdit.replace(replaceRange, codeSnippet);
             
-            // Ensures the client knows to interpret the content as a snippet
-            item.insertTextFormat = InsertTextFormat.Snippet;
+//             // Ensures the client knows to interpret the content as a snippet
+//             item.insertTextFormat = InsertTextFormat.Snippet;
 
-            // Optional: Re-adding insertText as a robust fallback for the client
-            item.insertText = codeSnippet;
-        }
-        return item;
-    }
-);
+//             // Optional: Re-adding insertText as a robust fallback for the client
+//             item.insertText = codeSnippet;
+//         }
+//         return item;
+//     }
+// );
 
 
 connection.onHover((params: HoverParams): Hover | null => {
@@ -205,50 +200,36 @@ connection.onHover((params: HoverParams): Hover | null => {
             // Run your parser
             const fullText = document.getText();
             const results = parseDocument(fullText);
+
+            const replaceRange: Range = {
+                start: { line: position.line, character: startIndex },
+                end: { line: position.line, character: startIndex + triggerSequence.length }
+            };
+            let suggestions = [];
+            const key = getSourceLocationKey({line: position.line + 1, column: startIndex, length: triggerSequence.length});
+            const variables = results.get(key)
             
-            for (const [location, variable] of results) {
-                const { line, column, length } = location;
-
-                // Note: Many parsers use 1-based indexing for lines/columns. 
-                // VS Code uses 0-based indexing. Adjust if necessary (e.g., line - 1).
-                const isSameLocation = 
-                    position.line + 1 === line && 
-                    startIndex === column && 
-                    triggerSequence.length === length;
-                console.log("hey")
-                console.log(startIndex)
-                console.log(position)
-                console.log(location)
-                console.log(variable)
-                console.log(isSameLocation)
-                const replaceRange: Range = {
-                    start: { line: position.line, character: startIndex },
-                    end: { line: position.line, character: startIndex + triggerSequence.length }
-                };
-                console.log(replaceRange)
-                if (isSameLocation) {
-                    const args = [
-                        textDocument.uri,
-                        replaceRange,
-                        variable.name
-                    ];
-
-                    const commandUri = `command:myExtension.applySuggestion?${encodeURIComponent(JSON.stringify(args))}`;
-                    console.log("hey")
-                    return {
-                        contents: {
-                            kind: 'markdown',
-                            // Use [Text](command:...) syntax
-                            value: [
-                                `**Suggestion:** Replace with \`${variable.name}\``,
-                                `\n\n[Click here to replace with ${variable.name}](${commandUri})`
-                            ].join('\n\n')
-                        },
-                        range: {
-                            start: { line: position.line, character: startIndex },
-                            end: { line: position.line, character: startIndex + triggerSequence.length }
-                        }
-                    };
+            if (!variables) {
+                return null;
+            }
+            for (const variable of variables) {
+                const args = [
+                    textDocument.uri,
+                    replaceRange,
+                    variable.name
+                ];
+                const commandUri = `command:myExtension.applySuggestion?${encodeURIComponent(JSON.stringify(args))}`;
+                suggestions.push(
+                    `**Suggestion:** [Replace](${commandUri}) with \`${variable.name}\``
+                );
+            }
+            if (suggestions.length > 0) {
+                return {
+                    contents: {
+                        kind: 'markdown',
+                        value: suggestions.join('\n\n')
+                    },
+                    range: replaceRange
                 }
             }
         }

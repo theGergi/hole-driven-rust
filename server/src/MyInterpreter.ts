@@ -25,9 +25,11 @@ export interface Hole {
 export interface SourceLocation {
     line: number;
     column: number;
-    offset: number;
     length: number;
 }
+export const getSourceLocationKey = (loc: SourceLocation): string => {
+    return `${loc.line}:${loc.column}:${loc.length}`;
+};
 
 export interface BaseNode {
     kind: string;
@@ -74,11 +76,9 @@ function getLocation(ctx: ParserRuleContext): SourceLocation {
     return {
         line: start.line,
         column: start.column,
-        offset: start.start,
         length: stop.stop - start.start + 1
     };
 }
-
 
 export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     private typeStack: NodeType[] = [NodeType.ROOT];
@@ -139,7 +139,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             // console.log(ctx.function_())
             return this.visit(ctx.function_()!);
         }
-        console.log("hey")
         
         // Add other checks as you implement them (structs, modules, etc.)
         // if (ctx.struct_()) return this.visit(ctx.struct_()!);
@@ -340,7 +339,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         };
     }
 
-    public getFinalResult(): Map<SourceLocation, Variable> {
+    public getFinalResult(): Map<string, Variable[]> {
         const holes = this.holes;
         const variables = this.variables;
 
@@ -349,11 +348,18 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         console.log("Holes:")
         console.log(holes)
-        let holeSuggestions = new Map<SourceLocation, Variable>();
+        let holeSuggestions = new Map<string, Variable[]>();
+        
         variables.forEach((variable: Variable) => {
             holes.forEach((hole: Hole) => {
+                const key = getSourceLocationKey(hole.location);
                 if (variable.type === hole.type) {
-                    holeSuggestions.set(hole.location, variable);
+                    let vars = holeSuggestions.get(key)
+                    if (!vars) {
+                        vars = []
+                        holeSuggestions.set(key, vars)
+                    }
+                    vars.push(variable);
                 }
             });
         });
