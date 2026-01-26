@@ -2,6 +2,7 @@ import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, HoleExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree, Token } from 'antlr4ng';
 import { get } from 'http';
+import { Func } from 'mocha';
 
 export enum NodeType {
     ROOT = "ROOT",
@@ -11,9 +12,25 @@ export enum NodeType {
     UNKNOWN = "UNKNOWN",
 }
 
+export interface Suggestion {
+    suggestionType: string;
+    suggestion: any;
+}
+
 export interface Variable {
     name: string;
     location: SourceLocation;
+    type?: NodeType;
+}
+
+export interface Function {
+    name: string;
+    location: SourceLocation;
+    type?: NodeType;
+    params: FunctionParam[];
+}
+export interface FunctionParam {
+    name: string;
     type?: NodeType;
 }
 
@@ -83,6 +100,7 @@ function getLocation(ctx: ParserRuleContext): SourceLocation {
 export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     private typeStack: NodeType[] = [NodeType.ROOT];
     private variables: Variable[] = [];
+    private functions: Function[] = [];
     private holes: Hole[] = [];
 
     private get currentParentType(): NodeType {
@@ -174,6 +192,23 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         // The identifier rule is a child of the function rule
         const name = ctx.identifier().getText();
         
+        const params = ctx.functionParameters()?.functionParam();
+
+        const paramsParsed = params?.map((param: any) => {
+
+            return {
+                name: param.functionParamPattern().pattern().getText(), 
+                type: this.parseType(param.functionParamPattern().type_().getText())
+            }
+        })
+
+        this.functions.push({
+            name: name,
+            location: getLocation(ctx),
+            type: type,
+            params: paramsParsed || []
+        })
+
         // 2. Handle the body (blockExpression or SEMI)
         const blockCtx = ctx.blockExpression();
         
@@ -339,29 +374,43 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         };
     }
 
-    public getFinalResult(): Map<string, Variable[]> {
+    public getFinalResult(): Map<string, Suggestion[]> {
         const holes = this.holes;
         const variables = this.variables;
+        const functions = this.functions;
 
         console.log("Variables:")
         console.log(variables)
 
         console.log("Holes:")
         console.log(holes)
-        let holeSuggestions = new Map<string, Variable[]>();
+
+        console.log("Functions:")
+        console.log(functions)
+        let holeSuggestions = new Map<string, Suggestion[]>();
         
-        variables.forEach((variable: Variable) => {
-            holes.forEach((hole: Hole) => {
-                const key = getSourceLocationKey(hole.location);
+        holes.forEach((hole: Hole) => {
+            const key = getSourceLocationKey(hole.location);
+            variables.forEach((variable: Variable) => {
                 if (variable.type === hole.type) {
                     let vars = holeSuggestions.get(key)
                     if (!vars) {
                         vars = []
                         holeSuggestions.set(key, vars)
                     }
-                    vars.push(variable);
+                    vars.push({suggestionType: 'variable', suggestion: variable});
                 }
             });
+            functions.forEach((func: Function) => {
+                if (func.type === hole.type) {
+                    let funcs = holeSuggestions.get(key)
+                    if (!funcs) {
+                        funcs = []
+                        holeSuggestions.set(key, funcs)
+                    }
+                    funcs.push({suggestionType: 'function', suggestion: func});
+                }
+            })
         });
         console.log("Suggestions:")
         console.log(holeSuggestions)

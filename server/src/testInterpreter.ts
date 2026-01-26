@@ -18,16 +18,19 @@ function parseDocument(code: string) {
 	const tree = parser.crate(); 
 
 	const result = interpreter.visit(tree);
-
+	interpreter.getFinalResult()
 	return result;
 }
 
 // --- Test Case ---
 const rustCode = `
-    fn main() -> i32 {
-        let x = 2;
-		??
+	fn abc(a: i32) -> i32 {
+        ??
     }
+    // fn main() -> i32 {
+    //     let x = 2;
+	// 	??
+    // }
 `;
 
 const result = parseDocument(rustCode);
