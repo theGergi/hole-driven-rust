@@ -128,8 +128,8 @@ connection.onHover((params: HoverParams): Hover | null => {
                 if (suggestion.suggestionType === 'variable') {
                     replacement = suggestion.suggestion.name
                 } else if (suggestion.suggestionType === 'function'){
-                    let paramString = suggestion.suggestion.params.map((param: any) => `??: ${param.name}`).join(', ')
-                    replacement = `${suggestion.suggestion.name}(${paramString}) {\n\n${' '.repeat(startIndex)}}`
+                    let paramString = suggestion.suggestion.params.map((param: any) => `??: ${param.type}`).join(', ')
+                    replacement = `${suggestion.suggestion.name}(${paramString})`
                 }
                 console.log("hey")
                 const args = [

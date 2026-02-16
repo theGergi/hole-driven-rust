@@ -24,13 +24,12 @@ function parseDocument(code: string) {
 
 // --- Test Case ---
 const rustCode = `
-	fn abc(a: i32) -> i32 {
-        ??
+    fn main() -> i32 {
+        let x = 2;
+		let y = x;
+		let z = x;
+		??
     }
-    // fn main() -> i32 {
-    //     let x = 2;
-	// 	??
-    // }
 `;
 
 const result = parseDocument(rustCode);

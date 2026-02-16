@@ -1,15 +1,31 @@
 import { RustParserVisitor } from './parser/RustParserVisitor';
-import { ArithmeticOrLogicalExpressionContext, HoleExpressionContext } from './parser/RustParser';
+import { ArithmeticOrLogicalExpressionContext, HoleExpressionContext, PathExpression_Context, PathExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree, Token } from 'antlr4ng';
 import { get } from 'http';
 import { Func } from 'mocha';
+import { isPrimitive } from 'util';
 
-export enum NodeType {
+export enum ValType {
     ROOT = "ROOT",
     FUNCTION = "FUNCTION",
-    INT = "INT",
+    INT = "i32",
     HOLE = "HOLE",
     UNKNOWN = "UNKNOWN",
+}
+
+export enum Borrow {
+    BFree,
+    BMut,
+    BImmut
+}
+
+export interface Type {
+    valType: ValType;
+    primitive: boolean;
+    mutable: boolean;
+    consumed: boolean;
+    borrows: Borrow;
+    owner: Variable;
 }
 
 export interface Suggestion {
@@ -20,23 +36,23 @@ export interface Suggestion {
 export interface Variable {
     name: string;
     location: SourceLocation;
-    type?: NodeType;
+    type: Type;
 }
 
 export interface Function {
     name: string;
     location: SourceLocation;
-    type?: NodeType;
+    type?: ValType;
     params: FunctionParam[];
 }
 export interface FunctionParam {
     name: string;
-    type?: NodeType;
+    type?: ValType;
 }
 
 export interface Hole {
     location: SourceLocation;
-    type: NodeType;
+    type: ValType;
 }
 
 export interface SourceLocation {
@@ -51,7 +67,7 @@ export const getSourceLocationKey = (loc: SourceLocation): string => {
 export interface BaseNode {
     kind: string;
     location: SourceLocation;
-    type?: NodeType; // Populated during type checking
+    type?: ValType; // Populated during type checking
 }
 
 export interface BlockExpressionNode extends BaseNode {
@@ -97,13 +113,69 @@ function getLocation(ctx: ParserRuleContext): SourceLocation {
     };
 }
 
+function toType(valType: ValType, variable: Variable): Type {
+    let primitive = false;
+    
+    if (valType == ValType.INT) {
+        primitive = true;
+    }
+
+    return {
+        valType: valType,
+        primitive: primitive,
+        mutable: false,
+        consumed: false,
+        borrows: Borrow.BFree,
+        owner: variable
+    }
+}
+
+function isVariable(variable: BaseNode) {
+    if ("name" in variable && "location" in variable && ! ("params" in variable)) {
+
+    }
+}
+
 export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
-    private typeStack: NodeType[] = [NodeType.ROOT];
+    private typeStack: ValType[] = [ValType.ROOT];
     private variables: Variable[] = [];
     private functions: Function[] = [];
     private holes: Hole[] = [];
+    
+    getBoundVariable(variableName: string): Variable {
+        const variable = this.variables.find(variable => (variable.name === variableName))
 
-    private get currentParentType(): NodeType {
+        if(variable) {
+            return variable;
+        } else {
+            throw Error("Variable not bound")
+        }
+    }
+
+    borrow(variableName: string, mutable: boolean) {
+        const variable = this.getBoundVariable(variableName);
+
+        if (variable.type?.borrows === Borrow.BFree) {
+            variable.type.borrows = mutable ? Borrow.BMut : Borrow.BImmut
+        } else if (variable.type?.borrows === Borrow.BMut) {
+            throw Error("Cannot borrow, already mutably borrowed")
+        } else {
+            if (mutable) {
+                throw Error("Cannot mutably borrow, already immutably borrowed")
+            }
+        }
+    }
+
+    consume(variableName: string) {
+        const variable = this.getBoundVariable(variableName)
+        if (variable.type.consumed) {
+            throw Error("Cannot consume already consumed variable")
+        }
+        console.log("Consumed", variableName)
+        variable.type.consumed = true
+    }
+
+    private get currentParentType(): ValType {
         return this.typeStack[this.typeStack.length - 1];
     }
 
@@ -124,26 +196,44 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return null; 
     };
 
+    // visitAssignmentExpression = (ctx: any): BaseNode | null => {
+    //     const variable = ctx.expression(0).getText();
+    //     const expression = ctx.expression(1);
+
+    //     const inferedExpression = this.visit(expression);
+    //     if(inferedExpression) {
+            
+    //     }
+
+    // }
+
     visitLetStatement = (ctx: any): BaseNode | null => {
         console.log("Let statement")
         const variable = ctx.patternNoTopAlt().getText();
         const declaredType = this.parseType(ctx.type_()?.getText());
         const expression = ctx.expression();
-        let inferedType = NodeType.UNKNOWN;
+        let inferedType = ValType.UNKNOWN;
         if (expression) {
-            inferedType = this.visit(expression)?.type as NodeType;
+            inferedType = this.visit(expression)?.type as ValType;
         }
         console.log(inferedType)
         console.log(declaredType)
-        if (inferedType !== NodeType.UNKNOWN && declaredType !== NodeType.UNKNOWN && declaredType !== inferedType) {
+        if (inferedType !== ValType.UNKNOWN && declaredType !== ValType.UNKNOWN && declaredType !== inferedType) {
             throw new Error("Declared type is different from infered type");
         }
 
-        if (inferedType === NodeType.UNKNOWN && declaredType === NodeType.UNKNOWN) {
+        if (inferedType === ValType.UNKNOWN && declaredType === ValType.UNKNOWN) {
             throw new Error("No type");
         }
 
-        this.variables.push({name: variable, type: declaredType !== NodeType.UNKNOWN ? declaredType : inferedType, location: getLocation(ctx)})
+        const valType = declaredType !== ValType.UNKNOWN ? declaredType : inferedType;
+
+        console.log("11111111111111111111111111")
+        console.log()
+        if(expression instanceof PathExpression_Context && expression?.pathExpression()?.pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier()) { // a variable is being assigned
+            this.consume(expression.getText())
+        }
+        this.variables.push({name: variable, type: toType(valType, variable), location: getLocation(ctx)})
         console.log(this.variables)
         return null;
     }
@@ -173,11 +263,11 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         //     console.log(ctx.type_())
     //     return null;
     // }
-    parseType = (typeString: string): NodeType => {
+    parseType = (typeString: string): ValType => {
         if (typeString === 'i32') {
-            return NodeType.INT;
+            return ValType.INT;
         }
-        return NodeType.UNKNOWN;
+        return ValType.UNKNOWN;
     }
 
     visitFunction_ = (ctx: any): FunctionDeclarationNode => {
@@ -212,7 +302,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         // 2. Handle the body (blockExpression or SEMI)
         const blockCtx = ctx.blockExpression();
         
-        const blockNode = blockCtx ? this.visit(blockCtx) as BlockExpressionNode : {kind: "Literal", type: NodeType.UNKNOWN} as LiteralNode; 
+        const blockNode = blockCtx ? this.visit(blockCtx) as BlockExpressionNode : {kind: "Literal", type: ValType.UNKNOWN} as LiteralNode; 
         
         this.typeStack.pop()
         
@@ -235,7 +325,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             // Visit the statements rule
             
         }
-        const visitedStatements = statementsNode ? this.visit(statementsNode) as BaseNode : {kind: "Literal", type: NodeType.UNKNOWN } as LiteralNode;
+        const visitedStatements = statementsNode ? this.visit(statementsNode) as BaseNode : {kind: "Literal", type: ValType.UNKNOWN } as LiteralNode;
         
         return {
             kind: "Block",
@@ -260,7 +350,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         
         // 2. Visit the optional trailing 'expression'
         const expr = ctx.expression();
-        const expressionNode = expr ? this.visit(expr) as ExpressionNode : {kind: "Literal", type: NodeType.UNKNOWN } as LiteralNode;
+        const expressionNode = expr ? this.visit(expr) as ExpressionNode : {kind: "Literal", type: ValType.UNKNOWN } as LiteralNode;
 
         return {
             kind: "Statements",
@@ -289,8 +379,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         let type;
 
-        if (left.type === NodeType.HOLE || right.type === NodeType.HOLE) {
-            type = NodeType.HOLE;
+        if (left.type === ValType.HOLE || right.type === ValType.HOLE) {
+            type = ValType.HOLE;
         } else if (left.type === right.type) {
             type = left.type;
         }
@@ -313,7 +403,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             return {
                 kind: "Literal",
                 value: parseInt(ctx.INTEGER_LITERAL()!.getText(), 10),
-                type: NodeType.INT,
+                type: ValType.INT,
                 location: getLocation(ctx)
             };
         }
@@ -351,7 +441,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return {
             kind: "Literal",
             value: ctx.getText(),
-            type: NodeType.UNKNOWN,
+            type: ValType.UNKNOWN,
             location: getLocation(ctx)
         };
 
@@ -369,7 +459,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return {
             kind: "Literal",
             value: ctx.getText(),
-            type: NodeType.HOLE,
+            type: ValType.HOLE,
             location: location
         };
     }
@@ -392,7 +482,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         holes.forEach((hole: Hole) => {
             const key = getSourceLocationKey(hole.location);
             variables.forEach((variable: Variable) => {
-                if (variable.type === hole.type) {
+                if (variable.type.valType === hole.type && !variable.type.consumed) {
                     let vars = holeSuggestions.get(key)
                     if (!vars) {
                         vars = []
