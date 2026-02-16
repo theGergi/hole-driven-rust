@@ -1,5 +1,5 @@
 import { RustParserVisitor } from './parser/RustParserVisitor';
-import { ArithmeticOrLogicalExpressionContext, HoleExpressionContext, PathExpression_Context, PathExpressionContext } from './parser/RustParser';
+import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, HoleExpressionContext, PathExpression_Context, PathExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree, Token } from 'antlr4ng';
 import { get } from 'http';
 import { Func } from 'mocha';
@@ -98,6 +98,11 @@ export interface LiteralNode extends BaseNode {
     value: any;
 }
 
+export interface VariableNode extends BaseNode {
+    kind: "Variable";
+    name: string;
+}
+
 
 
 export type ExpressionNode = BinaryExpressionNode | LiteralNode | BlockExpressionNode; // Add others as needed
@@ -149,6 +154,16 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             return variable;
         } else {
             throw Error("Variable not bound")
+        }
+    }
+
+    getBoundFunction(functionName: string): Function {
+        const function_ = this.functions.find(function_ => (function_.name === functionName))
+
+        if(function_) {
+            return function_;
+        } else {
+            throw Error("Function not bound")
         }
     }
 
@@ -229,13 +244,24 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const valType = declaredType !== ValType.UNKNOWN ? declaredType : inferedType;
 
         console.log("11111111111111111111111111")
-        console.log()
+        console.log(expression)
         if(expression instanceof PathExpression_Context && expression?.pathExpression()?.pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier()) { // a variable is being assigned
             this.consume(expression.getText())
         }
         this.variables.push({name: variable, type: toType(valType, variable), location: getLocation(ctx)})
         console.log(this.variables)
         return null;
+    }
+
+    visitPathExpression = (ctx: any): BaseNode | null => {
+        if(ctx.parent.parent instanceof CallExpressionContext) {
+            const type = this.getBoundFunction(ctx.getText()).type
+            return {kind: "Function", type: type, location: getLocation(ctx)}
+        } else {
+            const type = this.getBoundVariable(ctx.getText()).type.valType
+            return {kind: "Variable", type: type, location: getLocation(ctx)}
+        }
+
     }
 
     visitVisItem = (ctx: any): BaseNode | null => {
@@ -376,7 +402,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         // 2. Recursively build the left and right AST branches
         const left = this.visit(leftChild) as ExpressionNode;
         const right = this.visit(rightChild) as ExpressionNode;
-
+        console.log(leftChild)
         let type;
 
         if (left.type === ValType.HOLE || right.type === ValType.HOLE) {
@@ -453,7 +479,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const location = getLocation(ctx)
         const type = this.currentParentType;
 
-        console.log("Type shold be", type)
+        console.log("Type should be", type)
         this.holes.push({location:location, type: type})
 
         return {
@@ -481,8 +507,9 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         
         holes.forEach((hole: Hole) => {
             const key = getSourceLocationKey(hole.location);
+
             variables.forEach((variable: Variable) => {
-                if (variable.type.valType === hole.type && !variable.type.consumed) {
+                if (variable.type && variable.type.valType === hole.type && !variable.type.consumed) {
                     let vars = holeSuggestions.get(key)
                     if (!vars) {
                         vars = []
