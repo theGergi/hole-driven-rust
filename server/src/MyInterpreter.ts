@@ -9,6 +9,7 @@ export enum ValType {
     ROOT = "ROOT",
     FUNCTION = "FUNCTION",
     INT = "i32",
+    STRING = "string",
     HOLE = "HOLE",
     UNKNOWN = "UNKNOWN",
 }
@@ -170,6 +171,10 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     borrow(variableName: string, mutable: boolean) {
         const variable = this.getBoundVariable(variableName);
 
+        if (variable.type.primitive) {
+            return
+        }
+
         if (variable.type?.borrows === Borrow.BFree) {
             variable.type.borrows = mutable ? Borrow.BMut : Borrow.BImmut
         } else if (variable.type?.borrows === Borrow.BMut) {
@@ -183,6 +188,9 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     consume(variableName: string) {
         const variable = this.getBoundVariable(variableName)
+        if (variable.type.primitive) {
+            return
+        }
         if (variable.type.consumed) {
             throw Error("Cannot consume already consumed variable")
         }
@@ -211,28 +219,46 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return null; 
     };
 
-    // visitAssignmentExpression = (ctx: any): BaseNode | null => {
-    //     const variable = ctx.expression(0).getText();
-    //     const expression = ctx.expression(1);
+    visitAssignmentExpression = (ctx: any): BaseNode | null => {
+        const variableName = ctx.expression(0).getText();
+        const expression = ctx.expression(1);
 
-    //     const inferedExpression = this.visit(expression);
-    //     if(inferedExpression) {
-            
-    //     }
+        console.log("3333333333333333333333")
+        console.log(variableName)
 
-    // }
+        const variable = this.getBoundVariable(variableName)
 
-    visitLetStatement = (ctx: any): BaseNode | null => {
-        console.log("Let statement")
-        const variable = ctx.patternNoTopAlt().getText();
-        const declaredType = this.parseType(ctx.type_()?.getText());
-        const expression = ctx.expression();
+        if (!variable.type.mutable) {
+            throw Error("Cannot modify immutable variable", variableName)
+        }
+
         let inferedType = ValType.UNKNOWN;
         if (expression) {
             inferedType = this.visit(expression)?.type as ValType;
         }
-        console.log(inferedType)
-        console.log(declaredType)
+
+        if(expression instanceof PathExpression_Context && expression?.pathExpression()?.pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier()) { // a variable is being assigned
+            this.consume(expression.getText())
+        }
+
+        variable.location = getLocation(ctx);
+
+        return null
+    }
+
+    visitLetStatement = (ctx: any): BaseNode | null => {
+        console.log("Let statement")
+        const variableName = ctx.patternNoTopAlt().patternWithoutRange().identifierPattern().identifier().getText();
+        const mutable = ctx.patternNoTopAlt().patternWithoutRange().identifierPattern().KW_MUT() != null;
+        const declaredType = this.parseType(ctx.type_()?.getText());
+        const expression = ctx.expression();
+
+        let inferedType = ValType.UNKNOWN;
+
+        if (expression) {
+            inferedType = this.visit(expression)?.type as ValType;
+        }
+
         if (inferedType !== ValType.UNKNOWN && declaredType !== ValType.UNKNOWN && declaredType !== inferedType) {
             throw new Error("Declared type is different from infered type");
         }
@@ -243,17 +269,21 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         const valType = declaredType !== ValType.UNKNOWN ? declaredType : inferedType;
 
-        console.log("11111111111111111111111111")
-        console.log(expression)
         if(expression instanceof PathExpression_Context && expression?.pathExpression()?.pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier()) { // a variable is being assigned
             this.consume(expression.getText())
         }
-        this.variables.push({name: variable, type: toType(valType, variable), location: getLocation(ctx)})
+
+        const type = toType(valType, variableName);
+        type.mutable = mutable;
+
+        this.variables.push({name: variableName, type: type, location: getLocation(ctx)})
+        console.log("44444444444444444444")
         console.log(this.variables)
         return null;
     }
 
     visitPathExpression = (ctx: any): BaseNode | null => {
+        console.log(ctx.getText())
         if(ctx.parent.parent instanceof CallExpressionContext) {
             const type = this.getBoundFunction(ctx.getText()).type
             return {kind: "Function", type: type, location: getLocation(ctx)}
