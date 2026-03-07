@@ -118,8 +118,10 @@ connection.onHover((params: HoverParams): Hover | null => {
                 end: { line: position.line, character: startIndex + triggerSequence.length }
             };
             const key = getSourceLocationKey({line: position.line + 1, column: startIndex, length: triggerSequence.length});
-            const suggestions = results.get(key)
-
+            const hole = results.get(key)
+            const suggestions = hole.suggestions;
+            const type = hole.type;
+            
             if (!suggestions) {
                 return null;
             }
@@ -144,7 +146,7 @@ connection.onHover((params: HoverParams): Hover | null => {
                 return {
                     contents: {
                         kind: 'markdown',
-                        value: validSuggestions.join('\n\n')
+                        value: "Type: " + type + "\n\n" + validSuggestions.join('\n\n')
                     },
                     range: replaceRange
                 }

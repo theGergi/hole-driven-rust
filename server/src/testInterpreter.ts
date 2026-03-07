@@ -18,7 +18,7 @@ function parseDocument(code: string) {
 	const tree = parser.crate(); 
 
 	const result = interpreter.visit(tree);
-	interpreter.getFinalResult()
+	// interpreter.getFinalResult()
 	return result;
 }
 

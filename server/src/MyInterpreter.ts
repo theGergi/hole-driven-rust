@@ -54,6 +54,7 @@ export interface FunctionParam {
 export interface Hole {
     location: SourceLocation;
     type: ValType;
+    suggestions: Suggestion[]
 }
 
 export interface SourceLocation {
@@ -323,6 +324,9 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         if (typeString === 'i32') {
             return ValType.INT;
         }
+        if (typeString === 'string') {
+            return ValType.STRING;
+        }
         return ValType.UNKNOWN;
     }
 
@@ -473,16 +477,16 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         //     };
         // }
 
-        // if (ctx.STRING_LITERAL() || ctx.RAW_STRING_LITERAL()) {
-        //     const rawValue = (ctx.STRING_LITERAL() ?? ctx.RAW_STRING_LITERAL())!.getText();
-        //     return {
-        //         kind: "Literal",
-        //         // You might want a helper to strip quotes: rawValue.slice(1, -1)
-        //         value: rawValue, 
-        //         type: "string",
-        //         location: getLocation(ctx)
-        //     };
-        // }
+        if (ctx.STRING_LITERAL() || ctx.RAW_STRING_LITERAL()) {
+            const rawValue = (ctx.STRING_LITERAL() ?? ctx.RAW_STRING_LITERAL())!.getText();
+            return {
+                kind: "Literal",
+                // You might want a helper to strip quotes: rawValue.slice(1, -1)
+                value: rawValue, 
+                type: ValType.STRING,
+                location: getLocation(ctx)
+            };
+        }
 
         // if (ctx.CHAR_LITERAL()) {
         //     return {
@@ -510,8 +514,10 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const type = this.currentParentType;
 
         console.log("Type should be", type)
-        this.holes.push({location:location, type: type})
+        const hole = {location:location, type: type, suggestions: []}
+        this.generateHole(hole)
 
+        console.log(hole)
         return {
             kind: "Literal",
             value: ctx.getText(),
@@ -520,7 +526,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         };
     }
 
-    public getFinalResult(): Map<string, Suggestion[]> {
+    public getFinalResult(): Map<string, Hole> {
         const holes = this.holes;
         const variables = this.variables;
         const functions = this.functions;
@@ -533,35 +539,66 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         console.log("Functions:")
         console.log(functions)
-        let holeSuggestions = new Map<string, Suggestion[]>();
+        let holeSuggestions = new Map<string, Hole>();
         
         holes.forEach((hole: Hole) => {
             const key = getSourceLocationKey(hole.location);
 
-            variables.forEach((variable: Variable) => {
-                if (variable.type && variable.type.valType === hole.type && !variable.type.consumed) {
-                    let vars = holeSuggestions.get(key)
-                    if (!vars) {
-                        vars = []
-                        holeSuggestions.set(key, vars)
-                    }
-                    vars.push({suggestionType: 'variable', suggestion: variable});
-                }
-            });
-            functions.forEach((func: Function) => {
-                if (func.type === hole.type) {
-                    let funcs = holeSuggestions.get(key)
-                    if (!funcs) {
-                        funcs = []
-                        holeSuggestions.set(key, funcs)
-                    }
-                    funcs.push({suggestionType: 'function', suggestion: func});
-                }
-            })
+            // variables.forEach((variable: Variable) => {
+            //     if (variable.type && variable.type.valType === hole.type && !variable.type.consumed) {
+            //         let vars = holeSuggestions.get(key)
+            //         if (!vars) {
+            //             vars = []
+            //             holeSuggestions.set(key, vars)
+            //         }
+            //         vars.push({suggestionType: 'variable', suggestion: variable});
+            //     }
+            // });
+            // functions.forEach((func: Function) => {
+            //     if (func.type === hole.type) {
+            //         let funcs = holeSuggestions.get(key)
+            //         if (!funcs) {
+            //             funcs = []
+            //             holeSuggestions.set(key, funcs)
+            //         }
+            //         funcs.push({suggestionType: 'function', suggestion: func});
+            //     }
+            // })
+            holeSuggestions.set(key, hole)
         });
         console.log("Suggestions:")
         console.log(holeSuggestions)
         return holeSuggestions;
+    }
+
+    public generateHole(hole: Hole) {
+        const variables = this.variables;
+        const functions = this.functions;
+
+        console.log("Variables:")
+        console.log(variables)
+
+        console.log("Functions:")
+        console.log(functions)
+        let holeSuggestions = [] as Suggestion[];
+        
+        const key = getSourceLocationKey(hole.location);
+
+        variables.forEach((variable: Variable) => {
+            if (variable.type && variable.type.valType === hole.type && !variable.type.consumed) {
+                holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
+            }
+        });
+        functions.forEach((func: Function) => {
+            if (func.type === hole.type) {
+                holeSuggestions.push({suggestionType: 'function', suggestion: func});
+            }
+        })
+
+        console.log("Suggestions:")
+        console.log(holeSuggestions)
+        hole.suggestions = holeSuggestions
+        this.holes.push(hole)
     }
 
 // protected defaultResult(): BaseNode {
