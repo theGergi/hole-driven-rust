@@ -25,9 +25,11 @@ function parseDocument(code: string) {
 // --- Test Case ---
 const rustCode = `
     fn main(a: i32) -> i32 {
-		let x = 3;
-		x = 2;
-		x + ??
+		{
+			let x = 3;
+		}
+		let y = 4;
+		let z = ??;
 	}
 `;
 

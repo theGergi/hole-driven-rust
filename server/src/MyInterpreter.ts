@@ -149,6 +149,14 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     private functions: Function[] = [];
     private holes: Hole[] = [];
     
+    saveState() {
+        return { variables: structuredClone(this.variables) }
+    }
+
+    loadState(state: any) {
+        this.variables = state.variables;
+    }
+
     getBoundVariable(variableName: string): Variable {
         const variable = this.variables.find(variable => (variable.name === variableName))
 
@@ -380,13 +388,13 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const statementsNode = ctx.statements();
         
         const type = this.currentParentType
-        
-        if (statementsNode) {
-            // Visit the statements rule
-            
-        }
+
+        const currentState = this.saveState()
+
         const visitedStatements = statementsNode ? this.visit(statementsNode) as BaseNode : {kind: "Literal", type: ValType.UNKNOWN } as LiteralNode;
-        
+
+        this.loadState(currentState)
+
         return {
             kind: "Block",
             statements: visitedStatements,
@@ -402,9 +410,9 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const type = this.currentParentType
 
         // 1. Visit all individual 'statement' children
-        //
         const statements = ctx.statement()
         statements.forEach((statement: ParseTree) => {
+            console.log(this.variables)
             this.visit(statement)
         });
         
@@ -509,7 +517,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     visitHoleExpression = (ctx: any): LiteralNode => {
         console.log("Hole expression")
-        
+        console.log(this.variables)
         const location = getLocation(ctx)
         const type = this.currentParentType;
 
