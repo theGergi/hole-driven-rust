@@ -232,9 +232,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const variableName = ctx.expression(0).getText();
         const expression = ctx.expression(1);
 
-        console.log("3333333333333333333333")
-        console.log(variableName)
-
         const variable = this.getBoundVariable(variableName)
 
         if (!variable.type.mutable) {
@@ -262,6 +259,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const declaredType = this.parseType(ctx.type_()?.getText());
         const expression = ctx.expression();
 
+        console.log(expression.macroInvocation())
+
         let inferedType = ValType.UNKNOWN;
 
         if (expression) {
@@ -286,13 +285,11 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         type.mutable = mutable;
 
         this.variables.push({name: variableName, type: type, location: getLocation(ctx)})
-        console.log("44444444444444444444")
-        console.log(this.variables)
+
         return null;
     }
 
     visitPathExpression = (ctx: any): BaseNode | null => {
-        console.log(ctx.getText())
         if(ctx.parent.parent instanceof CallExpressionContext) {
             const type = this.getBoundFunction(ctx.getText()).type
             return {kind: "Function", type: type, location: getLocation(ctx)}
@@ -412,7 +409,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         // 1. Visit all individual 'statement' children
         const statements = ctx.statement()
         statements.forEach((statement: ParseTree) => {
-            console.log(this.variables)
             this.visit(statement)
         });
         
@@ -444,7 +440,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         // 2. Recursively build the left and right AST branches
         const left = this.visit(leftChild) as ExpressionNode;
         const right = this.visit(rightChild) as ExpressionNode;
-        console.log(leftChild)
+
         let type;
 
         if (left.type === ValType.HOLE || right.type === ValType.HOLE) {
@@ -517,15 +513,13 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     visitHoleExpression = (ctx: any): LiteralNode => {
         console.log("Hole expression")
-        console.log(this.variables)
+
         const location = getLocation(ctx)
         const type = this.currentParentType;
 
-        console.log("Type should be", type)
         const hole = {location:location, type: type, suggestions: []}
         this.generateHole(hole)
 
-        console.log(hole)
         return {
             kind: "Literal",
             value: ctx.getText(),
@@ -583,11 +577,11 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const variables = this.variables;
         const functions = this.functions;
 
-        console.log("Variables:")
-        console.log(variables)
+        // console.log("Variables:")
+        // console.log(variables)
 
-        console.log("Functions:")
-        console.log(functions)
+        // console.log("Functions:")
+        // console.log(functions)
         let holeSuggestions = [] as Suggestion[];
         
         const key = getSourceLocationKey(hole.location);
@@ -603,8 +597,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             }
         })
 
-        console.log("Suggestions:")
-        console.log(holeSuggestions)
+        // console.log("Suggestions:")
+        // console.log(holeSuggestions)
         hole.suggestions = holeSuggestions
         this.holes.push(hole)
     }
