@@ -5,6 +5,7 @@ import { get } from 'http';
 import { Func } from 'mocha';
 import { isPrimitive } from 'util';
 import { TraceValues } from 'vscode-languageserver';
+import { isDeepStrictEqual } from 'util';
 
 export enum ValKind {
     ROOT = "ROOT",
@@ -298,7 +299,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const declaredType = this.parseType(ctx.type_()?.getText());
         const expression = ctx.expression();
 
-        console.log(expression.macroInvocation())
+        this.typeStack.push(declaredType);
 
         let inferedType = {kind: ValKind.UNKNOWN} as ValType;
 
@@ -306,12 +307,14 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             inferedType = this.visit(expression)?.type as ValType;
         }
 
-        if (inferedType.kind !== ValKind.UNKNOWN && declaredType.kind !== ValKind.UNKNOWN && declaredType !== inferedType) {
-            throw new Error("Declared type is different from infered type");
-        }
+        this.typeStack.pop();
 
         if (inferedType.kind === ValKind.UNKNOWN && declaredType.kind === ValKind.UNKNOWN) {
             throw new Error("No type");
+        } else if (inferedType.kind === ValKind.HOLE && declaredType.kind !== ValKind.UNKNOWN) {
+            inferedType = declaredType;
+        } else if (inferedType.kind !== ValKind.UNKNOWN && declaredType.kind !== ValKind.UNKNOWN && !isDeepStrictEqual(declaredType, inferedType)) {
+            throw new Error("Declared type is different from infered type: " + declaredType.kind + " vs " + inferedType.kind);
         }
 
         const valType = declaredType.kind !== ValKind.UNKNOWN ? declaredType : inferedType;
@@ -365,11 +368,21 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     //     return null;
     // }
     parseType = (typeString: string): ValType => {
+        if (!typeString) {
+            return {kind: ValKind.UNKNOWN};
+        }
+
         if (typeString === 'i32') {
             return {kind: ValKind.INT};
         }
         if (typeString === 'string') {
             return {kind: ValKind.STRING};
+        }
+        const match = typeString.match(/^Vec<(.+)>$/);
+
+        if (match) {
+            const elementType = this.parseType(match[1]); 
+            return {kind: ValKind.VECTOR, elementType: elementType};
         }
         return {kind: ValKind.UNKNOWN};
     }
@@ -378,8 +391,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         console.log("Function");
         // console.log(ctx.functionReturnType())
         
+        console.log(ctx.functionReturnType().type_().getText())
         let type = this.parseType(ctx.functionReturnType().type_().getText());
-
         this.typeStack.push(type);
         
         // 1. Get the function name
@@ -443,7 +456,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         console.log("Statements");
         const nodes: BaseNode[] = [];
         
-        const type = this.currentParentType
+        const type = {kind: ValKind.UNKNOWN};
+        this.typeStack.push(type);
 
         // 1. Visit all individual 'statement' children
         const statements = ctx.statement()
@@ -455,6 +469,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const expr = ctx.expression();
         const expressionNode = expr ? this.visit(expr) as ExpressionNode : {kind: "Literal", type: {kind: ValKind.UNKNOWN}} as LiteralNode;
 
+        this.typeStack.pop()
         return {
             kind: "Statements",
             statements: nodes,
@@ -567,82 +582,34 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         };
     }
 
-    public getFinalResult(): Map<string, Hole> {
-        const holes = this.holes;
-        const variables = this.variables;
-        const functions = this.functions;
-
-        console.log("Variables:")
-        console.log(variables)
-
-        console.log("Holes:")
-        console.log(holes)
-
-        console.log("Functions:")
-        console.log(functions)
-        let holeSuggestions = new Map<string, Hole>();
-        
-        holes.forEach((hole: Hole) => {
-            const key = getSourceLocationKey(hole.location);
-
-            // variables.forEach((variable: Variable) => {
-            //     if (variable.type && variable.type.valType === hole.type && !variable.type.consumed) {
-            //         let vars = holeSuggestions.get(key)
-            //         if (!vars) {
-            //             vars = []
-            //             holeSuggestions.set(key, vars)
-            //         }
-            //         vars.push({suggestionType: 'variable', suggestion: variable});
-            //     }
-            // });
-            // functions.forEach((func: Function) => {
-            //     if (func.type === hole.type) {
-            //         let funcs = holeSuggestions.get(key)
-            //         if (!funcs) {
-            //             funcs = []
-            //             holeSuggestions.set(key, funcs)
-            //         }
-            //         funcs.push({suggestionType: 'function', suggestion: func});
-            //     }
-            // })
-            holeSuggestions.set(key, hole)
-        });
-        console.log("Suggestions:")
-        console.log(holeSuggestions)
-        return holeSuggestions;
-    }
-
     public generateHole(hole: Hole) {
         const variables = this.variables;
         const functions = this.functions;
 
-        // console.log("Variables:")
-        // console.log(variables)
+        console.log("Variables:")
+        console.log(variables[0].type)
 
-        // console.log("Functions:")
-        // console.log(functions)
+        console.log("Functions:")
+        console.log(functions[0])
         let holeSuggestions = [] as Suggestion[];
         
         const key = getSourceLocationKey(hole.location);
 
         variables.forEach((variable: Variable) => {
-            if (variable.type && variable.type.valType === hole.type && !variable.type.consumed) {
+            if (variable.type && isDeepStrictEqual(variable.type.valType, hole.type) && !variable.type.consumed) {
                 holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
             }
         });
         functions.forEach((func: Function) => {
-            if (func.type === hole.type) {
+            if (isDeepStrictEqual(func.type, hole.type)) {
                 holeSuggestions.push({suggestionType: 'function', suggestion: func});
             }
         })
 
-        // console.log("Suggestions:")
-        // console.log(holeSuggestions)
+        console.log("Suggestions:")
+        console.log(holeSuggestions)
         hole.suggestions = holeSuggestions
         this.holes.push(hole)
     }
 
-// protected defaultResult(): BaseNode {
-    //     throw new Error("Node not implemented");
-    // }
 }

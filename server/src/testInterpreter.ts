@@ -4,9 +4,10 @@ import { RustParser } from './parser/RustParser';
 import MyInterpreter, { Hole, SourceLocation, Variable, Function as Func } from './MyInterpreter.js';
 import * as assert from 'assert';
 
-const interpreter = new MyInterpreter() as any;
+
 
 function parseDocument(code: string) {
+	const interpreter = new MyInterpreter() as any;
 	const inputStream = CharStream.fromString(code);
 
 	// 1. Lexer: Breaks text into tokens
@@ -24,55 +25,64 @@ function parseDocument(code: string) {
 }
 
 
+const testCase = {
+	rustCode: `
+fn main(a: string) -> i32 {
+	let a = vec![1, 2, 3];
+	let c: Vec<i32> = ??;
+}
+`,
+	expectedHoles: [
+		{
+			line: 4,
+			type: { kind: 'Vec', elementType: { kind: 'i32' } },
+			suggestionNames: ['a']
+		},
+	] as any
+}
+
 // --- Test Case ---
-const rustCode2 = `
+const testCase2 = {rustCode:`
 fn main(a: string) -> string {
 	{
 		let x = "3";
-		let z = ??;
+		let z:string = ??;
 	}
 	let y = "4";
-	let z = ??;
+	let z:string = ??;
 	let r = y;
-	let m = ??;
+	let m:string = ??;
 }
-`;
-
-const rustCode = `
-fn main(a: string) -> string {
-	let a = vec![1, 2, 3];
+`, expectedHoles: [
+		{
+			line: 5,
+			type: { kind: 'string' },
+			suggestionNames: ['x', 'main']
+		},
+		{
+			line: 8,
+			type: { kind: 'string' },
+			suggestionNames: ['y', 'main']
+		},
+		{
+			line: 10,
+			type: { kind: 'string' },
+			suggestionNames: ['r', 'z', 'main']
+		}
+	] as any
 }
-`;
 
-const expectedHoles = [
-	// {
-	// 	line: 5,
-	// 	type: 'string',
-	// 	suggestionNames: ['x', 'main']
-	// },
-	// {
-	// 	line: 8,
-	// 	type: 'string',
-	// 	suggestionNames: ['y', 'main']
-	// },
-	// {
-	// 	line: 10,
-	// 	type: 'string',
-	// 	suggestionNames: ['r', 'main']
-	// }
-] as any;
-
-function runTest(rustCode: string, expectedHoles: { line: number; type: string; suggestionNames: string[] }[]) {
-	const result = parseDocument(rustCode);
-
+function runTest(testcase: {rustCode: string, expectedHoles: { line: number; type: string; suggestionNames: string[] }[]}) {
+	const result = parseDocument(testcase.rustCode);
+	console.log(result);
 	// Automated test for holes
-	assert.strictEqual(result.length, expectedHoles.length, 'Should have the correct number of holes');
+	assert.strictEqual(result.length, testcase.expectedHoles.length, 'Should have the correct number of holes');
 
-	for (let i = 0; i < expectedHoles.length; i++) {
+	for (let i = 0; i < testcase.expectedHoles.length; i++) {
 		const hole = result[i] as Hole;
-		const expected = expectedHoles[i];
+		const expected = testcase.expectedHoles[i];
 		assert.strictEqual(hole.location.line, expected.line, `Hole ${i} line mismatch`);
-		assert.strictEqual(hole.type, expected.type, `Hole ${i} type mismatch`);
+		assert.deepStrictEqual(hole.type, expected.type, `Hole ${i} type mismatch`);
 		const actualNames = hole.suggestions.map(s => s.suggestion.name).sort();
 		const expectedNames = expected.suggestionNames.sort();
 		assert.deepStrictEqual(actualNames, expectedNames, `Hole ${i} suggestion names mismatch`);
@@ -81,4 +91,5 @@ function runTest(rustCode: string, expectedHoles: { line: number; type: string; 
 	console.log('Test passed!');
 }
 
-runTest(rustCode, expectedHoles);
+runTest(testCase);
+runTest(testCase2);
