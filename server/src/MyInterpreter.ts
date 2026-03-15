@@ -178,6 +178,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     getBoundVariable(variableName: string): Variable {
         const variable = this.variables.find(variable => (variable.name === variableName))
+        console.log(variableName)
+        console.log(this.variables)
 
         if(variable) {
             return variable;
@@ -188,7 +190,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     getBoundFunction(functionName: string): Function {
         const function_ = this.functions.find(function_ => (function_.name === functionName))
-
         if(function_) {
             return function_;
         } else {
@@ -336,10 +337,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         const valType = declaredType.valType !== ValType.UNKNOWN ? declaredType : inferedType;
         
-        console.log("444444444444444444444444444")
-        
         const type = toType(valType);
-        console.log(variableName, valType, type)
         const variable: Variable = {name: variableName, type: type, location: getLocation(ctx)};
         type.owner = variable;
         type.mutable = mutable;
@@ -352,6 +350,15 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     visitPathExpression = (ctx: any): BaseNode | VariableNode | null => {
         if(ctx.parent.parent instanceof CallExpressionContext) {
             const func = this.getBoundFunction(ctx.getText());
+
+            ctx?.parent.parent.callParams().expression().forEach((expr: any) => {
+                const type = this.visit(expr)?.type;
+                if (expr instanceof PathExpressionContext) {
+                    this.consume(expr.getText())
+                }
+            })
+            // DO THIS SHIT
+
             return { kind: "Function", type: func.type, location: getLocation(ctx) };
         } else {
             const variable = this.getBoundVariable(ctx.getText());
@@ -402,8 +409,10 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             return toType({valType: ValType.VECTOR, elementType: elementType.valType});
         }
         const refMatch = typeString.match(/^&(?:mut\s+)?(.+)$/);
-
+        console.log("Parsing type:", typeString)
+        console.log(refMatch)
         if (refMatch) {
+            console.log("hey")
             const mutable = typeString.includes('mut');
             const elementType = this.parseType(refMatch[1]);
             return toType({valType: ValType.REFERENCE, elementType: elementType.valType, mutable: mutable});
@@ -413,10 +422,9 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     visitFunction_ = (ctx: any): FunctionDeclarationNode => {
         console.log("Function");
-        // console.log(ctx.functionReturnType())
-        
-        console.log(ctx.functionReturnType().type_().getText())
-        let type = this.parseType(ctx.functionReturnType().type_().getText());
+
+        let type = this.parseType(ctx.functionReturnType()?.type_().getText());
+
         this.typeStack.push(type);
         
         // 1. Get the function name
@@ -426,10 +434,16 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const params = ctx.functionParameters()?.functionParam();
 
         const paramsParsed = params?.map((param: any) => {
+            const paramName = param.functionParamPattern().pattern().getText()
+            const type = this.parseType(param.functionParamPattern().type_().getText())
 
+            const variable: Variable = {name: paramName, type: type, location: getLocation(param)};
+            variable.type.owner = variable;
+            this.variables.push(variable)
+            
             return {
-                name: param.functionParamPattern().pattern().getText(), 
-                type: this.parseType(param.functionParamPattern().type_().getText())
+                name: paramName, 
+                type: type
             }
         })
 
@@ -440,13 +454,14 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             params: paramsParsed || []
         })
 
-        // 2. Handle the body (blockExpression or SEMI)
         const blockCtx = ctx.blockExpression();
         
         const blockNode = blockCtx ? this.visit(blockCtx) as BlockExpressionNode : { kind: "Literal", value: null, type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) } as LiteralNode; 
         
         this.typeStack.pop()
         
+        this.variables = []; // Clear variables after function scope ends
+
         return {
             kind: "FunctionDeclarationNode",
             block: blockNode,
