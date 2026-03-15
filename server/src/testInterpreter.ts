@@ -1,7 +1,7 @@
 import { CharStream, CommonTokenStream } from 'antlr4ng';
 import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
-import MyInterpreter, { Hole, SourceLocation, Variable, Function as Func } from './MyInterpreter.js';
+import MyInterpreter, { Hole, SourceLocation, Variable, Function as Func, toType, Type } from './MyInterpreter.js';
 import * as assert from 'assert';
 
 
@@ -35,6 +35,52 @@ fn main(a: string) -> i32 {
 	expectedHoles: [
 		{
 			line: 4,
+			type: { valType: 'Vec', elementType: 'i32' },
+			suggestionNames: ['a']
+		},
+	] as any
+
+}
+const testCase3 = {
+	rustCode: `
+fn main() {
+    let mut s = String::from("hello");
+		
+    let s_imm_borrow: &String = &s; // Immutable borrow
+    
+    immutable_borrow(??) // s_imm_borrow or &s should be suggested
+		
+		let s_imm_borrow_2: &String = ??; // s should be suggested again since 
+		                     // immutable borrow can happen more than once
+		
+		immutable_borrow(??) // s_imm_borrow, s_imm_borrow_2 or &s should be suggested
+		
+    let s_mut_borrow = ??; // No suggestions since s_imm_borrow is used later
+												   // And immutable and mutable borrows cannot exist at the same time
+		
+		mutable_borrow(??)   // no suggestions since s_imm_borrow is used later
+
+		immutable_borrow(&s) 
+		
+		let s_mut_borrow = ??; // &mut s    since no immutable borrow later
+		
+		mutable_borrow(??)   // &mut s		since no immutable borrow later
+}
+
+fn immutable_borrow(s: &String) {
+    // We can read the value
+    println!("I'm reading: {}", s);
+}
+
+fn mutable_borrow(s: &mut String) {
+    // We can change the value
+    s.push_str("... modified!");
+    println!("Updated: {}", s);
+}
+`,
+	expectedHoles: [
+		{
+			line: 4,
 			type: { kind: 'Vec', elementType: { kind: 'i32' } },
 			suggestionNames: ['a']
 		},
@@ -56,23 +102,23 @@ fn main(a: string) -> string {
 `, expectedHoles: [
 		{
 			line: 5,
-			type: { kind: 'string' },
+			type: { valType: 'string' },
 			suggestionNames: ['x', 'main']
 		},
 		{
 			line: 8,
-			type: { kind: 'string' },
+			type: { valType: 'string' },
 			suggestionNames: ['y', 'main']
 		},
 		{
 			line: 10,
-			type: { kind: 'string' },
+			type: { valType: 'string' },
 			suggestionNames: ['r', 'z', 'main']
 		}
 	] as any
 }
 
-function runTest(testcase: {rustCode: string, expectedHoles: { line: number; type: string; suggestionNames: string[] }[]}) {
+function runTest(testcase: {rustCode: string, expectedHoles: { line: number; type: Type; suggestionNames: string[] }[]}) {
 	const result = parseDocument(testcase.rustCode);
 	console.log(result);
 	// Automated test for holes
@@ -82,7 +128,7 @@ function runTest(testcase: {rustCode: string, expectedHoles: { line: number; typ
 		const hole = result[i] as Hole;
 		const expected = testcase.expectedHoles[i];
 		assert.strictEqual(hole.location.line, expected.line, `Hole ${i} line mismatch`);
-		assert.deepStrictEqual(hole.type, expected.type, `Hole ${i} type mismatch`);
+		assert.deepStrictEqual(hole.type, toType(expected.type), `Hole ${i} type mismatch`);
 		const actualNames = hole.suggestions.map(s => s.suggestion.name).sort();
 		const expectedNames = expected.suggestionNames.sort();
 		assert.deepStrictEqual(actualNames, expectedNames, `Hole ${i} suggestion names mismatch`);
