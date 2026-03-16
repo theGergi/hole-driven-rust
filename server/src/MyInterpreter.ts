@@ -190,6 +190,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     getBoundFunction(functionName: string): Function {
         const function_ = this.functions.find(function_ => (function_.name === functionName))
+        console.log(this.functions)
+        console.log(functionName)
         if(function_) {
             return function_;
         } else {
@@ -251,6 +253,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     };
 
     visitAssignmentExpression = (ctx: any): BaseNode | null => {
+        console.log("Assignment expression")
+
         const variableName = ctx.expression(0).getText();
         const expression = ctx.expression(1);
 
@@ -312,7 +316,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const mutable = ctx.patternNoTopAlt().patternWithoutRange().identifierPattern().KW_MUT() != null;
         const declaredType = this.parseType(ctx.type_()?.getText());
         const expression = ctx.expression();
-
+        
         this.typeStack.push(declaredType);
 
         let inferedType: Type = toType({valType: ValType.UNKNOWN});
@@ -347,21 +351,40 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return null;
     }
 
-    visitPathExpression = (ctx: any): BaseNode | VariableNode | null => {
-        if(ctx.parent.parent instanceof CallExpressionContext) {
-            const func = this.getBoundFunction(ctx.getText());
+    visitCallExpression = (ctx: any): BaseNode | null => {
+        console.log("&" + ctx.expression().getText() + "&")
+        console.log(getLocation(ctx))
+        console.log(this.functions)
+        const func = this.getBoundFunction(ctx.expression().getText());
+        console.log("Function call:", func.name)
 
-            ctx?.parent.parent.callParams().expression().forEach((expr: any) => {
-                const type = this.visit(expr)?.type;
-                if (expr instanceof PathExpressionContext) {
-                    this.consume(expr.getText())
-                }
-            })
-            // DO THIS SHIT
+        ctx.callParams().expression().forEach((expr: any, i: number) => {
+            const otherType = func.params[i].type;
+            this.typeStack.push(otherType!)
+            const type = this.visit(expr)?.type;
+            console.log("Expression: ", expr.getText())
+            // console.log("Argument type:", type)
+            console.log("Parameter type:", otherType)
+            if (expr instanceof PathExpressionContext) {
+                this.consume(expr.getText())
+            }
+            this.typeStack.pop()
+        })
+
+        return { kind: "Function", type: func.type, location: getLocation(ctx) };
+    }
+
+    visitPathExpression = (ctx: any): BaseNode | VariableNode | null => {
+        console.log("Path expression")
+        if(ctx.parent.parent instanceof CallExpressionContext) { // Kinda useless now
+            const func = this.getBoundFunction(ctx.getText());
+            console.log("Function call:", func.name)
+            
 
             return { kind: "Function", type: func.type, location: getLocation(ctx) };
         } else {
             const variable = this.getBoundVariable(ctx.getText());
+            console.log("Variable:", variable.name)
             return { kind: "Variable", name: variable.name, type: variable.type, location: getLocation(ctx) };
         }
     }
@@ -382,10 +405,11 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return null;
     };
     
-    visitFunctionReturnType = (ctx: any): BaseNode | null => {
-        // console.log(ctx.type_().typeNoBounds().traitObjectTypeOneBound().traitBound().typePath().typePathSegment(0).pathIdentSegment().identifier(0).NON_KEYWORD_IDENTIFIER())
-        return null;
-    }
+    // visitFunctionReturnType = (ctx: any): BaseNode | null => {
+    //     con
+    //     // console.log(ctx.type_().typeNoBounds().traitObjectTypeOneBound().traitBound().typePath().typePathSegment(0).pathIdentSegment().identifier(0).NON_KEYWORD_IDENTIFIER())
+    //     return null;
+    // }
 
     // visitType_ = (ctx: any): BaseNode | null => {
         //     console.log(ctx.type_())
@@ -640,9 +664,11 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     visitHoleExpression = (ctx: any): LiteralNode => {
         console.log("Hole expression")
+        console.log(ctx)
 
         const location = getLocation(ctx)
         const type = this.currentParentType;
+        console.log("Alleged type:", type)
 
         const hole = {location:location, type: type, suggestions: []}
         this.generateHole(hole)
@@ -666,13 +692,13 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         console.log(functions[0])
         let holeSuggestions = [] as Suggestion[];
         
-        const key = getSourceLocationKey(hole.location);
 
         variables.forEach((variable: Variable) => {
-            console.log("1111111111111111111111111")
-            console.log(variable.name, variable.type, hole.type)
             if (variable.type && compareTypes(variable.type, hole.type) && !variable.type.consumed) {
                 holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
+            }
+            if (hole.type.valType === ValType.REFERENCE && variable.type.valType === hole.type.elementType && !variable.type.consumed) {
+                holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType}), location: variable.location}});
             }
         });
         functions.forEach((func: Function) => {

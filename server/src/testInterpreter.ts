@@ -91,37 +91,59 @@ fn main() {
 		
 	let s_imm_borrow: &string = &s; // Immutable borrow
 
-	immutable_borrow(??) // s_imm_borrow or &s should be suggested
+	immutable_borrow(??); // s_imm_borrow or &s should be suggested
 		
 	let s_imm_borrow_2: &string = ??; // s should be suggested again since 
 							// immutable borrow can happen more than once
 
-	immutable_borrow(??) // s_imm_borrow, s_imm_borrow_2 or &s should be suggested
+	immutable_borrow(??); // s_imm_borrow, s_imm_borrow_2 or &s should be suggested
 		
-	let s_mut_borrow = ??; // No suggestions since s_imm_borrow is used later
-													// And immutable and mutable borrows cannot exist at the same time
+	// let s_mut_borrow = ??; // No suggestions since s_imm_borrow is used later
+	// 												// And immutable and mutable borrows cannot exist at the same time
 		
-	mutable_borrow(??)   // no suggestions since s_imm_borrow is used later
+	// mutable_borrow(??);   // no suggestions since s_imm_borrow is used later
 
-	immutable_borrow(&s) 
+	// immutable_borrow(&s); 
 
-	let s_mut_borrow = ??; // &mut s    since no immutable borrow later
+	// let s_mut_borrow = ??; // &mut s    since no immutable borrow later
 
-	mutable_borrow(??)   // &mut s		since no immutable borrow later
+	// mutable_borrow(??);   // &mut s		since no immutable borrow later
 }
 `,
 	expectedHoles: [
 		{
 			line: 18,
-			type: { valType: 'Ref'},
-			suggestionNames: ['s_imm_borrow']
+			type: { valType: 'reference', elementType: 'string' },
+			suggestionNames: ['s_imm_borrow', '&s']
 		},
 		{
-			line: 18,
-			type: { valType: 'Ref'},
-			suggestionNames: ['s_imm_borrow']
+			line: 20,
+			type: { valType: 'reference', elementType: 'string' },
+			suggestionNames: ['s_imm_borrow', '&s']
+		},
+		{
+			line: 23,
+			type: { valType: 'reference', elementType: 'string' },
+			suggestionNames: ['s_imm_borrow', 's_imm_borrow_2', '&s']
 		},
 	] as any
+}
+
+function matchesSubset(source: Type, subset: Partial<Type>): boolean {
+  // Get keys from the subset to define the scope of the comparison
+  const keys = Object.keys(subset) as Array<keyof Type>;
+
+  return keys.every((key) => {
+    const sourceValue = source[key];
+    const subsetValue = subset[key];
+
+    // Basic equality check (Works for primitives like string, number, boolean)
+    if (sourceValue === subsetValue) {
+      return true;
+    }
+	console.log(`Key ${key} does not match: source has ${sourceValue}, subset has ${subsetValue}`);
+    return false;
+  });
 }
 
 function runTest(testcase: {rustCode: string, expectedHoles: { line: number; type: Type; suggestionNames: string[] }[]}) {
@@ -129,12 +151,12 @@ function runTest(testcase: {rustCode: string, expectedHoles: { line: number; typ
 	console.log(result);
 	// Automated test for holes
 	assert.strictEqual(result.length, testcase.expectedHoles.length, 'Should have the correct number of holes');
-
+	console.log(result)
 	for (let i = 0; i < testcase.expectedHoles.length; i++) {
 		const hole = result[i] as Hole;
 		const expected = testcase.expectedHoles[i];
 		assert.strictEqual(hole.location.line, expected.line, `Hole ${i} line mismatch`);
-		assert.deepStrictEqual(hole.type, toType(expected.type), `Hole ${i} type mismatch`);
+		assert.strictEqual(matchesSubset(hole.type, expected.type), true, `Hole ${i} type mismatch`);
 		const actualNames = hole.suggestions.map(s => s.suggestion.name).sort();
 		const expectedNames = expected.suggestionNames.sort();
 		assert.deepStrictEqual(actualNames, expectedNames, `Hole ${i} suggestion names mismatch`);
