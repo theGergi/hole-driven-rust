@@ -59,6 +59,7 @@ const testCase2 = {rustCode:`
 			line: 5,
 			type: { valType: 'string' },
 			suggestionNames: ['x', 'main', 'a']
+			// suggestionNames: ['x', 'main(??: string)', 'a']
 		},
 		{
 			line: 8,
@@ -98,7 +99,7 @@ fn main() {
 
 	immutable_borrow(??); // s_imm_borrow, s_imm_borrow_2 or &s should be suggested
 		
-	// let s_mut_borrow = ??; // No suggestions since s_imm_borrow is used later
+	let s_mut_borrow: &mut string = ??; // No suggestions since s_imm_borrow is used later
 	// 												// And immutable and mutable borrows cannot exist at the same time
 		
 	// mutable_borrow(??);   // no suggestions since s_imm_borrow is used later
@@ -125,6 +126,11 @@ fn main() {
 			line: 23,
 			type: { valType: 'reference', elementType: 'string' },
 			suggestionNames: ['s_imm_borrow', 's_imm_borrow_2', '&s']
+		},
+		{
+			line: 25,
+			type: { valType: 'reference', elementType: 'string', mutable: true },
+			suggestionNames: []
 		},
 	] as any
 }

@@ -331,15 +331,39 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         this.typeStack.pop();
 
+        console.log("1111111111111111111111111111")
+        console.log(inferedType, declaredType)
+        
         if (inferedType.valType === ValType.UNKNOWN && declaredType.valType === ValType.UNKNOWN) {
             throw new Error("No type");
         } else if (inferedType.valType === ValType.HOLE && declaredType.valType !== ValType.UNKNOWN) {
             inferedType = declaredType;
-        } else if (inferedType.valType !== ValType.UNKNOWN && declaredType.valType !== ValType.UNKNOWN && !isDeepStrictEqual(declaredType, inferedType)) {
-            throw new Error("Declared type is different from infered type: " + declaredType.valType + " vs " + inferedType.valType);
+        } else if (inferedType.valType !== ValType.UNKNOWN && declaredType.valType !== ValType.UNKNOWN) {
+            if (declaredType.valType !== inferedType.valType) {
+                throw new Error("Declared type is different from infered type: " + declaredType.valType + " vs " + inferedType.valType);
+            }
+            if (declaredType.valType === ValType.VECTOR || declaredType.valType === ValType.REFERENCE) {
+                if (inferedType.elementType === ValType.UNKNOWN && declaredType.elementType === ValType.UNKNOWN) {
+                    throw new Error("No type");
+                } else if (inferedType.elementType === ValType.HOLE && declaredType.elementType !== ValType.UNKNOWN) {
+                    inferedType = declaredType;
+                } else if (inferedType.elementType !== ValType.UNKNOWN && declaredType.elementType !== ValType.UNKNOWN) {
+                    if (declaredType.elementType !== inferedType.elementType) {
+                        throw new Error("Declared subtype is different from infered type: " + declaredType.elementType + " vs " + inferedType.elementType);
+                    }
+                }
+            }
+            
+            
+        }
+        console.log(inferedType, declaredType)
+
+        let valType = declaredType;
+        if ( declaredType.valType === ValType.UNKNOWN || declaredType.elementType === ValType.UNKNOWN ) {
+            valType = inferedType;
         }
 
-        const valType = declaredType.valType !== ValType.UNKNOWN ? declaredType : inferedType;
+        // const valType = declaredType.valType !== ValType.UNKNOWN ? declaredType : inferedType;
         
         const type = toType(valType);
         const variable: Variable = {name: variableName, type: type, location: getLocation(ctx)};
@@ -432,13 +456,15 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             const elementType = this.parseType(vecMatch[1]); 
             return toType({valType: ValType.VECTOR, elementType: elementType.valType});
         }
-        const refMatch = typeString.match(/^&(?:mut\s+)?(.+)$/);
+        const refMatch = typeString.match(/^(&)(mut)?([a-zA-Z]+)$/);
         console.log("Parsing type:", typeString)
-        console.log(refMatch)
         if (refMatch) {
             console.log("hey")
-            const mutable = typeString.includes('mut');
-            const elementType = this.parseType(refMatch[1]);
+            const mutable = refMatch[2] === 'mut' ? true : false;
+            const elementType = mutable ? this.parseType(refMatch[3]) : this.parseType(refMatch[2]);
+            console.log(refMatch[0])
+            console.log(refMatch[1])
+            console.log(refMatch[2])
             return toType({valType: ValType.REFERENCE, elementType: elementType.valType, mutable: mutable});
         }
         return toType({valType: ValType.UNKNOWN});
