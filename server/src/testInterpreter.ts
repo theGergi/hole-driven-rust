@@ -102,11 +102,11 @@ fn main() {
 	let s_mut_borrow: &mut string = ??; // No suggestions since s_imm_borrow is used later
 	// 												// And immutable and mutable borrows cannot exist at the same time
 		
-	// mutable_borrow(??);   // no suggestions since s_imm_borrow is used later
+	mutable_borrow(??);   // no suggestions since s_imm_borrow is used later
 
-	// immutable_borrow(&s); 
+	immutable_borrow(&s);
 
-	// let s_mut_borrow = ??; // &mut s    since no immutable borrow later
+	let s_mut_borrow: &mut string = ??; // &mut s    since no immutable borrow later
 
 	// mutable_borrow(??);   // &mut s		since no immutable borrow later
 }
@@ -132,6 +132,21 @@ fn main() {
 			type: { valType: 'reference', elementType: 'string', mutable: true },
 			suggestionNames: []
 		},
+		{
+			line: 28,
+			type: { valType: 'reference', elementType: 'string', mutable: true },
+			suggestionNames: []
+		},
+		{
+			line: 32,
+			type: { valType: 'reference', elementType: 'string', mutable: true },
+			suggestionNames: ['&mut s']
+		},
+		// {
+		// 	line: 34,
+		// 	type: { valType: 'reference', elementType: 'string', mutable: true },
+		// 	suggestionNames: []
+		// },
 	] as any
 }
 

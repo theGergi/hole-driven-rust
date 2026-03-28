@@ -146,10 +146,17 @@ export function toType(overrides: Partial<Type> & { valType: ValType }, variable
     }
 }
 
-export function compareTypes(type1: Type, type2: Type): boolean {
-    if (type1.valType === type2.valType) {
-        if (type1.valType === ValType.VECTOR || type1.valType === ValType.REFERENCE) {
-            return type1.elementType === type2.elementType;
+export function canBeAssigned(assignee: Type, assigned: Type): boolean {
+    if (assignee.mutable && !assigned.mutable) {
+        return false;
+    }
+    if (assignee.valType === ValType.UNKNOWN) {
+        return true;
+    }
+    
+    if (assignee.valType === assigned.valType) {
+        if (assignee.valType === ValType.VECTOR || assignee.valType === ValType.REFERENCE) {
+            return assignee.elementType === assigned.elementType;
         }
         return true;
     }
@@ -456,15 +463,16 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             const elementType = this.parseType(vecMatch[1]); 
             return toType({valType: ValType.VECTOR, elementType: elementType.valType});
         }
-        const refMatch = typeString.match(/^(&)(mut)?([a-zA-Z]+)$/);
+        const refMatch = typeString.match(/^(&)?\s*(mut)?\s*([a-zA-Z_][a-zA-Z0-9_]*)$/);
         console.log("Parsing type:", typeString)
         if (refMatch) {
             console.log("hey")
             const mutable = refMatch[2] === 'mut' ? true : false;
-            const elementType = mutable ? this.parseType(refMatch[3]) : this.parseType(refMatch[2]);
+            const elementType = this.parseType(refMatch[3]);
             console.log(refMatch[0])
             console.log(refMatch[1])
             console.log(refMatch[2])
+            console.log(refMatch[3])
             return toType({valType: ValType.REFERENCE, elementType: elementType.valType, mutable: mutable});
         }
         return toType({valType: ValType.UNKNOWN});
@@ -720,15 +728,23 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         
 
         variables.forEach((variable: Variable) => {
-            if (variable.type && compareTypes(variable.type, hole.type) && !variable.type.consumed) {
+            if (variable.type && canBeAssigned(hole.type, variable.type) && !variable.type.consumed) {
                 holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
             }
             if (hole.type.valType === ValType.REFERENCE && variable.type.valType === hole.type.elementType && !variable.type.consumed) {
-                holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType}), location: variable.location}});
+                if (hole.type.mutable) {
+                    if (variable.type.borrows === Borrow.BFree && variable.type.mutable) {
+                        holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, mutable: true}), location: variable.location}});
+                    }
+                } else {
+                    if (variable.type.borrows === Borrow.BFree || (variable.type.borrows === Borrow.BImmut)) {
+                        holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType}), location: variable.location}});
+                    }
+                }
             }
         });
         functions.forEach((func: Function) => {
-            if (func.type && compareTypes(func.type, hole.type)) {
+            if (func.type && canBeAssigned(hole.type, func.type)) {
                 holeSuggestions.push({suggestionType: 'function', suggestion: func});
             }
         })
