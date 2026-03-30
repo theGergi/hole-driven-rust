@@ -162,7 +162,9 @@ fn main() {
 		{
 			line: 23,
 			type: { valType: 'reference', elementType: 'string' },
-			suggestionNames: ['s_imm_borrow', 's_imm_borrow_2', '&s']
+			suggestionNames: ['s_imm_borrow',
+				// 's_imm_borrow_2',
+				'&s']
 		},
 		{
 			line: 25,
@@ -172,7 +174,9 @@ fn main() {
 		{
 			line: 27,
 			type: { valType: 'reference', elementType: 'string', mutableReference: true },
-			suggestionNames: ['s_mut_borrow', '&mut s']
+			suggestionNames: [
+				// 's_mut_borrow', 
+				'&mut s']
 		},
 		{
 			line: 30,
@@ -185,14 +189,14 @@ fn main() {
 			suggestionNames: []
 		},
 		{
-			line: 32,
+			line: 38,
 			type: { valType: 'reference', elementType: 'string', mutableReference: true },
 			suggestionNames: ['&mut s']
 		},
 		{
-			line: 34,
+			line: 40,
 			type: { valType: 'reference', elementType: 'string', mutableReference: true },
-			suggestionNames: []
+			suggestionNames: ['&mut s']
 		},
 	] as any
 }

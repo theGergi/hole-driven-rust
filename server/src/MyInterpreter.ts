@@ -258,10 +258,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     borrow(variableName: string, mutable: boolean): Variable {
         const variable = this.getBoundVariable(variableName);
 
-        console.log("000000000000000000000000000")
-        console.log(variableName)
-        console.log(this.usageListener.isVariableFree(variableName, this.getCurrentBlock(), variable.location.line))
-
         if (variable.type?.borrows === Borrow.BFree) {
             variable.type.borrows = mutable ? Borrow.BMut : Borrow.BImmut
         } else if (variable.type?.borrows === Borrow.BMut) {
@@ -371,13 +367,17 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const mutable = ctx.patternNoTopAlt().patternWithoutRange().identifierPattern().KW_MUT() != null;
         const declaredType = this.parseType(ctx.type_()?.getText());
         const expression = ctx.expression();
-        
+        let recordVar = true;
+
         this.typeStack.push(declaredType);
 
         let inferedType: Type = toType({valType: ValType.UNKNOWN});
 
         if (expression) {
             inferedType = toType(this.visit(expression)?.type as Type);
+        }
+        if (inferedType.valType === ValType.HOLE) {
+            recordVar = false;
         }
 
         if(expression instanceof PathExpression_Context && expression?.pathExpression()?.pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier()) { // a variable is being assigned
@@ -409,20 +409,23 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             
         }
 
-        let valType = inferedType;
-        if ( inferedType.valType === ValType.UNKNOWN || inferedType.elementType === ValType.UNKNOWN ) {
-            valType = declaredType;
+        if (recordVar) {
+
+            let valType = inferedType;
+            if ( inferedType.valType === ValType.UNKNOWN || inferedType.elementType === ValType.UNKNOWN ) {
+                valType = declaredType;
+            }
+            console.log(valType, inferedType, declaredType)
+            // const valType = declaredType.valType !== ValType.UNKNOWN ? declaredType : inferedType;
+            
+            const type = toType(valType);
+            type.mutable = mutable;
+
+            console.log(type)
+            const variable: Variable = {name: variableName, type: type, location: getLocation(ctx)};
+
+            this.variables.push(variable)
         }
-
-        // const valType = declaredType.valType !== ValType.UNKNOWN ? declaredType : inferedType;
-        
-        const type = toType(valType);
-        type.mutable = mutable;
-
-        const variable: Variable = {name: variableName, type: type, location: getLocation(ctx)};
-
-        this.variables.push(variable)
-
         return null;
     }
 
@@ -675,6 +678,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             const varName = exprCtx.getText();
             owner = this.borrow(varName, mutable);
         }
+        console.log(owner)
         
         const expr = this.visit(exprCtx) as ExpressionNode;
         
@@ -770,17 +774,23 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const variables = this.variables;
         const functions = this.functions;
 
-        console.log("Variables:")
-        console.log(variables)
+        // console.log("Variables:")
+        // console.log(variables)
 
-        console.log("Functions:")
-        console.log(functions)
+        // console.log("Functions:")
+        // console.log(functions)
         let holeSuggestions = [] as Suggestion[];
         
 
         variables.forEach((variable: Variable) => {
             if (variable.type && canBeAssigned(hole.type, variable.type) && !variable.type.consumed) {
-                holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
+                const borrows = this.variables.filter(v => v.type.owner === variable.type.owner && v !== variable.type.owner)
+                // console.log("Checking variable:", variable.name)
+                // console.log(variable.type.owner)
+                // console.log(borrows)
+                if (borrows.every(v => this.usageListener.isVariableFree(v.name, this.getCurrentBlock(), hole.location.line))) {
+                    holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
+                }
             }
             if (hole.type.valType === ValType.REFERENCE && variable.type.valType === hole.type.elementType && !variable.type.consumed) {
                 if (hole.type.mutableReference) {
@@ -814,8 +824,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             }
         })
 
-        console.log("Suggestions:")
-        console.log(holeSuggestions)
+        // console.log("Suggestions:")
+        // console.log(holeSuggestions)
         hole.suggestions = holeSuggestions
         this.holes.push(hole)
     }
