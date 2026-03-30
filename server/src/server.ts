@@ -23,23 +23,28 @@ import {
 import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
 import MyInterpreter, { getSourceLocationKey, SourceLocation, Variable } from './MyInterpreter.js';
-import { CharStream, CommonTokenStream } from 'antlr4ng';
+import { CharStream, CommonTokenStream, ParseTreeWalker } from 'antlr4ng';
+import { UsageGraphListener } from './UsageGraphListener';
 
 
 
 function parseDocument(code: string) {
-    const interpreter = new MyInterpreter() as any;
     const inputStream = CharStream.fromString(code);
-
+    
     // 1. Lexer: Breaks text into tokens
     const lexer = new RustLexer(inputStream);
     const tokenStream = new CommonTokenStream(lexer);
-
+    
     // 2. Parser: Builds the logic tree
     const parser = new RustParser(tokenStream);
     
     const tree = parser.crate(); 
+    
+    const listener = new UsageGraphListener();
+    ParseTreeWalker.DEFAULT.walk(listener, tree);
+    
 
+    const interpreter = new MyInterpreter(listener) as any;
     interpreter.visit(tree)
     return interpreter.getFinalResult();
 }

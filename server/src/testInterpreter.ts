@@ -10,18 +10,23 @@ import * as assert from 'assert';
 
 
 function parseDocument(code: string) {
-	const interpreter = new MyInterpreter() as any;
 	const inputStream = CharStream.fromString(code);
-
+	
 	// 1. Lexer: Breaks text into tokens
 	const lexer = new RustLexer(inputStream);
 	const tokenStream = new CommonTokenStream(lexer);
-
+	
 	// 2. Parser: Builds the logic tree
 	const parser = new RustParser(tokenStream);
 	
 	const tree = parser.crate(); 
+
+	const listener = new UsageGraphListener();
+	ParseTreeWalker.DEFAULT.walk(listener, tree);
+
+	const interpreter = new MyInterpreter(listener) as any;
 	interpreter.visit(tree)
+
 	const result = interpreter.holes;
 	// interpreter.getFinalResult()
 	return result;
@@ -43,6 +48,9 @@ function parseDocumentForUsageGraph(code: string) {
 	const listener = new UsageGraphListener();
 	ParseTreeWalker.DEFAULT.walk(listener, tree);
 	
+	console.log(listener.getUsages());
+	console.log(listener.isVariableFree('x', 'block_1', 5));
+
 	return listener.getUsages();
 }
 
@@ -210,16 +218,16 @@ function runTest(testcase: {rustCode: string, expectedHoles: { line: number; typ
 
 // runTest(testCase);
 // runTest(testCase2);
-// runTest(testCase3);
+runTest(testCase3);
 
 // Example usage of the usage graph listener:
-const code = `fn main() {
-let x = 5;
-let y = x;
-	{
-		let mut z = y;
-		z = y; 
-	}
-}`;
-const usages = parseDocumentForUsageGraph(code);
-console.log(usages);
+// const code = `fn main() {
+// let x = 5;
+// let y = x;
+// 	{
+// 		let mut z = y;
+// 		z = y; 
+// 	}
+// }`;
+// const usages = parseDocumentForUsageGraph(code);
+// console.log(usages);

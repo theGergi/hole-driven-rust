@@ -6,6 +6,7 @@ import { Func } from 'mocha';
 import { isPrimitive } from 'util';
 import { TraceValues } from 'vscode-languageserver';
 import { isDeepStrictEqual } from 'util';
+import { UsageGraphListener, ValueUsage } from './UsageGraphListener';
 
 export enum ValType {
     ROOT = "ROOT",
@@ -175,6 +176,16 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     private functions: Function[] = [];
     private holes: Hole[] = [];
     
+    private blockStack: string[] = ['global']; // Stack to track nested blocks
+    private blockCounter: number = 0;          // Counter to generate unique block IDs
+
+    private usageListener: UsageGraphListener;
+
+    constructor(usageListener: UsageGraphListener) {
+        super();
+        this.usageListener = usageListener;
+    }
+
     saveState() {
         return { variables: structuredClone(this.variables) }
     }
@@ -182,6 +193,40 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     loadState(state: any) {
         this.variables = state.variables;
     }
+
+    /**
+     * Get current block context
+     */
+    private getCurrentBlock(): string {
+        return this.blockStack[this.blockStack.length - 1];
+    }
+
+    /**
+     * Get line number from a parser context
+     */
+    private getLine(ctx: ParserRuleContext | undefined): number {
+        if (!ctx || !ctx.start) {
+            return -1;
+        }
+        return ctx.start.line;
+    }
+
+    /**
+     * Push a new block onto the stack
+     */
+    private pushBlock(blockId: string): void {
+        this.blockStack.push(blockId);
+    }
+
+    /**
+     * Pop a block from the stack
+     */
+    private popBlock(): void {
+        if (this.blockStack.length > 1) {
+            this.blockStack.pop();
+        }
+    }
+
 
     getBoundVariable(variableName: string): Variable {
         const variable = this.variables.find(variable => (variable.name === variableName))
@@ -481,6 +526,10 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
     visitFunction_ = (ctx: any): FunctionDeclarationNode => {
         console.log("Function");
 
+        const funcName = ctx.identifier()?.getText() ?? 'unknown';
+        const funcId = `func_${funcName}`;
+        this.pushBlock(funcId);
+
         let type = this.parseType(ctx.functionReturnType()?.type_().getText());
 
         this.typeStack.push(type);
@@ -520,6 +569,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         
         this.variables = []; // Clear variables after function scope ends
 
+        this.pushBlock(funcId);
+
         return {
             kind: "FunctionDeclarationNode",
             block: blockNode,
@@ -530,6 +581,9 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
     visitBlockExpression = (ctx: any): BlockExpressionNode => {
         console.log("BlockExpression");
+
+        const blockId = `block_${this.blockCounter++}`;
+        this.pushBlock(blockId);
         
         const statementsNode = ctx.statements();
         
@@ -540,6 +594,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         const visitedStatements = statementsNode ? this.visit(statementsNode) as BaseNode : { kind: "Literal", value: null, type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) } as LiteralNode;
 
         this.loadState(currentState)
+
+        this.popBlock();
 
         return {
             kind: "Block",
