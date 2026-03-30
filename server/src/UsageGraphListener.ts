@@ -1,0 +1,226 @@
+import { RustParserListener } from './parser/RustParserListener';
+import {
+    PathExpression_Context,
+    BlockExpressionContext,
+    Function_Context,
+    CallExpressionContext,
+    PathExpressionContext,
+    LiteralExpression_Context,
+    LetStatementContext,
+    AssignmentExpressionContext,
+    BorrowExpressionContext,
+} from './parser/RustParser';
+import { ParseTree, ParserRuleContext } from 'antlr4ng';
+
+/**
+ * Represents a usage of a value in the code
+ */
+export interface ValueUsage {
+    parent: string;      // Block identifier (scope)
+    line: number;        // Line number where value is used
+    name: string;        // Name of the value
+}
+
+/**
+ * Listener that constructs a graph of value usages in the form (parent, line, name)
+ * Tracks where values (variables, functions) are referenced in the code
+ */
+export class UsageGraphListener extends RustParserListener {
+    private usages: ValueUsage[] = [];
+    private blockStack: string[] = ['global']; // Stack to track nested blocks
+    private blockCounter: number = 0;          // Counter to generate unique block IDs
+
+    /**
+     * Get all recorded value usages
+     */
+    public getUsages(): ValueUsage[] {
+        return this.usages;
+    }
+
+    /**
+     * Get current block context
+     */
+    private getCurrentBlock(): string {
+        return this.blockStack[this.blockStack.length - 1];
+    }
+
+    /**
+     * Get line number from a parser context
+     */
+    private getLine(ctx: ParserRuleContext | undefined): number {
+        if (!ctx || !ctx.start) {
+            return -1;
+        }
+        return ctx.start.line;
+    }
+
+    /**
+     * Push a new block onto the stack
+     */
+    private pushBlock(blockId: string): void {
+        this.blockStack.push(blockId);
+    }
+
+    /**
+     * Pop a block from the stack
+     */
+    private popBlock(): void {
+        if (this.blockStack.length > 1) {
+            this.blockStack.pop();
+        }
+    }
+
+    /**
+     * Record a value usage
+     */
+    private recordUsage(name: string, line: number): void {
+        // Don't record if line is invalid
+        if (line > 0) {
+            this.usages.push({
+                parent: this.getCurrentBlock(),
+                line: line,
+                name: name,
+            });
+        }
+    }
+
+    // ============= Block Expression Handling =============
+
+    enterBlockExpression = (ctx: BlockExpressionContext): void => {
+        const blockId = `block_${this.blockCounter++}`;
+        this.pushBlock(blockId);
+    };
+
+    exitBlockExpression = (ctx: BlockExpressionContext): void => {
+        this.popBlock();
+    };
+
+    // ============= Function Declaration Handling =============
+
+    enterFunction_ = (ctx: Function_Context): void => {
+        const funcName = ctx.identifier()?.getText() ?? 'unknown';
+        const funcId = `func_${funcName}`;
+        this.pushBlock(funcId);
+    };
+
+    exitFunction_ = (ctx: Function_Context): void => {
+        this.popBlock();
+    };
+
+    // ============= Path Expression Handling (Variable/Function References) =============
+
+    enterPathExpression_ = (ctx: PathExpression_Context): void => {
+        const valueText = ctx.getText();
+        const line = this.getLine(ctx);
+
+        // Only record if this is a simple path expression (variable or function name)
+        // Skip qualified paths that contain "::"
+        if (!valueText.includes('::')) {
+            this.recordUsage(valueText, line);
+        }
+    };
+
+    // ============= Borrow Expression Handling =============
+
+    enterBorrowExpression = (ctx: BorrowExpressionContext): void => {
+        // Borrow expressions reference variables, but the variable is captured
+        // through the inner expression, so we let that handle the recording
+    };
+
+    // ============= Call Expression Handling =============
+
+    enterCallExpression = (ctx: CallExpressionContext): void => {
+        // The function name is in the first expression child
+        const funcExpr = ctx.expression();
+        if (funcExpr instanceof PathExpression_Context) {
+            const funcName = funcExpr.getText();
+            const line = this.getLine(ctx);
+
+            if (!funcName.includes('::')) {
+                this.recordUsage(funcName, line);
+            }
+        }
+    };
+
+    // ============= Let Statement Handling (Variable Declaration) =============
+
+    enterLetStatement = (ctx: LetStatementContext): void => {
+        // Let statements declare variables but may use existing values in initialization
+        // The expressions in the let statement will be visited separately
+    };
+
+    // ============= Assignment Expression Handling =============
+
+    enterAssignmentExpression = (ctx: AssignmentExpressionContext): void => {
+        // Assignment expressions reference both the target and the assigned value
+        // Both will be handled by path expression visitors
+    };
+
+    // ============= Helper Methods for Graph Analysis =============
+
+    /**
+     * Group usages by parent block
+     */
+    public getUsagesByParent(): Map<string, ValueUsage[]> {
+        const grouped = new Map<string, ValueUsage[]>();
+
+        for (const usage of this.usages) {
+            if (!grouped.has(usage.parent)) {
+                grouped.set(usage.parent, []);
+            }
+            grouped.get(usage.parent)!.push(usage);
+        }
+
+        return grouped;
+    }
+
+    /**
+     * Group usages by value name
+     */
+    public getUsagesByName(): Map<string, ValueUsage[]> {
+        const grouped = new Map<string, ValueUsage[]>();
+
+        for (const usage of this.usages) {
+            if (!grouped.has(usage.name)) {
+                grouped.set(usage.name, []);
+            }
+            grouped.get(usage.name)!.push(usage);
+        }
+
+        return grouped;
+    }
+
+    /**
+     * Get all usages for a specific parent block
+     */
+    public getUsagesInBlock(blockId: string): ValueUsage[] {
+        return this.usages.filter(usage => usage.parent === blockId);
+    }
+
+    /**
+     * Get all usages of a specific value
+     */
+    public getUsagesOfValue(valueName: string): ValueUsage[] {
+        return this.usages.filter(usage => usage.name === valueName);
+    }
+
+    /**
+     * Print usage graph in a readable format
+     */
+    public printUsageGraph(): string {
+        let output = 'Value Usage Graph:\n';
+        output += '==================\n\n';
+
+        const usagesByParent = this.getUsagesByParent();
+
+        for (const [parent, usages] of usagesByParent) {
+            output += `Block: ${parent}\n`;
+            for (const usage of usages) {
+                output += `  Line ${usage.line}: ${usage.name}\n`;
+            }
+            output += '\n';
+        }
+
+        return output;
+    }
+}
