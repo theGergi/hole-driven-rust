@@ -23,6 +23,7 @@ function parseDocument(code: string) {
 
 	const listener = new UsageGraphListener();
 	ParseTreeWalker.DEFAULT.walk(listener, tree);
+	console.log(listener.getUsages());
 
 	const interpreter = new MyInterpreter(listener) as any;
 	interpreter.visit(tree)
@@ -129,16 +130,22 @@ fn main() {
 
 	immutable_borrow(??); // s_imm_borrow, s_imm_borrow_2 or &s should be suggested
 		
-	let s_mut_borrow: &mut string = ??; // No suggestions since s_imm_borrow is used later
-	// 												// And immutable and mutable borrows cannot exist at the same time
+	let s_mut_borrow: &mut string = ??; // &mut s    since no immutable borrow later         !!!!!!!!!!!!!!!!! Important to write
+
+	mutable_borrow(??);   // s_mut_borrow, &mut s		since no immutable borrow later
+
+	{
+		let s_mut_borrow_2: &mut string = ??; // No suggestions since s_imm_borrow is used later
+		// 												// And immutable and mutable borrows cannot exist at the same time
 		
-	mutable_borrow(??);   // no suggestions since s_imm_borrow is used later
+		mutable_borrow(??);   // no suggestions since s_imm_borrow is used later
 
-	immutable_borrow(&s);
+		immutable_borrow(s_imm_borrow);
+	}
 
-	let s_mut_borrow: &mut string = ??; // &mut s    since no immutable borrow later
+	let s_mut_borrow_3: &mut string = ??; // s_mut_borrow, &mut s    since no immutable borrow later
 
-	// mutable_borrow(??);   // &mut s		since no immutable borrow later
+	mutable_borrow(??);   // s_mut_borrow, s_mut_borrow_3, &mut s		since no immutable borrow later
 }
 `,
 	expectedHoles: [
@@ -159,24 +166,68 @@ fn main() {
 		},
 		{
 			line: 25,
-			type: { valType: 'reference', elementType: 'string', mutable: true },
+			type: { valType: 'reference', elementType: 'string', mutableReference: true },
+			suggestionNames: ['&mut s']
+		},
+		{
+			line: 27,
+			type: { valType: 'reference', elementType: 'string', mutableReference: true },
+			suggestionNames: ['s_mut_borrow', '&mut s']
+		},
+		{
+			line: 30,
+			type: { valType: 'reference', elementType: 'string', mutableReference: true },
 			suggestionNames: []
 		},
 		{
-			line: 28,
-			type: { valType: 'reference', elementType: 'string', mutable: true },
+			line: 33,
+			type: { valType: 'reference', elementType: 'string', mutableReference: true },
 			suggestionNames: []
 		},
 		{
 			line: 32,
-			type: { valType: 'reference', elementType: 'string', mutable: true },
+			type: { valType: 'reference', elementType: 'string', mutableReference: true },
 			suggestionNames: ['&mut s']
 		},
-		// {
-		// 	line: 34,
-		// 	type: { valType: 'reference', elementType: 'string', mutable: true },
-		// 	suggestionNames: []
-		// },
+		{
+			line: 34,
+			type: { valType: 'reference', elementType: 'string', mutableReference: true },
+			suggestionNames: []
+		},
+	] as any
+}
+
+const testCase3simple = {
+	rustCode: `
+fn mutable_borrow(s: &mut string) {
+	// We can change the value
+	s.push_str("... modified!");
+	println!("Updated: {}", s);
+}
+	
+fn main() {
+	let mut s = "hello";
+		
+	let s_mut_borrow: &mut string = &mut s;
+		
+	mutable_borrow(??);   // no suggestions since s_imm_borrow is used later
+
+	mutable_borrow(s_mut_borrow);   // &mut s		since no immutable borrow later
+
+	mutable_borrow(??);   // &mut s		since no immutable borrow later
+}
+`,
+	expectedHoles: [
+		{
+			line: 13,
+			type: { valType: 'reference', elementType: 'string' },
+			suggestionNames: ['s_mut_borrow']
+		},
+		{
+			line: 17,
+			type: { valType: 'reference', elementType: 'string' },
+			suggestionNames: ['s_mut_borrow', '&mut s']
+		}
 	] as any
 }
 
@@ -219,6 +270,7 @@ function runTest(testcase: {rustCode: string, expectedHoles: { line: number; typ
 // runTest(testCase);
 // runTest(testCase2);
 runTest(testCase3);
+// runTest(testCase3simple);
 
 // Example usage of the usage graph listener:
 // const code = `fn main() {

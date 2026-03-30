@@ -118,6 +118,11 @@ export class UsageGraphListener extends RustParserListener {
     // ============= Path Expression Handling (Variable/Function References) =============
 
     exitPathExpression_ = (ctx: PathExpression_Context): void => {
+        console.log("path expression")
+        console.log(ctx.getText())
+        console.log(ctx.parent!.getText())
+        console.log(ctx.parent)
+        
         const valueText = ctx.getText();
         const line = this.getLine(ctx);
 
@@ -125,28 +130,6 @@ export class UsageGraphListener extends RustParserListener {
         // Skip qualified paths that contain "::"
         if (!valueText.includes('::')) {
             this.recordUsage(valueText, line);
-        }
-    };
-
-    // ============= Borrow Expression Handling =============
-
-    enterBorrowExpression = (ctx: BorrowExpressionContext): void => {
-        // Borrow expressions reference variables, but the variable is captured
-        // through the inner expression, so we let that handle the recording
-    };
-
-    // ============= Call Expression Handling =============
-
-    enterCallExpression = (ctx: CallExpressionContext): void => {
-        // The function name is in the first expression child
-        const funcExpr = ctx.expression();
-        if (funcExpr instanceof PathExpression_Context) {
-            const funcName = funcExpr.getText();
-            const line = this.getLine(ctx);
-
-            if (!funcName.includes('::')) {
-                this.recordUsage(funcName, line);
-            }
         }
     };
 
