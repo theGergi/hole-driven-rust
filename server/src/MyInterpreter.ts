@@ -830,4 +830,17 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         this.holes.push(hole)
     }
 
+    public getFinalResult(): Map<string, Hole> {
+        const holes = this.holes;
+
+        let holeSuggestions = new Map<string, Hole>();
+        
+        holes.forEach((hole: Hole) => {
+            const key = getSourceLocationKey(hole.location);
+            holeSuggestions.set(key, hole)
+        });
+        console.log("Suggestions:")
+        console.log(holeSuggestions)
+        return holeSuggestions;
+    }
 }

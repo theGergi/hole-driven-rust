@@ -131,6 +131,8 @@ connection.onHover((params: HoverParams): Hover | null => {
                 return null;
             }
             const validSuggestions = suggestions.map((suggestion: any) => {
+                console.log("hey")
+                console.log(suggestion)
                 let replacement = ''
                 if (suggestion.suggestionType === 'variable') {
                     replacement = suggestion.suggestion.name
@@ -138,7 +140,6 @@ connection.onHover((params: HoverParams): Hover | null => {
                     let paramString = suggestion.suggestion.params.map((param: any) => `??: ${param.type}`).join(', ')
                     replacement = `${suggestion.suggestion.name}(${paramString})`
                 }
-                console.log("hey")
                 const args = [
                     textDocument.uri,
                     replaceRange,
@@ -148,10 +149,22 @@ connection.onHover((params: HoverParams): Hover | null => {
                 return `**Suggestion:** [Replace](${commandUri}) with \`${replacement}\``;
             });
             if (validSuggestions.length > 0) {
+                let typeString = "Type: ";
+                if (type.valType == 'reference') {
+                    typeString += "&";
+                    if (type.mutableReference) {
+                        typeString += "mut ";
+                    }
+                    typeString += type.elementType;
+                } else if ((type.valType == 'Vec')) {
+                    typeString += "Vec " + type.elementType;
+                } else {
+                    typeString += type.valType;
+                }
                 return {
                     contents: {
                         kind: 'markdown',
-                        value: "Type: " + type + "\n\n" + validSuggestions.join('\n\n')
+                        value: typeString + "\n\n" + validSuggestions.join('\n\n')
                     },
                     range: replaceRange
                 }
