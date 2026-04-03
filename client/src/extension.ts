@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from 'path';
-import { workspace, ExtensionContext, commands, Range, WorkspaceEdit, Uri } from 'vscode';
+import { workspace, ExtensionContext, commands, Range, WorkspaceEdit, Uri, window, ViewColumn } from 'vscode';
 
 import {
 	LanguageClient,
@@ -27,6 +27,92 @@ export function activate(context: ExtensionContext) {
 			const edit = new WorkspaceEdit();
 			edit.replace(Uri.parse(uri), range, newText);
 			workspace.applyEdit(edit);
+		})
+	);
+
+	context.subscriptions.push(
+		commands.registerCommand('myExtension.showHoleInfo', async (uri: string, line: number, column: number) => {
+			const result: any = await client.sendRequest('custom/holeInfo', { uri, line, column });
+			if (!result) return;
+
+			const panel = window.createWebviewPanel(
+				'holeInfo',
+				'Hole Information',
+				ViewColumn.Beside,
+				{ enableScripts: true }
+			);
+
+			panel.webview.onDidReceiveMessage(async (message) => {
+				if (message.command === 'applySuggestion') {
+					const { uri, range, newText } = message.args;
+					const edit = new WorkspaceEdit();
+					edit.replace(Uri.parse(uri), range, newText);
+					await workspace.applyEdit(edit);
+				}
+			});
+
+			let typeString = "Type: ";
+			const type = result.type;
+			if (type.valType == 'reference') {
+				typeString += "&";
+				if (type.mutableReference) {
+					typeString += "mut ";
+				}
+				typeString += type.elementType;
+			} else if (type.valType == 'Vec') {
+				typeString += "Vec<" + type.elementType + ">";
+			} else {
+				typeString += type.valType;
+			}
+
+			const possibleValues = result.possibleValues.map((v: any) => v.name || v).join(', ');
+
+			const suggestionsHtml = result.suggestions.map((s: any) => {
+				let replacement = '';
+				if (s.suggestionType === 'variable') {
+					replacement = s.suggestion.name;
+				} else if (s.suggestionType === 'function') {
+					const paramString = s.suggestion.params.map((param: any) => `??: ${param.type}`).join(', ');
+					replacement = `${s.suggestion.name}(${paramString})`;
+				}
+				const escapedReplacement = replacement.replace(/'/g, "\\'").replace(/"/g, '\\"');
+				return `<li><a href="#" onclick="apply('${escapedReplacement}')">${replacement}</a></li>`;
+			}).join('');
+
+			panel.webview.html = `
+				<!DOCTYPE html>
+				<html>
+				<head>
+					<style>
+						body { font-family: Arial, sans-serif; padding: 20px; }
+						pre { background: #f4f4f4; padding: 10px; border-radius: 4px; }
+						ul { list-style-type: disc; margin-left: 20px; }
+					</style>
+				</head>
+				<body>
+					<h2>${typeString}</h2>
+					<h3>Current Full Context:</h3>
+					<pre>${result.context}</pre>
+					<h3>Possible Values to Fill:</h3>
+					<p>${possibleValues}</p>
+					<h3>Suggestions:</h3>
+					<ul>${suggestionsHtml}</ul>
+					<script>
+						const vscode = acquireVsCodeApi();
+						function apply(replacement) {
+							vscode.postMessage({
+								command: 'applySuggestion',
+								args: {
+									uri: '${result.uri}',
+									range: ${JSON.stringify(result.range)},
+									newText: replacement
+								}
+							});
+						}
+					</script>
+				</body>
+				</html>
+			`;
 		})
 	);
 

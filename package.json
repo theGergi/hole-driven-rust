@@ -10,7 +10,7 @@
     "vscode": "^1.100.0"
   },
   "activationEvents": [
-    "onLanguage:plaintext"
+    "onLanguage:rust"
   ],
   "main": "./client/out/extension.js",
   "contributes": {

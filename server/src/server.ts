@@ -91,10 +91,11 @@ connection.onInitialized(() => {
     if (hasConfigurationCapability) {
         // Register for configuration changes if needed
     }
-    connection.console.log('Language Server initialized and ready.3');
+    connection.console.log('Language Server initialized and ready.');
 });
 
 connection.onHover((params: HoverParams): Hover | null => {
+    connection.console.log('HOVERING BITCH');
     const { textDocument, position } = params;
     const document = documents.get(textDocument.uri);
     
@@ -130,6 +131,14 @@ connection.onHover((params: HoverParams): Hover | null => {
             if (!suggestions) {
                 return null;
             }
+
+            const holeArgs = [
+                textDocument.uri,
+                position.line,
+                startIndex
+            ];
+            const holeCommandUri = `command:myExtension.showHoleInfo?${encodeURIComponent(JSON.stringify(holeArgs))}`;
+
             const validSuggestions = suggestions.map((suggestion: any) => {
                 console.log("hey")
                 console.log(suggestion)
@@ -146,7 +155,7 @@ connection.onHover((params: HoverParams): Hover | null => {
                     replacement
                 ];
                 const commandUri = `command:myExtension.applySuggestion?${encodeURIComponent(JSON.stringify(args))}`;
-                return `**Suggestion:** [Replace](${commandUri}) with \`${replacement}\``;
+                return `**Suggestion:** [Replace](${commandUri}) with\`${replacement}\``;
             });
             if (validSuggestions.length > 0) {
                 let typeString = "Type: ";
@@ -164,7 +173,7 @@ connection.onHover((params: HoverParams): Hover | null => {
                 return {
                     contents: {
                         kind: 'markdown',
-                        value: typeString + "\n\n" + validSuggestions.join('\n\n')
+                        value: typeString + "\n\n" + validSuggestions.join('\n\n') + `\n\n[Open Full Context Window](${holeCommandUri})`
                     },
                     range: replaceRange
                 }
@@ -173,6 +182,28 @@ connection.onHover((params: HoverParams): Hover | null => {
     }
 
     return null;
+});
+
+connection.onRequest('custom/holeInfo', (params: { uri: string; line: number; column: number }) => {
+    connection.console.log('REQUEST BITCH');
+    const { uri, line, column } = params;
+    const document = documents.get(uri);
+    if (!document) return null;
+
+    const fullText = document.getText();
+    const results = parseDocument(fullText);
+    const key = getSourceLocationKey({ line: line + 1, column, length: 2 });
+    const hole = results.get(key);
+    if (!hole) return null;
+
+    return {
+        type: hole.type,
+        context: fullText,
+        possibleValues: hole.suggestions.map((s: any) => s.suggestion),
+        suggestions: hole.suggestions,
+        range: { start: { line, character: column }, end: { line, character: column + 2 } },
+        uri
+    };
 });
 
 // Listen for text document synchronization messages
