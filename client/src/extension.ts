@@ -92,7 +92,10 @@ export function activate(context: ExtensionContext) {
 				<body>
 					<h2>${typeString}</h2>
 					<h3>Current Full Context:</h3>
-					<pre>${result.context}</pre>
+					<h4>Variables:</h4>
+					<p>${result.variables.join('\n')}</p>
+					<h4>Functions:</h4>
+					<p>${result.functions.join('\n')}</p>
 					<h3>Possible Values to Fill:</h3>
 					<p>${possibleValues}</p>
 					<h3>Suggestions:</h3>

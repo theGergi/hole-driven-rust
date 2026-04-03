@@ -830,7 +830,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         this.holes.push(hole)
     }
 
-    public getFinalResult(): Map<string, Hole> {
+    public getFinalResult() {
         const holes = this.holes;
 
         let holeSuggestions = new Map<string, Hole>();
@@ -841,6 +841,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         });
         console.log("Suggestions:")
         console.log(holeSuggestions)
-        return holeSuggestions;
+        return {holes: holeSuggestions, variables: this.variables, functions: this.functions} as any;
     }
 }

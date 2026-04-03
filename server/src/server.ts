@@ -124,7 +124,7 @@ connection.onHover((params: HoverParams): Hover | null => {
                 end: { line: position.line, character: startIndex + triggerSequence.length }
             };
             const key = getSourceLocationKey({line: position.line + 1, column: startIndex, length: triggerSequence.length});
-            const hole = results.get(key)
+            const hole = results.holes.get(key)
             const suggestions = hole.suggestions;
             const type = hole.type;
             
@@ -193,12 +193,13 @@ connection.onRequest('custom/holeInfo', (params: { uri: string; line: number; co
     const fullText = document.getText();
     const results = parseDocument(fullText);
     const key = getSourceLocationKey({ line: line + 1, column, length: 2 });
-    const hole = results.get(key);
+    const hole = results.holes.get(key);
     if (!hole) return null;
 
     return {
         type: hole.type,
-        context: fullText,
+        variables: results.variables,
+        functions: results.functions,
         possibleValues: hole.suggestions.map((s: any) => s.suggestion),
         suggestions: hole.suggestions,
         range: { start: { line, character: column }, end: { line, character: column + 2 } },
