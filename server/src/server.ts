@@ -168,9 +168,9 @@ connection.onHover((params: HoverParams): Hover | null => {
 
             let hoverContent = "";
             if (validSuggestions.length > 0) {
-                hoverContent = typeString + "\n\n" + validSuggestions.join('\n\n') + `\n\n[Open Full Context Window](${holeCommandUri})`;
+                hoverContent = typeString + "\n\n" + validSuggestions.join('\n\n') + `\n\n[Show Full Context](${holeCommandUri})`;
             } else {
-                hoverContent = typeString + "\n\nNo suggestions\n\n[Open Full Context Window](${holeCommandUri})";
+                hoverContent = typeString + "\n\nNo suggestions\n\n[Show Full Context](${holeCommandUri})";
             }
 
             return {
