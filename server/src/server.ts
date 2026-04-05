@@ -124,18 +124,26 @@ connection.onHover((params: HoverParams): Hover | null => {
                 end: { line: position.line, character: startIndex + triggerSequence.length }
             };
             const key = getSourceLocationKey({line: position.line + 1, column: startIndex, length: triggerSequence.length});
-            const hole = results.holes.get(key)
+            const hole = results.get(key)
             const suggestions = hole.suggestions;
             const type = hole.type;
-            
-            if (!suggestions) {
-                return null;
+
+            let typeString = "Type: ";
+            if (type.valType == 'reference') {
+                typeString += "&";
+                if (type.mutableReference) {
+                    typeString += "mut ";
+                }
+                typeString += type.elementType;
+            } else if ((type.valType == 'Vec')) {
+                typeString += "Vec " + type.elementType;
+            } else {
+                typeString += type.valType;
             }
 
             const holeArgs = [
-                textDocument.uri,
-                position.line,
-                startIndex
+                hole,
+                textDocument.uri
             ];
             const holeCommandUri = `command:myExtension.showHoleInfo?${encodeURIComponent(JSON.stringify(holeArgs))}`;
 
@@ -157,54 +165,25 @@ connection.onHover((params: HoverParams): Hover | null => {
                 const commandUri = `command:myExtension.applySuggestion?${encodeURIComponent(JSON.stringify(args))}`;
                 return `**Suggestion:** [Replace](${commandUri}) with\`${replacement}\``;
             });
+
+            let hoverContent = "";
             if (validSuggestions.length > 0) {
-                let typeString = "Type: ";
-                if (type.valType == 'reference') {
-                    typeString += "&";
-                    if (type.mutableReference) {
-                        typeString += "mut ";
-                    }
-                    typeString += type.elementType;
-                } else if ((type.valType == 'Vec')) {
-                    typeString += "Vec " + type.elementType;
-                } else {
-                    typeString += type.valType;
-                }
-                return {
-                    contents: {
-                        kind: 'markdown',
-                        value: typeString + "\n\n" + validSuggestions.join('\n\n') + `\n\n[Open Full Context Window](${holeCommandUri})`
-                    },
-                    range: replaceRange
-                }
+                hoverContent = typeString + "\n\n" + validSuggestions.join('\n\n') + `\n\n[Open Full Context Window](${holeCommandUri})`;
+            } else {
+                hoverContent = typeString + "\n\nNo suggestions\n\n[Open Full Context Window](${holeCommandUri})";
+            }
+
+            return {
+                contents: {
+                    kind: 'markdown',
+                    value: hoverContent
+                },
+                range: replaceRange
             }
         }
     }
 
     return null;
-});
-
-connection.onRequest('custom/holeInfo', (params: { uri: string; line: number; column: number }) => {
-    connection.console.log('REQUEST BITCH');
-    const { uri, line, column } = params;
-    const document = documents.get(uri);
-    if (!document) return null;
-
-    const fullText = document.getText();
-    const results = parseDocument(fullText);
-    const key = getSourceLocationKey({ line: line + 1, column, length: 2 });
-    const hole = results.holes.get(key);
-    if (!hole) return null;
-
-    return {
-        type: hole.type,
-        variables: results.variables,
-        functions: results.functions,
-        possibleValues: hole.suggestions.map((s: any) => s.suggestion),
-        suggestions: hole.suggestions,
-        range: { start: { line, character: column }, end: { line, character: column + 2 } },
-        uri
-    };
 });
 
 // Listen for text document synchronization messages

@@ -15,6 +15,38 @@ import {
 
 let client: LanguageClient;
 
+// Helper function to format a type as a string
+function formatType(type: any): string {
+	if (!type) return 'unknown';
+	
+	if (type.valType === 'reference') {
+		let result = '&';
+		if (type.mutableReference) {
+			result += 'mut ';
+		}
+		result += type.elementType || 'unknown';
+		return result;
+	} else if (type.valType === 'Vec') {
+		return `Vec<${type.elementType || 'unknown'}>`;
+	} else {
+		return type.valType || 'unknown';
+	}
+}
+
+// Helper function to format a variable as "name: type"
+function formatVariable(variable: any): string {
+	return `${variable.name}: ${formatType(variable.type)}`;
+}
+
+// Helper function to format a function signature as "name(??: paramTypes) -> returnType"
+function formatFunction(func: any): string {
+	const paramString = func.params
+		.map((param: any) => `??: ${formatType(param.type)}`)
+		.join(', ');
+	const returnType = formatType(func.type);
+	return `${func.name}(${paramString}) -> ${returnType}`;
+}
+
 export function activate(context: ExtensionContext) {
 	// The server is implemented in node
 	const serverModule = context.asAbsolutePath(
@@ -31,9 +63,16 @@ export function activate(context: ExtensionContext) {
 	);
 
 	context.subscriptions.push(
-		commands.registerCommand('myExtension.showHoleInfo', async (uri: string, line: number, column: number) => {
-			const result: any = await client.sendRequest('custom/holeInfo', { uri, line, column });
-			if (!result) return;
+		commands.registerCommand('myExtension.showHoleInfo', async (hole: any, uri: string) => {
+			const result = {
+				type: hole.type,
+				variables: hole.context.variables,
+				functions: hole.context.functions,
+				possibleValues: hole.suggestions.map((s: any) => s.suggestion),
+				suggestions: hole.suggestions,
+				range: { start: { line: 0, character: 0 }, end: { line: 0, character: 2 } },
+				uri: uri
+			};
 
 			const panel = window.createWebviewPanel(
 				'holeInfo',
@@ -79,6 +118,13 @@ export function activate(context: ExtensionContext) {
 				return `<li><a href="#" onclick="apply('${escapedReplacement}')">${replacement}</a></li>`;
 			}).join('');
 
+			const formattedVariables = result.variables
+				.map((v: any) => formatVariable(v))
+				.join('<br>');
+			const formattedFunctions = result.functions
+				.map((f: any) => formatFunction(f))
+				.join('<br>');
+
 			panel.webview.html = `
 				<!DOCTYPE html>
 				<html>
@@ -87,15 +133,16 @@ export function activate(context: ExtensionContext) {
 						body { font-family: Arial, sans-serif; padding: 20px; }
 						pre { background: #f4f4f4; padding: 10px; border-radius: 4px; }
 						ul { list-style-type: disc; margin-left: 20px; }
+						.context { font-family: 'Courier New', monospace; margin: 0; }
 					</style>
 				</head>
 				<body>
 					<h2>${typeString}</h2>
 					<h3>Current Full Context:</h3>
 					<h4>Variables:</h4>
-					<p>${result.variables.join('\n')}</p>
+					<div class="context">${formattedVariables}</div>
 					<h4>Functions:</h4>
-					<p>${result.functions.join('\n')}</p>
+					<div class="context">${formattedFunctions}</div>
 					<h3>Possible Values to Fill:</h3>
 					<p>${possibleValues}</p>
 					<h3>Suggestions:</h3>

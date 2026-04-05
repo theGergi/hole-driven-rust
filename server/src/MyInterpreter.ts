@@ -61,7 +61,13 @@ export interface FunctionParam {
 export interface Hole {
     location: SourceLocation;
     type: Type;
+    context?: HoleContext;
     suggestions: Suggestion[]
+}
+
+export interface HoleContext {
+    variables: Variable[];
+    functions: Function[];
 }
 
 export interface SourceLocation {
@@ -769,7 +775,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             location: location
         };
     }
-
     public generateHole(hole: Hole) {
         const variables = this.variables;
         const functions = this.functions;
@@ -827,7 +832,11 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         // console.log("Suggestions:")
         // console.log(holeSuggestions)
         hole.suggestions = holeSuggestions
-        this.holes.push(hole)
+        hole.context = {
+            variables: structuredClone(this.variables),
+            functions: structuredClone(this.functions)
+        };
+        this.holes.push(hole);
     }
 
     public getFinalResult() {
@@ -841,6 +850,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         });
         console.log("Suggestions:")
         console.log(holeSuggestions)
-        return {holes: holeSuggestions, variables: this.variables, functions: this.functions} as any;
+        return holeSuggestions;
     }
 }
