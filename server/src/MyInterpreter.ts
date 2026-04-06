@@ -1,12 +1,7 @@
 import { RustParserVisitor } from './parser/RustParserVisitor';
-import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, HoleExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext } from './parser/RustParser';
-import { ParserRuleContext, ParseTree, Token } from 'antlr4ng';
-import { get } from 'http';
-import { Func } from 'mocha';
-import { isPrimitive } from 'util';
-import { TraceValues } from 'vscode-languageserver';
-import { isDeepStrictEqual } from 'util';
-import { UsageGraphListener, ValueUsage } from './UsageGraphListener';
+import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext } from './parser/RustParser';
+import { ParserRuleContext, ParseTree } from 'antlr4ng';
+import { UsageGraphListener } from './UsageGraphListener';
 
 export enum ValType {
     ROOT = "ROOT",
@@ -70,61 +65,20 @@ export interface HoleContext {
     functions: Function[];
 }
 
+export interface ReturnType {
+    type?: Type;
+    location: SourceLocation;
+}
+
 export interface SourceLocation {
     line: number;
     column: number;
     length: number;
 }
+
 export const getSourceLocationKey = (loc: SourceLocation): string => {
     return `${loc.line}:${loc.column}:${loc.length}`;
 };
-
-export interface BaseNode {
-    kind: string;
-    location: SourceLocation;
-    type?: Type; // Populated during type checking
-}
-
-export interface BlockExpressionNode extends BaseNode {
-    kind: "Block";
-    statements: BaseNode;
-}
-
-export interface FunctionDeclarationNode extends BaseNode {
-    kind: "FunctionDeclarationNode";
-    block: ExpressionNode;
-}
-
-export interface StatementsNode extends BaseNode {
-    kind: "Statements";
-    statements: BaseNode[];
-    expression: ExpressionNode;
-}
-
-export interface BinaryExpressionNode extends BaseNode {
-    kind: "BinaryExpression";
-    operator: string;
-    left: ExpressionNode;
-    right: ExpressionNode;
-}
-
-export interface LiteralNode extends BaseNode {
-    kind: "Literal";
-    value: any;
-}
-
-export interface VariableNode extends BaseNode {
-    kind: "Variable";
-    name: string;
-}
-
-export interface BorrowExpressionNode extends BaseNode {
-    kind: "BorrowExpression";
-    mutable: boolean;
-    expression: ExpressionNode;
-}
-
-export type ExpressionNode = BinaryExpressionNode | LiteralNode | BlockExpressionNode | BorrowExpressionNode; // Add others as needed
 
 function getLocation(ctx: ParserRuleContext): SourceLocation {
     const start = ctx.start!;
@@ -177,13 +131,7 @@ export function canBeAssigned(assignee: Type, assigned: Type): boolean {
     return false;
 }
 
-function isVariable(variable: BaseNode) {
-    if ("name" in variable && "location" in variable && ! ("params" in variable)) {
-
-    }
-}
-
-export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
+export default class MyInterpreter extends RustParserVisitor<ReturnType | null> {
     private typeStack: Type[] = [toType({valType: ValType.ROOT})];
     private variables: Variable[] = [];
     private functions: Function[] = [];
@@ -212,16 +160,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
      */
     private getCurrentBlock(): string {
         return this.blockStack[this.blockStack.length - 1];
-    }
-
-    /**
-     * Get line number from a parser context
-     */
-    private getLine(ctx: ParserRuleContext | undefined): number {
-        if (!ctx || !ctx.start) {
-            return -1;
-        }
-        return ctx.start.line;
     }
 
     /**
@@ -292,24 +230,54 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return this.typeStack[this.typeStack.length - 1];
     }
 
-    visitCrate = (ctx: any): BaseNode => {
+        
+    parseType = (typeString: string): Type => {
+        if (!typeString) {
+            return toType({valType: ValType.UNKNOWN});
+        }
+
+        if (typeString === 'i32') {
+            return toType({valType: ValType.INT});
+        }
+        if (typeString === 'string') {
+            return toType({valType: ValType.STRING});
+        }
+        const vecMatch = typeString.match(/^Vec<(.+)>$/);
+
+        if (vecMatch) {
+            const elementType = this.parseType(vecMatch[1]); 
+            return toType({valType: ValType.VECTOR, elementType: elementType.valType});
+        }
+        const refMatch = typeString.match(/^(&)?\s*(mut)?\s*([a-zA-Z_][a-zA-Z0-9_]*)$/);
+        
+        if (refMatch) {
+
+            const mutableReference = refMatch[2] === 'mut' ? true : false;
+            const elementType = this.parseType(refMatch[3]);
+
+            return toType({valType: ValType.REFERENCE, elementType: elementType.valType,mutableReference: mutableReference, mutable: null});
+        }
+        return toType({valType: ValType.UNKNOWN});
+    }
+
+    visitCrate = (ctx: any): ReturnType => {
         console.log("Crate")
         const items = ctx.item();
         // Map over every item and visit it; filter out nulls if some items aren't implemented
-        return items.map((item: ParseTree) => this.visit(item) as BaseNode).filter((n: ParseTree | null) => n !== null);
+        return items.map((item: ParseTree) => this.visit(item) as ReturnType).filter((n: ParseTree | null) => n !== null);
     };
 
-    visitItem = (ctx: any): BaseNode | null => {
+    visitItem = (ctx: any): ReturnType | null => {
         console.log("Item")
         const visItem = ctx.visItem();
         if (visItem) {
-            return this.visit(visItem) as BaseNode;
+            return this.visit(visItem) as ReturnType;
         }
         // Handle macroItem here if needed, otherwise return null
         return null; 
     };
 
-    visitAssignmentExpression = (ctx: any): BaseNode | null => {
+    visitAssignmentExpression = (ctx: any): ReturnType | null => {
         console.log("Assignment expression")
 
         const variableName = ctx.expression(0).getText();
@@ -335,7 +303,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return null
     }
 
-    visitMacroInvocation = (ctx: any): BaseNode | null => {
+    visitMacroInvocation = (ctx: any): ReturnType | null => {
         console.log("Macro invocation")
         
         if (ctx.simplePath().getText() === "vec") {
@@ -358,7 +326,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             })
 
             return {
-                kind: "MacroInvocation",
                 type: type,
                 location: getLocation(ctx)
             }
@@ -367,7 +334,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return null;
     }
 
-    visitLetStatement = (ctx: any): BaseNode | null => {
+    visitLetStatement = (ctx: any): ReturnType | null => {
         console.log("Let statement")
         const variableName = ctx.patternNoTopAlt().patternWithoutRange().identifierPattern().identifier().getText();
         const mutable = ctx.patternNoTopAlt().patternWithoutRange().identifierPattern().KW_MUT() != null;
@@ -421,13 +388,10 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             if ( inferedType.valType === ValType.UNKNOWN || inferedType.elementType === ValType.UNKNOWN ) {
                 valType = declaredType;
             }
-            console.log(valType, inferedType, declaredType)
-            // const valType = declaredType.valType !== ValType.UNKNOWN ? declaredType : inferedType;
-            
+
             const type = toType(valType);
             type.mutable = mutable;
 
-            console.log(type)
             const variable: Variable = {name: variableName, type: type, location: getLocation(ctx)};
 
             this.variables.push(variable)
@@ -435,8 +399,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         return null;
     }
 
-    visitCallExpression = (ctx: any): BaseNode | null => {
-
+    visitCallExpression = (ctx: any): ReturnType | null => {
         const func = this.getBoundFunction(ctx.expression().getText());
         console.log("Function call:", func.name)
 
@@ -452,78 +415,23 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             this.typeStack.pop()
         })
 
-        return { kind: "Function", type: func.type, location: getLocation(ctx) };
+        return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
     }
 
-    visitPathExpression = (ctx: any): BaseNode | VariableNode | null => {
+    visitPathExpression = (ctx: any): ReturnType | null => {
         console.log("Path expression")
         if(ctx.parent.parent instanceof CallExpressionContext) { // Kinda useless now
             const func = this.getBoundFunction(ctx.getText());
             console.log("Function call:", func.name)
-            return { kind: "Function", type: func.type, location: getLocation(ctx) };
+            return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
         } else {
             const variable = this.getBoundVariable(ctx.getText());
             console.log("Variable:", variable.name)
-            return { kind: "Variable", name: variable.name, type: variable.type, location: getLocation(ctx) };
+            return { type: variable.type, location: getLocation(ctx) };
         }
     }
 
-    visitVisItem = (ctx: any): BaseNode | null => {
-        console.log("Vis item")
-
-
-        // This acts as a router. ANTLR provides methods for each possible child rule.
-        if (ctx.function_()) {
-            // console.log(ctx.function_())
-            return this.visit(ctx.function_()!);
-        }
-        
-        // Add other checks as you implement them (structs, modules, etc.)
-        // if (ctx.struct_()) return this.visit(ctx.struct_()!);
-        
-        return null;
-    };
-    
-    // visitFunctionReturnType = (ctx: any): BaseNode | null => {
-    //     con
-    //     // console.log(ctx.type_().typeNoBounds().traitObjectTypeOneBound().traitBound().typePath().typePathSegment(0).pathIdentSegment().identifier(0).NON_KEYWORD_IDENTIFIER())
-    //     return null;
-    // }
-
-    // visitType_ = (ctx: any): BaseNode | null => {
-        //     console.log(ctx.type_())
-    //     return null;
-    // }
-    parseType = (typeString: string): Type => {
-        if (!typeString) {
-            return toType({valType: ValType.UNKNOWN});
-        }
-
-        if (typeString === 'i32') {
-            return toType({valType: ValType.INT});
-        }
-        if (typeString === 'string') {
-            return toType({valType: ValType.STRING});
-        }
-        const vecMatch = typeString.match(/^Vec<(.+)>$/);
-
-        if (vecMatch) {
-            const elementType = this.parseType(vecMatch[1]); 
-            return toType({valType: ValType.VECTOR, elementType: elementType.valType});
-        }
-        const refMatch = typeString.match(/^(&)?\s*(mut)?\s*([a-zA-Z_][a-zA-Z0-9_]*)$/);
-        console.log("Parsing type:", typeString)
-        if (refMatch) {
-
-            const mutableReference = refMatch[2] === 'mut' ? true : false;
-            const elementType = this.parseType(refMatch[3]);
-
-            return toType({valType: ValType.REFERENCE, elementType: elementType.valType,mutableReference: mutableReference, mutable: null});
-        }
-        return toType({valType: ValType.UNKNOWN});
-    }
-
-    visitFunction_ = (ctx: any): FunctionDeclarationNode => {
+    visitFunction_ = (ctx: any): ReturnType => {
         console.log("Function");
 
         const funcName = ctx.identifier()?.getText() ?? 'unknown';
@@ -566,7 +474,9 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         const blockCtx = ctx.blockExpression();
         
-        const blockNode = blockCtx ? this.visit(blockCtx) as BlockExpressionNode : { kind: "Literal", value: null, type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) } as LiteralNode; 
+        if (blockCtx) {
+            this.visit(blockCtx);
+        }
         
         this.typeStack.pop()
         
@@ -575,14 +485,12 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         this.pushBlock(funcId);
 
         return {
-            kind: "FunctionDeclarationNode",
-            block: blockNode,
-            location: getLocation(ctx),
-            type: type
+            type: type,
+            location: getLocation(ctx)
         };
     };
 
-    visitBlockExpression = (ctx: any): BlockExpressionNode => {
+    visitBlockExpression = (ctx: any): ReturnType => {
         console.log("BlockExpression");
 
         const blockId = `block_${this.blockCounter++}`;
@@ -594,23 +502,22 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         const currentState = this.saveState()
 
-        const visitedStatements = statementsNode ? this.visit(statementsNode) as BaseNode : { kind: "Literal", value: null, type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) } as LiteralNode;
+        if (statementsNode) {
+            this.visit(statementsNode);
+        }
 
         this.loadState(currentState)
 
         this.popBlock();
 
         return {
-            kind: "Block",
-            statements: visitedStatements,
-            location: getLocation(ctx),
-            type: type
+            type: type,
+            location: getLocation(ctx)
         };
     };
     
-    visitStatements = (ctx: any): StatementsNode => {
+    visitStatements = (ctx: any): ReturnType => {
         console.log("Statements");
-        const nodes: BaseNode[] = [];
         
         const type = toType({valType: ValType.UNKNOWN});
         this.typeStack.push(type);
@@ -623,23 +530,20 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         
         // 2. Visit the optional trailing 'expression'
         const expr = ctx.expression();
-        const expressionNode = expr ? this.visit(expr) as ExpressionNode : { kind: "Literal", value: null, type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) } as LiteralNode;
+        if (expr) {
+            this.visit(expr);
+        }
 
         this.typeStack.pop()
         return {
-            kind: "Statements",
-            statements: nodes,
-            expression: expressionNode,
-            location: getLocation(ctx),
-            type: type
+            type: type,
+            location: getLocation(ctx)
         }
     };
 
-    visitArithmeticOrLogicalExpression = (ctx: ArithmeticOrLogicalExpressionContext): ExpressionNode => {
+    visitArithmeticOrLogicalExpression = (ctx: ArithmeticOrLogicalExpressionContext): ReturnType => {
         console.log("ArithmeticOrLogicalExpression")
-        // 1. Extract the operator text
-        const operator = ctx.getChild(1)?.getText(); // The operator is the middle child
-        
+
         const leftChild = ctx.expression(0)
         const rightChild = ctx.expression(1)
 
@@ -648,8 +552,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         }
         
         // 2. Recursively build the left and right AST branches
-        const left = this.visit(leftChild) as ExpressionNode;
-        const right = this.visit(rightChild) as ExpressionNode;
+        const left = this.visit(leftChild) as ReturnType;
+        const right = this.visit(rightChild) as ReturnType;
 
         let type: Type;
 
@@ -663,16 +567,12 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
 
         // 3. Return the structured AST node
         return {
-            kind: "BinaryExpression",
-            operator: operator as any,
-            left: left,
-            right: right,
-            location: getLocation(ctx), // Using the helper from the previous step
-            type: type
+            type: type,
+            location: getLocation(ctx)
         };
     };
 
-    visitBorrowExpression = (ctx: BorrowExpressionContext): BorrowExpressionNode => {
+    visitBorrowExpression = (ctx: BorrowExpressionContext): ReturnType => {
         console.log("BorrowExpression");
         const mutable = ctx.KW_MUT() != null;
         const exprCtx = ctx.expression();
@@ -684,9 +584,8 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             const varName = exprCtx.getText();
             owner = this.borrow(varName, mutable);
         }
-        console.log(owner)
         
-        const expr = this.visit(exprCtx) as ExpressionNode;
+        const expr = this.visit(exprCtx) as ReturnType;
         
         const type: Type = {
             valType: ValType.REFERENCE,
@@ -699,66 +598,36 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         };
 
         return {
-            kind: "BorrowExpression",
-            mutable: mutable,
-            expression: expr,
-            location: getLocation(ctx),
-            type: type
+            type: type,
+            location: getLocation(ctx)
         };
     };
 
-    visitLiteralExpression = (ctx: any): LiteralNode => {
+    visitLiteralExpression = (ctx: any): ReturnType => {
         console.log("Literal Expression")
-        // 1. Identify which token is present
+
         if (ctx.INTEGER_LITERAL()) {
             return {
-                kind: "Literal",
-                value: parseInt(ctx.INTEGER_LITERAL()!.getText(), 10),
                 type: toType({valType: ValType.INT}),
                 location: getLocation(ctx)
             };
         }
 
-        // if (ctx.FLOAT_LITERAL()) {
-        //     return {
-        //         valType: "Literal",
-        //         value: parseFloat(ctx.FLOAT_LITERAL()!.getText()),
-        //         type: "float",
-        //         location: getLocation(ctx)
-        //     };
-        // }
-
         if (ctx.STRING_LITERAL() || ctx.RAW_STRING_LITERAL()) {
-            const rawValue = (ctx.STRING_LITERAL() ?? ctx.RAW_STRING_LITERAL())!.getText();
             return {
-                kind: "Literal",
-                // You might want a helper to strip quotes: rawValue.slice(1, -1)
-                value: rawValue, 
                 type: toType({valType: ValType.STRING}),
                 location: getLocation(ctx)
             };
         }
 
-        // if (ctx.CHAR_LITERAL()) {
-        //     return {
-        //         valType: "Literal",
-        //         value: ctx.CHAR_LITERAL()!.getText(),
-        //         type: "char",
-        //         location: getLocation(ctx)
-        //     };
-        // }
-
-        // Default fallback or handling for Byte literals
+        // Fallback
         return {
-            kind: "Literal",
-            value: ctx.getText(),
             type: toType({valType: ValType.UNKNOWN}),
             location: getLocation(ctx)
         };
-
     };
 
-    visitHoleExpression = (ctx: any): LiteralNode => {
+    visitHoleExpression = (ctx: any): ReturnType => {
         console.log("Hole expression")
 
         const location = getLocation(ctx)
@@ -769,8 +638,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         this.generateHole(hole)
 
         return {
-            kind: "Literal",
-            value: ctx.getText(),
             type: toType({valType: ValType.HOLE}),
             location: location
         };
@@ -790,9 +657,7 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
         variables.forEach((variable: Variable) => {
             if (variable.type && canBeAssigned(hole.type, variable.type) && !variable.type.consumed) {
                 const borrows = this.variables.filter(v => v.type.owner === variable.type.owner && v !== variable.type.owner)
-                // console.log("Checking variable:", variable.name)
-                // console.log(variable.type.owner)
-                // console.log(borrows)
+
                 if (borrows.every(v => this.usageListener.isVariableFree(v.name, this.getCurrentBlock(), hole.location.line))) {
                     holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
                 }
@@ -829,8 +694,6 @@ export default class MyInterpreter extends RustParserVisitor<BaseNode | null> {
             }
         })
 
-        // console.log("Suggestions:")
-        // console.log(holeSuggestions)
         hole.suggestions = holeSuggestions
         hole.context = {
             variables: structuredClone(this.variables),
