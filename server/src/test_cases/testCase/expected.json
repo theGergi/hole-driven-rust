@@ -1,0 +1,7 @@
+[
+	{
+		"line": 7,
+		"type": { "valType": "Vec", "elementType": "i32" },
+		"suggestionNames": ["a"]
+	}
+]

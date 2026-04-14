@@ -6,10 +6,12 @@ import { RustParserListener } from './parser/RustParserListener';
 import { ParseTreeWalker } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
 import * as assert from 'assert';
+import * as fs from 'fs';
+import * as path from 'path';
 
 
 
-function parseDocument(code: string) {
+function parseDocument(code: string): Hole[] {
 	const inputStream = CharStream.fromString(code);
 	
 	// 1. Lexer: Breaks text into tokens
@@ -56,185 +58,6 @@ function parseDocumentForUsageGraph(code: string) {
 }
 
 
-const testCase = {
-	rustCode: `
-fn main(a: string) -> i32 {
-	let a = vec![1, 2, 3];
-	let c: Vec<i32> = ??;
-}
-`,
-	expectedHoles: [
-		{
-			line: 4,
-			type: { valType: 'Vec', elementType: 'i32' },
-			suggestionNames: ['a']
-		},
-	] as any
-
-}
-
-// --- Test Case ---
-const testCase2 = {rustCode:`
-	fn main(a: string) -> string {
-	{
-		let x = "3";
-		let z:string = ??;
-		}
-		let y = "4";
-		let z:string = ??;
-		let r = y;
-		let m:string = ??;
-}
-`, expectedHoles: [
-		{
-			line: 5,
-			type: { valType: 'string' },
-			suggestionNames: ['x', 'main', 'a']
-			// suggestionNames: ['x', 'main(??: string)', 'a']
-		},
-		{
-			line: 8,
-			type: { valType: 'string' },
-			suggestionNames: ['y', 'main', 'a']
-		},
-		{
-			line: 10,
-			type: { valType: 'string' },
-			suggestionNames: ['r', 'z', 'main', 'a']
-		}
-	] as any
-}
-
-const testCase3 = {
-	rustCode: `
-fn immutable_borrow(s: &string) {
-	// We can read the value
-	println!("I'm reading: {}", s);
-}
-
-fn mutable_borrow(s: &mut string) {
-	// We can change the value
-	s.push_str("... modified!");
-	println!("Updated: {}", s);
-}
-	
-fn main() {
-	let mut s = "hello";
-		
-	let s_imm_borrow: &string = &s; // Immutable borrow
-
-	immutable_borrow(??); // s_imm_borrow or &s should be suggested
-		
-	let s_imm_borrow_2: &string = ??; // s should be suggested again since 
-							// immutable borrow can happen more than once
-
-	immutable_borrow(??); // s_imm_borrow, s_imm_borrow_2 or &s should be suggested
-		
-	let s_mut_borrow: &mut string = ??; // &mut s    since no immutable borrow later         !!!!!!!!!!!!!!!!! Important to write
-
-	mutable_borrow(??);   // s_mut_borrow, &mut s		since no immutable borrow later
-
-	{
-		let s_mut_borrow_2: &mut string = ??; // No suggestions since s_imm_borrow is used later
-		// 												// And immutable and mutable borrows cannot exist at the same time
-		
-		mutable_borrow(??);   // no suggestions since s_imm_borrow is used later
-
-		immutable_borrow(s_imm_borrow);
-	}
-
-	let s_mut_borrow_3: &mut string = ??; // s_mut_borrow, &mut s    since no immutable borrow later
-
-	mutable_borrow(??);   // s_mut_borrow, s_mut_borrow_3, &mut s		since no immutable borrow later
-}
-`,
-	expectedHoles: [
-		{
-			line: 18,
-			type: { valType: 'reference', elementType: 'string' },
-			suggestionNames: ['s_imm_borrow', '&s']
-		},
-		{
-			line: 20,
-			type: { valType: 'reference', elementType: 'string' },
-			suggestionNames: ['s_imm_borrow', '&s']
-		},
-		{
-			line: 23,
-			type: { valType: 'reference', elementType: 'string' },
-			suggestionNames: ['s_imm_borrow',
-				// 's_imm_borrow_2',
-				'&s']
-		},
-		{
-			line: 25,
-			type: { valType: 'reference', elementType: 'string', mutableReference: true },
-			suggestionNames: ['&mut s']
-		},
-		{
-			line: 27,
-			type: { valType: 'reference', elementType: 'string', mutableReference: true },
-			suggestionNames: [
-				// 's_mut_borrow', 
-				'&mut s']
-		},
-		{
-			line: 30,
-			type: { valType: 'reference', elementType: 'string', mutableReference: true },
-			suggestionNames: []
-		},
-		{
-			line: 33,
-			type: { valType: 'reference', elementType: 'string', mutableReference: true },
-			suggestionNames: []
-		},
-		{
-			line: 38,
-			type: { valType: 'reference', elementType: 'string', mutableReference: true },
-			suggestionNames: ['&mut s']
-		},
-		{
-			line: 40,
-			type: { valType: 'reference', elementType: 'string', mutableReference: true },
-			suggestionNames: ['&mut s']
-		},
-	] as any
-}
-
-const testCase3simple = {
-	rustCode: `
-fn mutable_borrow(s: &mut string) {
-	// We can change the value
-	s.push_str("... modified!");
-	println!("Updated: {}", s);
-}
-	
-fn main() {
-	let mut s = "hello";
-		
-	let s_mut_borrow: &mut string = &mut s;
-		
-	mutable_borrow(??);   // no suggestions since s_imm_borrow is used later
-
-	mutable_borrow(s_mut_borrow);   // &mut s		since no immutable borrow later
-
-	mutable_borrow(??);   // &mut s		since no immutable borrow later
-}
-`,
-	expectedHoles: [
-		{
-			line: 13,
-			type: { valType: 'reference', elementType: 'string' },
-			suggestionNames: ['s_mut_borrow']
-		},
-		{
-			line: 17,
-			type: { valType: 'reference', elementType: 'string' },
-			suggestionNames: ['s_mut_borrow', '&mut s']
-		}
-	] as any
-}
-
 function matchesSubset(source: Type, subset: Partial<Type>): boolean {
   // Get keys from the subset to define the scope of the comparison
   const keys = Object.keys(subset) as Array<keyof Type>;
@@ -254,7 +77,7 @@ function matchesSubset(source: Type, subset: Partial<Type>): boolean {
 
 function runTest(testcase: {rustCode: string, expectedHoles: { line: number; type: Type; suggestionNames: string[] }[]}) {
 	const result = parseDocument(testcase.rustCode);
-	console.log(result);
+	result.forEach(hole => MyInterpreter.printHoleSuggestionContext(hole));
 	// Automated test for holes
 	assert.strictEqual(result.length, testcase.expectedHoles.length, 'Should have the correct number of holes');
 	console.log(result)
@@ -271,19 +94,57 @@ function runTest(testcase: {rustCode: string, expectedHoles: { line: number; typ
 	console.log('Test passed!');
 }
 
-// runTest(testCase);
-// runTest(testCase2);
-runTest(testCase3);
-// runTest(testCase3simple);
+// Recursively collect test cases in nested folders
+const testCasesDir = path.resolve(process.cwd(), 'server', 'src', 'test_cases');
 
-// Example usage of the usage graph listener:
-// const code = `fn main() {
-// let x = 5;
-// let y = x;
-// 	{
-// 		let mut z = y;
-// 		z = y; 
-// 	}
-// }`;
-// const usages = parseDocumentForUsageGraph(code);
-// console.log(usages);
+function collectTestCases(dir: string, rootDir: string = dir): Array<{ name: string; rustFile: string; expectedFile: string }> {
+	const entries = fs.readdirSync(dir, { withFileTypes: true });
+	const testCases: Array<{ name: string; rustFile: string; expectedFile: string }> = [];
+	const hasExpected = entries.some(entry => entry.isFile() && entry.name === 'expected.json');
+
+	if (hasExpected) {
+		const rustFiles = entries.filter(entry => entry.isFile() && entry.name.endsWith('.rs')).map(entry => entry.name);
+		if (rustFiles.length === 0) {
+			throw new Error(`Test folder ${dir} contains expected.json but no .rs file.`);
+		}
+
+		for (const rustFile of rustFiles) {
+			testCases.push({
+				name: path.relative(rootDir, path.join(dir, rustFile)),
+				rustFile: path.join(dir, rustFile),
+				expectedFile: path.join(dir, 'expected.json')
+			});
+		}
+	}
+
+	for (const entry of entries) {
+		if (entry.isDirectory()) {
+			testCases.push(...collectTestCases(path.join(dir, entry.name), rootDir));
+		}
+	}
+
+	return testCases;
+}
+
+const testCases = collectTestCases(testCasesDir);
+
+// Get test name filter from command line arguments (e.g., "Move/testCase2c")
+const testFilter = process.argv[2]; 
+
+// Filter the cases if a name was provided
+const casesToRun = testFilter 
+    ? testCases.filter(t => t.name.includes(testFilter)) 
+    : testCases;
+
+if (casesToRun.length === 0) {
+    console.warn(`No test cases found matching: "${testFilter}"`);
+    process.exit(0);
+}
+
+// Run the tests
+for (const testCaseDef of casesToRun) {
+    const rustCode = fs.readFileSync(testCaseDef.rustFile, 'utf8');
+    const expectedHoles = JSON.parse(fs.readFileSync(testCaseDef.expectedFile, 'utf8')) as any;
+    console.log(`Running test for ${testCaseDef.name}`);
+    runTest({ rustCode, expectedHoles });
+}

@@ -1,0 +1,47 @@
+[
+	{
+		"line": 22,
+		"type": { "valType": "reference", "elementType": "string" },
+		"suggestionNames": ["s_imm_borrow", "&s"]
+	},
+	{
+		"line": 24,
+		"type": { "valType": "reference", "elementType": "string" },
+		"suggestionNames": ["s_imm_borrow", "&s"]
+	},
+	{
+		"line": 26,
+		"type": { "valType": "reference", "elementType": "string" },
+		"suggestionNames": ["s_imm_borrow", "&s"]
+	},
+	{
+		"line": 28,
+		"type": { "valType": "reference", "elementType": "string", "mutableReference": true },
+		"suggestionNames": ["&mut s"]
+	},
+	{
+		"line": 30,
+		"type": { "valType": "reference", "elementType": "string", "mutableReference": true },
+		"suggestionNames": ["&mut s"]
+	},
+	{
+		"line": 33,
+		"type": { "valType": "reference", "elementType": "string", "mutableReference": true },
+		"suggestionNames": []
+	},
+	{
+		"line": 35,
+		"type": { "valType": "reference", "elementType": "string", "mutableReference": true },
+		"suggestionNames": []
+	},
+	{
+		"line": 40,
+		"type": { "valType": "reference", "elementType": "string", "mutableReference": true },
+		"suggestionNames": ["&mut s"]
+	},
+	{
+		"line": 42,
+		"type": { "valType": "reference", "elementType": "string", "mutableReference": true },
+		"suggestionNames": ["&mut s"]
+	}
+]
