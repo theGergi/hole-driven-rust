@@ -6,7 +6,7 @@ import { UsageGraphListener } from './UsageGraphListener';
 export enum ValType {
     ROOT = "ROOT",
     FUNCTION = "FUNCTION",
-    INT = "i32",
+    INT = "integer",
     STRING = "string",
     HOLE = "HOLE",
     UNKNOWN = "UNKNOWN",
@@ -46,9 +46,16 @@ export interface Function {
     name: string;
     location: SourceLocation;
     type?: Type;
-    params: FunctionParam[];
+    params: Param[];
 }
-export interface FunctionParam {
+
+export interface Struct {
+    name: string;
+    location: SourceLocation;
+    params: Param[];
+}
+
+export interface Param {
     name: string;
     type?: Type;
 }
@@ -276,6 +283,17 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         // Handle macroItem here if needed, otherwise return null
         return null; 
     };
+
+    visitStruct_ = (ctx: any): ReturnType | null => {
+        console.log("Struct")
+
+        const structFields = ctx.structFields().structField();
+        structFields.forEach((field: any) => {
+            const fieldName = field.identifier().getText();
+            const fieldType = this.parseType(field.type_().getText());
+        });
+    };
+
 
     visitAssignmentExpression = (ctx: any): ReturnType | null => {
         console.log("Assignment expression")

@@ -1,0 +1,2 @@
+cd thesis
+pandoc thesis.md --citeproc --pdf-engine=xelatex -o thesis.pdf --toc --number-sections -csl=apa.csl
