@@ -2,6 +2,7 @@ import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
+import { ref } from 'process';
 
 export enum ValType {
     ROOT = "ROOT",
@@ -11,7 +12,8 @@ export enum ValType {
     HOLE = "HOLE",
     UNKNOWN = "UNKNOWN",
     VECTOR = "Vec",
-    REFERENCE = "reference"
+    REFERENCE = "reference",
+    STRUCT = "struct"
 }
 
 export enum Borrow {
@@ -29,6 +31,7 @@ export interface Type {
     consumed: boolean;
     borrows: Borrow;
     owner?: Variable;
+    structName?: string; // For struct types
 }
 
 export interface Suggestion {
@@ -47,6 +50,7 @@ export interface Function {
     location: SourceLocation;
     type?: Type;
     params: Param[];
+    structName?: string;
 }
 
 export interface Struct {
@@ -100,6 +104,7 @@ function getLocation(ctx: ParserRuleContext): SourceLocation {
 
 export function toType(overrides: Partial<Type> & { valType: ValType }, variable?: Variable): Type {
     let primitive = false;
+    console.log(overrides)
     
     if (overrides.valType === ValType.INT) {
         primitive = true;
@@ -132,6 +137,8 @@ export function canBeAssigned(assignee: Type, assigned: Type): boolean {
                 return false;
             }
             return assignee.elementType === assigned.elementType;
+        } else if (assignee.valType === ValType.STRUCT) {
+            return assignee.structName === assigned.structName;
         }
         return true;
     }
@@ -142,10 +149,13 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
     private typeStack: Type[] = [toType({valType: ValType.ROOT})];
     private variables: Variable[] = [];
     private functions: Function[] = [];
+    private structs: Struct[] = [];
     private holes: Hole[] = [];
     
     private blockStack: string[] = ['global']; // Stack to track nested blocks
     private blockCounter: number = 0;          // Counter to generate unique block IDs
+
+    private currentImplType: string | null = null;
 
     private usageListener: UsageGraphListener;
 
@@ -196,9 +206,9 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         }
     }
 
-    getBoundFunction(functionName: string): Function {
-        const function_ = this.functions.find(function_ => (function_.name === functionName))
-
+    getBoundFunction(functionName: string, structName: string | null = null): Function {
+        const function_ = this.functions.find(function_ => (function_.name === functionName && (structName ? function_.structName === structName : true)))
+        console.log(functionName)
         if(function_) {
             return function_;
         } else {
@@ -239,16 +249,18 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
         
     parseType = (typeString: string): Type => {
+        console.log(typeString)
         if (!typeString) {
             return toType({valType: ValType.UNKNOWN});
         }
 
-        if (typeString === 'i32') {
+        if (typeString === 'integer') {
             return toType({valType: ValType.INT});
         }
         if (typeString === 'string') {
             return toType({valType: ValType.STRING});
         }
+        console.log(typeString)
         const vecMatch = typeString.match(/^Vec<(.+)>$/);
 
         if (vecMatch) {
@@ -257,13 +269,22 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         }
         const refMatch = typeString.match(/^(&)?\s*(mut)?\s*([a-zA-Z_][a-zA-Z0-9_]*)$/);
         
-        if (refMatch) {
-
+        if (refMatch && refMatch[1] === '&') {
             const mutableReference = refMatch[2] === 'mut' ? true : false;
             const elementType = this.parseType(refMatch[3]);
 
             return toType({valType: ValType.REFERENCE, elementType: elementType.valType,mutableReference: mutableReference, mutable: null});
         }
+
+        // Check if it's a struct type
+        if (this.structs.some(s => s.name === typeString)) {
+            return toType({valType: ValType.STRUCT, structName: typeString});
+        }
+
+        if (typeString === 'Self') {
+            return toType({valType: ValType.STRUCT, structName: this.currentImplType ?? 'unknown'});
+        }
+
         return toType({valType: ValType.UNKNOWN});
     }
 
@@ -284,16 +305,47 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         return null; 
     };
 
-    visitStruct_ = (ctx: any): ReturnType | null => {
+    visitStructStruct = (ctx: any): ReturnType | null => {
         console.log("Struct")
 
-        const structFields = ctx.structFields().structField();
-        structFields.forEach((field: any) => {
+        const structName = ctx.identifier().getText();
+        const structFields = ctx.structFields()?.structField() || [];
+        const params: Param[] = structFields.map((field: any) => {
             const fieldName = field.identifier().getText();
             const fieldType = this.parseType(field.type_().getText());
+            return {
+                name: fieldName,
+                type: fieldType
+            };
         });
+
+        const struct: Struct = {
+            name: structName,
+            location: getLocation(ctx),
+            params: params
+        };
+
+        console.log("Defined struct:", struct);
+
+        this.structs.push(struct);
+
+        return null;
     };
 
+    visitInherentImpl = (ctx: any): ReturnType | null => {
+        console.log("Inherent impl")
+        const genericArgs = ctx.type_().typeNoBounds().traitObjectTypeOneBound().traitBound().typePath().typePathSegment(0).genericArgs().genericArgsTypes();
+        const typeName = ctx.type_().typeNoBounds().traitObjectTypeOneBound().traitBound().typePath().typePathSegment(0).pathIdentSegment().identifier().getText();
+        this.currentImplType = typeName;
+        const associatedItems = ctx.associatedItem();
+        associatedItems.forEach((item: any) => {
+            this.visit(item);
+        });
+        console.log(this.currentImplType)
+        console.log("functions: ", this.functions)
+        this.currentImplType = null;
+        return null;
+    };
 
     visitAssignmentExpression = (ctx: any): ReturnType | null => {
         console.log("Assignment expression")
@@ -361,7 +413,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         let recordVar = true;
 
         this.typeStack.push(declaredType);
-
         let inferedType: Type = toType({valType: ValType.UNKNOWN});
 
         if (expression) {
@@ -399,7 +450,8 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             
             
         }
-
+        console.log("Declared type:", declaredType)
+        console.log("Infered type:", inferedType)
         if (recordVar) {
 
             let valType = inferedType;
@@ -418,10 +470,14 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
     }
 
     visitCallExpression = (ctx: any): ReturnType | null => {
-        const func = this.getBoundFunction(ctx.expression().getText());
+        const structName = ctx.expression().pathExpression().pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier().getText()
+        const functionName = ctx.expression().pathExpression().pathInExpression()?.pathExprSegment(1)?.pathIdentSegment().identifier().getText()
+        
+        console.log(functionName, "dawadaw", structName)
+        const func = this.getBoundFunction(functionName, structName);
         console.log("Function call:", func.name)
 
-        ctx.callParams().expression().forEach((expr: any, i: number) => {
+        ctx.callParams()?.expression().forEach((expr: any, i: number) => {
             const otherType = func.params[i].type;
 
             this.typeStack.push(otherType!)
@@ -466,14 +522,18 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         const params = ctx.functionParameters()?.functionParam();
 
         const paramsParsed = params?.map((param: any) => {
+            console.log("Parsing param:", param)
+
+            if param.selfParam()
+
             const pattern = param.functionParamPattern().pattern().patternNoTopAlt(0).patternWithoutRange().identifierPattern();
             const paramName = pattern.identifier().getText();
+            // console.log("Parsing param:", paramName)
             const mutable = pattern.KW_MUT() != null;
             const type = this.parseType(param.functionParamPattern().type_().getText())
             type.mutable = mutable;
-
             const variable: Variable = {name: paramName, type: type, location: getLocation(param)};
-
+            
             this.variables.push(variable)
             
             return {
@@ -481,13 +541,17 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                 type: type
             }
         })
-
+        
         this.functions.push({
             name: name,
             location: getLocation(ctx),
             type: type,
             params: paramsParsed || []
         })
+        
+        if (this.currentImplType) {
+            this.functions[this.functions.length - 1].structName = this.currentImplType;
+        }
 
         const blockCtx = ctx.blockExpression();
         
