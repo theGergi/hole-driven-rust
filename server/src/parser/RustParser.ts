@@ -480,7 +480,7 @@ export class RustParser extends RustParserBase {
             this.state = 403;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 3173262760) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 122683411) !== 0) || _la === 119 || _la === 122) {
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 3173262760) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 122683411) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 4105) !== 0)) {
                 {
                 {
                 this.state = 400;
@@ -551,7 +551,7 @@ export class RustParser extends RustParserBase {
                 this.state = 416;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 369098751) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1442840575) !== 0)) {
                     {
                     {
                     this.state = 413;
@@ -574,7 +574,7 @@ export class RustParser extends RustParserBase {
                 this.state = 424;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 369098751) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1442840575) !== 0)) {
                     {
                     {
                     this.state = 421;
@@ -597,7 +597,7 @@ export class RustParser extends RustParserBase {
                 this.state = 432;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 369098751) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1442840575) !== 0)) {
                     {
                     {
                     this.state = 429;
@@ -747,6 +747,7 @@ export class RustParser extends RustParserBase {
             case RustParser.POUND:
             case RustParser.DOLLAR:
             case RustParser.QUESTION:
+            case RustParser.HOLE:
                 this.enterOuterAlt(localContext, 1);
                 {
                 this.state = 439;
@@ -874,7 +875,7 @@ export class RustParser extends RustParserBase {
                 this.state = 459;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 369098751) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1442840575) !== 0)) {
                     {
                     {
                     this.state = 456;
@@ -903,7 +904,7 @@ export class RustParser extends RustParserBase {
                 this.state = 471;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 369098751) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1442840575) !== 0)) {
                     {
                     {
                     this.state = 468;
@@ -932,7 +933,7 @@ export class RustParser extends RustParserBase {
                 this.state = 483;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 369098751) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1442840575) !== 0)) {
                     {
                     {
                     this.state = 480;
@@ -1148,7 +1149,7 @@ export class RustParser extends RustParserBase {
                 this.state = 530;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 369098751) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1442840575) !== 0)) {
                     {
                     {
                     this.state = 527;
@@ -1171,7 +1172,7 @@ export class RustParser extends RustParserBase {
                 this.state = 538;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 369098751) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1442840575) !== 0)) {
                     {
                     {
                     this.state = 535;
@@ -1194,7 +1195,7 @@ export class RustParser extends RustParserBase {
                 this.state = 546;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 369098751) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1442840575) !== 0)) {
                     {
                     {
                     this.state = 543;
@@ -1278,6 +1279,7 @@ export class RustParser extends RustParserBase {
                 case RustParser.KW_MACRORULES:
                 case RustParser.NON_KEYWORD_IDENTIFIER:
                 case RustParser.RAW_IDENTIFIER:
+                case RustParser.HOLE:
                     {
                     this.state = 559;
                     this.identifier();
@@ -1318,13 +1320,13 @@ export class RustParser extends RustParserBase {
                     this.state = 570;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
-                } while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 369098751) !== 0));
+                } while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294965375) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1442840575) !== 0));
                 this.state = 572;
                 this.match(RustParser.RPAREN);
                 this.state = 574;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294924415) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 8388607) !== 0)) {
+                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 4294967294) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 134217727) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 4294924415) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 1082130431) !== 0)) {
                     {
                     this.state = 573;
                     this.macroRepSep();
@@ -1579,6 +1581,7 @@ export class RustParser extends RustParserBase {
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
             case RustParser.PATHSEP:
+            case RustParser.HOLE:
                 {
                 this.state = 605;
                 this.macroItem();
@@ -1806,7 +1809,7 @@ export class RustParser extends RustParserBase {
                 this.state = 646;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 3173262760) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 122683411) !== 0) || _la === 119 || _la === 122) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 3173262760) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 122683411) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 4105) !== 0)) {
                     {
                     {
                     this.state = 643;
@@ -1889,6 +1892,7 @@ export class RustParser extends RustParserBase {
             case RustParser.KW_MACRORULES:
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
+            case RustParser.HOLE:
                 this.enterOuterAlt(localContext, 1);
                 {
                 this.state = 660;
@@ -1933,6 +1937,7 @@ export class RustParser extends RustParserBase {
             case RustParser.KW_MACRORULES:
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
+            case RustParser.HOLE:
                 {
                 this.state = 665;
                 this.identifier();
@@ -2004,7 +2009,7 @@ export class RustParser extends RustParserBase {
                 this.state = 677;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 285212704) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 29) !== 0) || _la === 119) {
+                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 285212704) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 29) !== 0) || _la === 119 || _la === 131) {
                     {
                     this.state = 674;
                     this.errorHandler.sync(this);
@@ -2037,7 +2042,7 @@ export class RustParser extends RustParserBase {
                     this.state = 692;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
-                    if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 285212704) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 1073741853) !== 0) || _la === 119 || _la === 125) {
+                    if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 285212704) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 1073741853) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 4161) !== 0)) {
                         {
                         this.state = 681;
                         this.useTree();
@@ -2099,6 +2104,7 @@ export class RustParser extends RustParserBase {
                     case RustParser.KW_MACRORULES:
                     case RustParser.NON_KEYWORD_IDENTIFIER:
                     case RustParser.RAW_IDENTIFIER:
+                    case RustParser.HOLE:
                         {
                         this.state = 699;
                         this.identifier();
@@ -2161,7 +2167,7 @@ export class RustParser extends RustParserBase {
             this.state = 715;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1397763872) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 7919743) !== 0) || ((((_la - 107)) & ~0x1F) === 0 && ((1 << (_la - 107)) & 5411025) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1397763872) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 7919743) !== 0) || ((((_la - 107)) & ~0x1F) === 0 && ((1 << (_la - 107)) & 22188241) !== 0)) {
                 {
                 this.state = 714;
                 this.functionParameters();
@@ -2655,6 +2661,7 @@ export class RustParser extends RustParserBase {
             case RustParser.QUESTION:
             case RustParser.LSQUAREBRACKET:
             case RustParser.LPAREN:
+            case RustParser.HOLE:
                 {
                 this.state = 808;
                 this.type_();
@@ -2846,7 +2853,7 @@ export class RustParser extends RustParserBase {
                 this.state = 843;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                if (_la === 21 || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 25) !== 0) || _la === 122) {
+                if (_la === 21 || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 25) !== 0) || _la === 122 || _la === 131) {
                     {
                     this.state = 842;
                     this.structFields();
@@ -2907,7 +2914,7 @@ export class RustParser extends RustParserBase {
             this.state = 856;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 320875808) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 1321) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 320875808) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5417) !== 0)) {
                 {
                 this.state = 855;
                 this.tupleFields();
@@ -3185,7 +3192,7 @@ export class RustParser extends RustParserBase {
             this.state = 920;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if (_la === 21 || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 25) !== 0) || _la === 122) {
+            if (_la === 21 || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 25) !== 0) || _la === 122 || _la === 131) {
                 {
                 this.state = 919;
                 this.enumItems();
@@ -3349,7 +3356,7 @@ export class RustParser extends RustParserBase {
             this.state = 952;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 320875808) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 1321) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 320875808) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5417) !== 0)) {
                 {
                 this.state = 951;
                 this.tupleFields();
@@ -3385,7 +3392,7 @@ export class RustParser extends RustParserBase {
             this.state = 958;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if (_la === 21 || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 25) !== 0) || _la === 122) {
+            if (_la === 21 || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 25) !== 0) || _la === 122 || _la === 131) {
                 {
                 this.state = 957;
                 this.structFields();
@@ -3501,6 +3508,7 @@ export class RustParser extends RustParserBase {
             case RustParser.KW_MACRORULES:
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
+            case RustParser.HOLE:
                 {
                 this.state = 978;
                 this.identifier();
@@ -3644,7 +3652,7 @@ export class RustParser extends RustParserBase {
                 this.state = 1013;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318769184) !== 0) || ((((_la - 53)) & ~0x1F) === 0 && ((1 << (_la - 53)) & 268435519) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 1057) !== 0)) {
+                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318769184) !== 0) || ((((_la - 53)) & ~0x1F) === 0 && ((1 << (_la - 53)) & 268435519) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5153) !== 0)) {
                     {
                     this.state = 1012;
                     this.typeParamBounds();
@@ -3685,7 +3693,7 @@ export class RustParser extends RustParserBase {
             this.state = 1030;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2434794792) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 121634833) !== 0) || _la === 119 || _la === 122) {
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2434794792) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 121634833) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 4105) !== 0)) {
                 {
                 {
                 this.state = 1027;
@@ -3802,7 +3810,7 @@ export class RustParser extends RustParserBase {
             this.state = 1057;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2434794792) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 121634833) !== 0) || _la === 119 || _la === 122) {
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2434794792) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 121634833) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 4105) !== 0)) {
                 {
                 {
                 this.state = 1054;
@@ -3907,7 +3915,7 @@ export class RustParser extends RustParserBase {
             this.state = 1088;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2434794792) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 121634833) !== 0) || _la === 119 || _la === 122) {
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2434794792) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 121634833) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 4105) !== 0)) {
                 {
                 {
                 this.state = 1085;
@@ -3986,7 +3994,7 @@ export class RustParser extends RustParserBase {
             this.state = 1110;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 354420008) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 121634833) !== 0) || _la === 119 || _la === 122) {
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 354420008) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 121634833) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 4105) !== 0)) {
                 {
                 {
                 this.state = 1107;
@@ -4046,6 +4054,7 @@ export class RustParser extends RustParserBase {
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
             case RustParser.PATHSEP:
+            case RustParser.HOLE:
                 {
                 this.state = 1121;
                 this.macroInvocationSemi();
@@ -4124,7 +4133,7 @@ export class RustParser extends RustParserBase {
             this.state = 1144;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if (_la === 3 || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 134217753) !== 0) || _la === 122) {
+            if (_la === 3 || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 134217753) !== 0) || _la === 122 || _la === 131) {
                 {
                 this.state = 1137;
                 this.errorHandler.sync(this);
@@ -4311,7 +4320,7 @@ export class RustParser extends RustParserBase {
                 this.state = 1173;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318769184) !== 0) || ((((_la - 53)) & ~0x1F) === 0 && ((1 << (_la - 53)) & 268435519) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 1057) !== 0)) {
+                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318769184) !== 0) || ((((_la - 53)) & ~0x1F) === 0 && ((1 << (_la - 53)) & 268435519) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5153) !== 0)) {
                     {
                     this.state = 1172;
                     this.typeParamBounds();
@@ -4408,7 +4417,7 @@ export class RustParser extends RustParserBase {
             this.state = 1196;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 1313) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
                 {
                 this.state = 1195;
                 this.whereClauseItem();
@@ -4517,7 +4526,7 @@ export class RustParser extends RustParserBase {
             this.state = 1212;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318769184) !== 0) || ((((_la - 53)) & ~0x1F) === 0 && ((1 << (_la - 53)) & 268435519) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 1057) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318769184) !== 0) || ((((_la - 53)) & ~0x1F) === 0 && ((1 << (_la - 53)) & 268435519) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5153) !== 0)) {
                 {
                 this.state = 1211;
                 this.typeParamBounds();
@@ -4596,6 +4605,7 @@ export class RustParser extends RustParserBase {
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
             case RustParser.PATHSEP:
+            case RustParser.HOLE:
                 {
                 this.state = 1223;
                 this.macroInvocationSemi();
@@ -5983,6 +5993,7 @@ export class RustParser extends RustParserBase {
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
             case RustParser.PATHSEP:
+            case RustParser.HOLE:
                 this.enterOuterAlt(localContext, 1);
                 {
                 this.state = 1481;
@@ -6419,6 +6430,7 @@ export class RustParser extends RustParserBase {
             case RustParser.RAW_IDENTIFIER:
             case RustParser.INTEGER_LITERAL:
             case RustParser.POUND:
+            case RustParser.HOLE:
                 {
                 this.state = 1559;
                 this.structExprFields();
@@ -6559,6 +6571,7 @@ export class RustParser extends RustParserBase {
                 case RustParser.KW_MACRORULES:
                 case RustParser.NON_KEYWORD_IDENTIFIER:
                 case RustParser.RAW_IDENTIFIER:
+                case RustParser.HOLE:
                     {
                     this.state = 1587;
                     this.identifier();
@@ -6783,7 +6796,7 @@ export class RustParser extends RustParserBase {
             this.state = 1632;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if (((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 2097177) !== 0)) {
+            if (((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 2097177) !== 0) || _la === 131) {
                 {
                 this.state = 1631;
                 this.enumExprFields();
@@ -6883,6 +6896,7 @@ export class RustParser extends RustParserBase {
                 case RustParser.KW_MACRORULES:
                 case RustParser.NON_KEYWORD_IDENTIFIER:
                 case RustParser.RAW_IDENTIFIER:
+                case RustParser.HOLE:
                     {
                     this.state = 1648;
                     this.identifier();
@@ -7651,7 +7665,7 @@ export class RustParser extends RustParserBase {
             this.state = 1794;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1397752352) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 608141341) !== 0) || ((((_la - 89)) & ~0x1F) === 0 && ((1 << (_la - 89)) & 1094975495) !== 0) || ((((_la - 122)) & ~0x1F) === 0 && ((1 << (_la - 122)) & 161) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1397752352) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 608141341) !== 0) || ((((_la - 89)) & ~0x1F) === 0 && ((1 << (_la - 89)) & 1094975495) !== 0) || ((((_la - 122)) & ~0x1F) === 0 && ((1 << (_la - 122)) & 673) !== 0)) {
                 {
                 this.state = 1793;
                 this.matchArms();
@@ -8457,7 +8471,7 @@ export class RustParser extends RustParserBase {
             this.state = 1932;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if (_la === 20 || _la === 22 || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 2097177) !== 0) || _la === 113 || _la === 122) {
+            if (_la === 20 || _la === 22 || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 2097177) !== 0) || ((((_la - 113)) & ~0x1F) === 0 && ((1 << (_la - 113)) & 262657) !== 0)) {
                 {
                 this.state = 1931;
                 this.structPatternElements();
@@ -8718,7 +8732,7 @@ export class RustParser extends RustParserBase {
             this.state = 1988;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1397752352) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 608141341) !== 0) || ((((_la - 89)) & ~0x1F) === 0 && ((1 << (_la - 89)) & 1094975495) !== 0) || _la === 127 || _la === 129) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1397752352) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 608141341) !== 0) || ((((_la - 89)) & ~0x1F) === 0 && ((1 << (_la - 89)) & 1094975495) !== 0) || ((((_la - 127)) & ~0x1F) === 0 && ((1 << (_la - 127)) & 21) !== 0)) {
                 {
                 this.state = 1987;
                 this.tupleStructItems();
@@ -8807,7 +8821,7 @@ export class RustParser extends RustParserBase {
             this.state = 2005;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1397752352) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 608141341) !== 0) || ((((_la - 89)) & ~0x1F) === 0 && ((1 << (_la - 89)) & 1094975495) !== 0) || _la === 127 || _la === 129) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1397752352) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 608141341) !== 0) || ((((_la - 89)) & ~0x1F) === 0 && ((1 << (_la - 89)) & 1094975495) !== 0) || ((((_la - 127)) & ~0x1F) === 0 && ((1 << (_la - 127)) & 21) !== 0)) {
                 {
                 this.state = 2004;
                 this.tuplePatternItems();
@@ -8949,7 +8963,7 @@ export class RustParser extends RustParserBase {
             this.state = 2031;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1397752352) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 608141341) !== 0) || ((((_la - 89)) & ~0x1F) === 0 && ((1 << (_la - 89)) & 1094975495) !== 0) || _la === 127 || _la === 129) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1397752352) !== 0) || ((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 608141341) !== 0) || ((((_la - 89)) & ~0x1F) === 0 && ((1 << (_la - 89)) & 1094975495) !== 0) || ((((_la - 127)) & ~0x1F) === 0 && ((1 << (_la - 127)) & 21) !== 0)) {
                 {
                 this.state = 2030;
                 this.slicePatternItems();
@@ -9042,6 +9056,7 @@ export class RustParser extends RustParserBase {
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
             case RustParser.PATHSEP:
+            case RustParser.HOLE:
                 this.enterOuterAlt(localContext, 1);
                 {
                 this.state = 2046;
@@ -9298,7 +9313,7 @@ export class RustParser extends RustParserBase {
             this.state = 2088;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 1313) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
                 {
                 this.state = 2081;
                 this.errorHandler.sync(this);
@@ -9325,7 +9340,7 @@ export class RustParser extends RustParserBase {
                 this.state = 2086;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 1313) !== 0)) {
+                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
                     {
                     this.state = 2085;
                     this.type_();
@@ -9517,7 +9532,7 @@ export class RustParser extends RustParserBase {
             this.state = 2122;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 1321) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5417) !== 0)) {
                 {
                 this.state = 2121;
                 this.functionParametersMaybeNamedVariadic();
@@ -9749,6 +9764,7 @@ export class RustParser extends RustParserBase {
                 case RustParser.KW_MACRORULES:
                 case RustParser.NON_KEYWORD_IDENTIFIER:
                 case RustParser.RAW_IDENTIFIER:
+                case RustParser.HOLE:
                     {
                     this.state = 2161;
                     this.identifier();
@@ -10067,6 +10083,7 @@ export class RustParser extends RustParserBase {
             case RustParser.PATHSEP:
             case RustParser.QUESTION:
             case RustParser.LPAREN:
+            case RustParser.HOLE:
                 this.enterOuterAlt(localContext, 2);
                 {
                 this.state = 2218;
@@ -10109,6 +10126,7 @@ export class RustParser extends RustParserBase {
             case RustParser.RAW_IDENTIFIER:
             case RustParser.PATHSEP:
             case RustParser.QUESTION:
+            case RustParser.HOLE:
                 this.enterOuterAlt(localContext, 1);
                 {
                 this.state = 2222;
@@ -10328,6 +10346,7 @@ export class RustParser extends RustParserBase {
             case RustParser.KW_MACRORULES:
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
+            case RustParser.HOLE:
                 this.enterOuterAlt(localContext, 1);
                 {
                 this.state = 2264;
@@ -10477,6 +10496,7 @@ export class RustParser extends RustParserBase {
             case RustParser.KW_MACRORULES:
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
+            case RustParser.HOLE:
                 this.enterOuterAlt(localContext, 1);
                 {
                 this.state = 2287;
@@ -10784,6 +10804,7 @@ export class RustParser extends RustParserBase {
             case RustParser.KW_DOLLARCRATE:
             case RustParser.NON_KEYWORD_IDENTIFIER:
             case RustParser.RAW_IDENTIFIER:
+            case RustParser.HOLE:
                 this.enterOuterAlt(localContext, 3);
                 {
                 this.state = 2351;
@@ -11206,7 +11227,7 @@ export class RustParser extends RustParserBase {
             this.state = 2425;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 1313) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
                 {
                 this.state = 2424;
                 this.typePathInputs();
@@ -11371,7 +11392,7 @@ export class RustParser extends RustParserBase {
             {
             this.state = 2455;
             _la = this.tokenStream.LA(1);
-            if(!(((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 25) !== 0))) {
+            if(!(((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & 25) !== 0) || _la === 131)) {
             this.errorHandler.recoverInline(this);
             }
             else {
@@ -11927,126 +11948,126 @@ export class RustParser extends RustParserBase {
         356,358,360,362,364,366,368,370,372,374,376,378,380,382,384,386,
         388,390,392,0,14,3,0,82,82,84,84,124,124,1,0,70,71,2,0,89,89,91,
         91,2,0,83,83,88,88,1,0,84,86,1,0,82,83,1,0,104,109,1,0,93,102,4,
-        0,9,9,30,30,69,75,80,80,2,0,3,3,20,20,3,0,53,53,55,55,81,81,2,0,
-        54,54,57,58,1,0,1,53,2,0,83,83,85,122,2765,0,397,1,0,0,0,2,408,1,
-        0,0,0,4,436,1,0,0,0,6,444,1,0,0,0,8,451,1,0,0,0,10,488,1,0,0,0,12,
-        490,1,0,0,0,14,509,1,0,0,0,16,511,1,0,0,0,18,522,1,0,0,0,20,550,
-        1,0,0,0,22,578,1,0,0,0,24,584,1,0,0,0,26,586,1,0,0,0,28,592,1,0,
-        0,0,30,594,1,0,0,0,32,596,1,0,0,0,34,601,1,0,0,0,36,609,1,0,0,0,
-        38,628,1,0,0,0,40,631,1,0,0,0,42,652,1,0,0,0,44,662,1,0,0,0,46,664,
-        1,0,0,0,48,669,1,0,0,0,50,705,1,0,0,0,52,707,1,0,0,0,54,729,1,0,
-        0,0,56,743,1,0,0,0,58,765,1,0,0,0,60,770,1,0,0,0,62,781,1,0,0,0,
-        64,789,1,0,0,0,66,798,1,0,0,0,68,806,1,0,0,0,70,812,1,0,0,0,72,815,
-        1,0,0,0,74,831,1,0,0,0,76,833,1,0,0,0,78,849,1,0,0,0,80,864,1,0,
-        0,0,82,878,1,0,0,0,84,888,1,0,0,0,86,902,1,0,0,0,88,910,1,0,0,0,
-        90,924,1,0,0,0,92,938,1,0,0,0,94,950,1,0,0,0,96,956,1,0,0,0,98,962,
-        1,0,0,0,100,965,1,0,0,0,102,977,1,0,0,0,104,990,1,0,0,0,106,1004,
-        1,0,0,0,108,1037,1,0,0,0,110,1039,1,0,0,0,112,1063,1,0,0,0,114,1094,
-        1,0,0,0,116,1118,1,0,0,0,118,1131,1,0,0,0,120,1151,1,0,0,0,122,1160,
-        1,0,0,0,124,1168,1,0,0,0,126,1181,1,0,0,0,128,1186,1,0,0,0,130,1200,
-        1,0,0,0,132,1202,1,0,0,0,134,1207,1,0,0,0,136,1214,1,0,0,0,138,1220,
-        1,0,0,0,140,1234,1,0,0,0,142,1240,1,0,0,0,144,1245,1,0,0,0,146,1252,
-        1,0,0,0,148,1259,1,0,0,0,150,1264,1,0,0,0,152,1286,1,0,0,0,154,1369,
-        1,0,0,0,156,1457,1,0,0,0,158,1459,1,0,0,0,160,1461,1,0,0,0,162,1477,
-        1,0,0,0,164,1479,1,0,0,0,166,1483,1,0,0,0,168,1485,1,0,0,0,170,1506,
-        1,0,0,0,172,1508,1,0,0,0,174,1514,1,0,0,0,176,1532,1,0,0,0,178,1537,
-        1,0,0,0,180,1544,1,0,0,0,182,1549,1,0,0,0,184,1551,1,0,0,0,186,1565,
-        1,0,0,0,188,1583,1,0,0,0,190,1596,1,0,0,0,192,1599,1,0,0,0,194,1622,
-        1,0,0,0,196,1627,1,0,0,0,198,1629,1,0,0,0,200,1636,1,0,0,0,202,1655,
-        1,0,0,0,204,1657,1,0,0,0,206,1674,1,0,0,0,208,1676,1,0,0,0,210,1688,
-        1,0,0,0,212,1705,1,0,0,0,214,1719,1,0,0,0,216,1728,1,0,0,0,218,1736,
-        1,0,0,0,220,1739,1,0,0,0,222,1743,1,0,0,0,224,1750,1,0,0,0,226,1756,
-        1,0,0,0,228,1759,1,0,0,0,230,1770,1,0,0,0,232,1784,1,0,0,0,234,1804,
-        1,0,0,0,236,1820,1,0,0,0,238,1825,1,0,0,0,240,1832,1,0,0,0,242,1836,
-        1,0,0,0,244,1848,1,0,0,0,246,1862,1,0,0,0,248,1880,1,0,0,0,250,1883,
-        1,0,0,0,252,1893,1,0,0,0,254,1895,1,0,0,0,256,1908,1,0,0,0,258,1921,
-        1,0,0,0,260,1923,1,0,0,0,262,1929,1,0,0,0,264,1944,1,0,0,0,266,1946,
-        1,0,0,0,268,1957,1,0,0,0,270,1980,1,0,0,0,272,1985,1,0,0,0,274,1992,
-        1,0,0,0,276,2003,1,0,0,0,278,2023,1,0,0,0,280,2025,1,0,0,0,282,2029,
-        1,0,0,0,284,2035,1,0,0,0,286,2048,1,0,0,0,288,2053,1,0,0,0,290,2069,
-        1,0,0,0,292,2071,1,0,0,0,294,2075,1,0,0,0,296,2077,1,0,0,0,298,2092,
-        1,0,0,0,300,2098,1,0,0,0,302,2102,1,0,0,0,304,2111,1,0,0,0,306,2116,
-        1,0,0,0,308,2129,1,0,0,0,310,2137,1,0,0,0,312,2142,1,0,0,0,314,2144,
-        1,0,0,0,316,2158,1,0,0,0,318,2175,1,0,0,0,320,2189,1,0,0,0,322,2194,
-        1,0,0,0,324,2198,1,0,0,0,326,2201,1,0,0,0,328,2204,1,0,0,0,330,2206,
-        1,0,0,0,332,2219,1,0,0,0,334,2238,1,0,0,0,336,2245,1,0,0,0,338,2251,
-        1,0,0,0,340,2254,1,0,0,0,342,2269,1,0,0,0,344,2272,1,0,0,0,346,2282,
-        1,0,0,0,348,2293,1,0,0,0,350,2338,1,0,0,0,352,2344,1,0,0,0,354,2352,
-        1,0,0,0,356,2354,1,0,0,0,358,2362,1,0,0,0,360,2370,1,0,0,0,362,2378,
-        1,0,0,0,364,2382,1,0,0,0,366,2389,1,0,0,0,368,2397,1,0,0,0,370,2405,
-        1,0,0,0,372,2415,1,0,0,0,374,2423,1,0,0,0,376,2432,1,0,0,0,378,2443,
-        1,0,0,0,380,2455,1,0,0,0,382,2457,1,0,0,0,384,2465,1,0,0,0,386,2467,
-        1,0,0,0,388,2469,1,0,0,0,390,2471,1,0,0,0,392,2475,1,0,0,0,394,396,
-        3,140,70,0,395,394,1,0,0,0,396,399,1,0,0,0,397,395,1,0,0,0,397,398,
-        1,0,0,0,398,403,1,0,0,0,399,397,1,0,0,0,400,402,3,34,17,0,401,400,
-        1,0,0,0,402,405,1,0,0,0,403,401,1,0,0,0,403,404,1,0,0,0,404,406,
-        1,0,0,0,405,403,1,0,0,0,406,407,5,0,0,1,407,1,1,0,0,0,408,409,3,
-        340,170,0,409,410,5,88,0,0,410,411,3,4,2,0,411,3,1,0,0,0,412,416,
-        5,129,0,0,413,415,3,6,3,0,414,413,1,0,0,0,415,418,1,0,0,0,416,414,
-        1,0,0,0,416,417,1,0,0,0,417,419,1,0,0,0,418,416,1,0,0,0,419,437,
-        5,130,0,0,420,424,5,127,0,0,421,423,3,6,3,0,422,421,1,0,0,0,423,
-        426,1,0,0,0,424,422,1,0,0,0,424,425,1,0,0,0,425,427,1,0,0,0,426,
-        424,1,0,0,0,427,437,5,128,0,0,428,432,5,125,0,0,429,431,3,6,3,0,
-        430,429,1,0,0,0,431,434,1,0,0,0,432,430,1,0,0,0,432,433,1,0,0,0,
-        433,435,1,0,0,0,434,432,1,0,0,0,435,437,5,126,0,0,436,412,1,0,0,
-        0,436,420,1,0,0,0,436,428,1,0,0,0,437,5,1,0,0,0,438,440,3,8,4,0,
-        439,438,1,0,0,0,440,441,1,0,0,0,441,439,1,0,0,0,441,442,1,0,0,0,
-        442,445,1,0,0,0,443,445,3,4,2,0,444,439,1,0,0,0,444,443,1,0,0,0,
-        445,7,1,0,0,0,446,452,3,384,192,0,447,452,3,386,193,0,448,452,3,
-        388,194,0,449,452,3,30,15,0,450,452,5,123,0,0,451,446,1,0,0,0,451,
-        447,1,0,0,0,451,448,1,0,0,0,451,449,1,0,0,0,451,450,1,0,0,0,452,
-        9,1,0,0,0,453,454,3,340,170,0,454,455,5,88,0,0,455,459,5,129,0,0,
-        456,458,3,6,3,0,457,456,1,0,0,0,458,461,1,0,0,0,459,457,1,0,0,0,
-        459,460,1,0,0,0,460,462,1,0,0,0,461,459,1,0,0,0,462,463,5,130,0,
-        0,463,464,5,117,0,0,464,489,1,0,0,0,465,466,3,340,170,0,466,467,
-        5,88,0,0,467,471,5,127,0,0,468,470,3,6,3,0,469,468,1,0,0,0,470,473,
-        1,0,0,0,471,469,1,0,0,0,471,472,1,0,0,0,472,474,1,0,0,0,473,471,
-        1,0,0,0,474,475,5,128,0,0,475,476,5,117,0,0,476,489,1,0,0,0,477,
-        478,3,340,170,0,478,479,5,88,0,0,479,483,5,125,0,0,480,482,3,6,3,
-        0,481,480,1,0,0,0,482,485,1,0,0,0,483,481,1,0,0,0,483,484,1,0,0,
-        0,484,486,1,0,0,0,485,483,1,0,0,0,486,487,5,126,0,0,487,489,1,0,
-        0,0,488,453,1,0,0,0,488,465,1,0,0,0,488,477,1,0,0,0,489,11,1,0,0,
-        0,490,491,5,54,0,0,491,492,5,88,0,0,492,493,3,380,190,0,493,494,
-        3,14,7,0,494,13,1,0,0,0,495,496,5,129,0,0,496,497,3,16,8,0,497,498,
-        5,130,0,0,498,499,5,117,0,0,499,510,1,0,0,0,500,501,5,127,0,0,501,
-        502,3,16,8,0,502,503,5,128,0,0,503,504,5,117,0,0,504,510,1,0,0,0,
-        505,506,5,125,0,0,506,507,3,16,8,0,507,508,5,126,0,0,508,510,1,0,
-        0,0,509,495,1,0,0,0,509,500,1,0,0,0,509,505,1,0,0,0,510,15,1,0,0,
-        0,511,516,3,18,9,0,512,513,5,117,0,0,513,515,3,18,9,0,514,512,1,
-        0,0,0,515,518,1,0,0,0,516,514,1,0,0,0,516,517,1,0,0,0,517,520,1,
-        0,0,0,518,516,1,0,0,0,519,521,5,117,0,0,520,519,1,0,0,0,520,521,
-        1,0,0,0,521,17,1,0,0,0,522,523,3,20,10,0,523,524,5,121,0,0,524,525,
-        3,32,16,0,525,19,1,0,0,0,526,530,5,129,0,0,527,529,3,22,11,0,528,
-        527,1,0,0,0,529,532,1,0,0,0,530,528,1,0,0,0,530,531,1,0,0,0,531,
-        533,1,0,0,0,532,530,1,0,0,0,533,551,5,130,0,0,534,538,5,127,0,0,
-        535,537,3,22,11,0,536,535,1,0,0,0,537,540,1,0,0,0,538,536,1,0,0,
-        0,538,539,1,0,0,0,539,541,1,0,0,0,540,538,1,0,0,0,541,551,5,128,
-        0,0,542,546,5,125,0,0,543,545,3,22,11,0,544,543,1,0,0,0,545,548,
-        1,0,0,0,546,544,1,0,0,0,546,547,1,0,0,0,547,549,1,0,0,0,548,546,
-        1,0,0,0,549,551,5,126,0,0,550,526,1,0,0,0,550,534,1,0,0,0,550,542,
-        1,0,0,0,551,21,1,0,0,0,552,554,3,24,12,0,553,552,1,0,0,0,554,555,
-        1,0,0,0,555,553,1,0,0,0,555,556,1,0,0,0,556,579,1,0,0,0,557,579,
-        3,20,10,0,558,561,5,123,0,0,559,562,3,380,190,0,560,562,5,24,0,0,
-        561,559,1,0,0,0,561,560,1,0,0,0,562,563,1,0,0,0,563,564,5,118,0,
-        0,564,579,3,26,13,0,565,566,5,123,0,0,566,568,5,129,0,0,567,569,
-        3,22,11,0,568,567,1,0,0,0,569,570,1,0,0,0,570,568,1,0,0,0,570,571,
-        1,0,0,0,571,572,1,0,0,0,572,574,5,130,0,0,573,575,3,28,14,0,574,
-        573,1,0,0,0,574,575,1,0,0,0,575,576,1,0,0,0,576,577,3,30,15,0,577,
-        579,1,0,0,0,578,553,1,0,0,0,578,557,1,0,0,0,578,558,1,0,0,0,578,
-        565,1,0,0,0,579,23,1,0,0,0,580,585,3,384,192,0,581,585,3,386,193,
-        0,582,585,3,388,194,0,583,585,3,30,15,0,584,580,1,0,0,0,584,581,
-        1,0,0,0,584,582,1,0,0,0,584,583,1,0,0,0,585,25,1,0,0,0,586,587,3,
-        380,190,0,587,27,1,0,0,0,588,593,3,384,192,0,589,593,3,386,193,0,
-        590,593,3,388,194,0,591,593,5,123,0,0,592,588,1,0,0,0,592,589,1,
-        0,0,0,592,590,1,0,0,0,592,591,1,0,0,0,593,29,1,0,0,0,594,595,7,0,
-        0,0,595,31,1,0,0,0,596,597,3,4,2,0,597,33,1,0,0,0,598,600,3,142,
-        71,0,599,598,1,0,0,0,600,603,1,0,0,0,601,599,1,0,0,0,601,602,1,0,
-        0,0,602,606,1,0,0,0,603,601,1,0,0,0,604,607,3,36,18,0,605,607,3,
-        38,19,0,606,604,1,0,0,0,606,605,1,0,0,0,607,35,1,0,0,0,608,610,3,
-        378,189,0,609,608,1,0,0,0,609,610,1,0,0,0,610,624,1,0,0,0,611,625,
-        3,40,20,0,612,625,3,42,21,0,613,625,3,48,24,0,614,625,3,52,26,0,
-        615,625,3,72,36,0,616,625,3,74,37,0,617,625,3,88,44,0,618,625,3,
-        100,50,0,619,625,3,102,51,0,620,625,3,104,52,0,621,625,3,106,53,
+        0,9,9,30,30,69,75,80,80,2,0,3,3,20,20,3,0,53,53,55,55,81,81,3,0,
+        54,54,57,58,131,131,1,0,1,53,2,0,83,83,85,122,2765,0,397,1,0,0,0,
+        2,408,1,0,0,0,4,436,1,0,0,0,6,444,1,0,0,0,8,451,1,0,0,0,10,488,1,
+        0,0,0,12,490,1,0,0,0,14,509,1,0,0,0,16,511,1,0,0,0,18,522,1,0,0,
+        0,20,550,1,0,0,0,22,578,1,0,0,0,24,584,1,0,0,0,26,586,1,0,0,0,28,
+        592,1,0,0,0,30,594,1,0,0,0,32,596,1,0,0,0,34,601,1,0,0,0,36,609,
+        1,0,0,0,38,628,1,0,0,0,40,631,1,0,0,0,42,652,1,0,0,0,44,662,1,0,
+        0,0,46,664,1,0,0,0,48,669,1,0,0,0,50,705,1,0,0,0,52,707,1,0,0,0,
+        54,729,1,0,0,0,56,743,1,0,0,0,58,765,1,0,0,0,60,770,1,0,0,0,62,781,
+        1,0,0,0,64,789,1,0,0,0,66,798,1,0,0,0,68,806,1,0,0,0,70,812,1,0,
+        0,0,72,815,1,0,0,0,74,831,1,0,0,0,76,833,1,0,0,0,78,849,1,0,0,0,
+        80,864,1,0,0,0,82,878,1,0,0,0,84,888,1,0,0,0,86,902,1,0,0,0,88,910,
+        1,0,0,0,90,924,1,0,0,0,92,938,1,0,0,0,94,950,1,0,0,0,96,956,1,0,
+        0,0,98,962,1,0,0,0,100,965,1,0,0,0,102,977,1,0,0,0,104,990,1,0,0,
+        0,106,1004,1,0,0,0,108,1037,1,0,0,0,110,1039,1,0,0,0,112,1063,1,
+        0,0,0,114,1094,1,0,0,0,116,1118,1,0,0,0,118,1131,1,0,0,0,120,1151,
+        1,0,0,0,122,1160,1,0,0,0,124,1168,1,0,0,0,126,1181,1,0,0,0,128,1186,
+        1,0,0,0,130,1200,1,0,0,0,132,1202,1,0,0,0,134,1207,1,0,0,0,136,1214,
+        1,0,0,0,138,1220,1,0,0,0,140,1234,1,0,0,0,142,1240,1,0,0,0,144,1245,
+        1,0,0,0,146,1252,1,0,0,0,148,1259,1,0,0,0,150,1264,1,0,0,0,152,1286,
+        1,0,0,0,154,1369,1,0,0,0,156,1457,1,0,0,0,158,1459,1,0,0,0,160,1461,
+        1,0,0,0,162,1477,1,0,0,0,164,1479,1,0,0,0,166,1483,1,0,0,0,168,1485,
+        1,0,0,0,170,1506,1,0,0,0,172,1508,1,0,0,0,174,1514,1,0,0,0,176,1532,
+        1,0,0,0,178,1537,1,0,0,0,180,1544,1,0,0,0,182,1549,1,0,0,0,184,1551,
+        1,0,0,0,186,1565,1,0,0,0,188,1583,1,0,0,0,190,1596,1,0,0,0,192,1599,
+        1,0,0,0,194,1622,1,0,0,0,196,1627,1,0,0,0,198,1629,1,0,0,0,200,1636,
+        1,0,0,0,202,1655,1,0,0,0,204,1657,1,0,0,0,206,1674,1,0,0,0,208,1676,
+        1,0,0,0,210,1688,1,0,0,0,212,1705,1,0,0,0,214,1719,1,0,0,0,216,1728,
+        1,0,0,0,218,1736,1,0,0,0,220,1739,1,0,0,0,222,1743,1,0,0,0,224,1750,
+        1,0,0,0,226,1756,1,0,0,0,228,1759,1,0,0,0,230,1770,1,0,0,0,232,1784,
+        1,0,0,0,234,1804,1,0,0,0,236,1820,1,0,0,0,238,1825,1,0,0,0,240,1832,
+        1,0,0,0,242,1836,1,0,0,0,244,1848,1,0,0,0,246,1862,1,0,0,0,248,1880,
+        1,0,0,0,250,1883,1,0,0,0,252,1893,1,0,0,0,254,1895,1,0,0,0,256,1908,
+        1,0,0,0,258,1921,1,0,0,0,260,1923,1,0,0,0,262,1929,1,0,0,0,264,1944,
+        1,0,0,0,266,1946,1,0,0,0,268,1957,1,0,0,0,270,1980,1,0,0,0,272,1985,
+        1,0,0,0,274,1992,1,0,0,0,276,2003,1,0,0,0,278,2023,1,0,0,0,280,2025,
+        1,0,0,0,282,2029,1,0,0,0,284,2035,1,0,0,0,286,2048,1,0,0,0,288,2053,
+        1,0,0,0,290,2069,1,0,0,0,292,2071,1,0,0,0,294,2075,1,0,0,0,296,2077,
+        1,0,0,0,298,2092,1,0,0,0,300,2098,1,0,0,0,302,2102,1,0,0,0,304,2111,
+        1,0,0,0,306,2116,1,0,0,0,308,2129,1,0,0,0,310,2137,1,0,0,0,312,2142,
+        1,0,0,0,314,2144,1,0,0,0,316,2158,1,0,0,0,318,2175,1,0,0,0,320,2189,
+        1,0,0,0,322,2194,1,0,0,0,324,2198,1,0,0,0,326,2201,1,0,0,0,328,2204,
+        1,0,0,0,330,2206,1,0,0,0,332,2219,1,0,0,0,334,2238,1,0,0,0,336,2245,
+        1,0,0,0,338,2251,1,0,0,0,340,2254,1,0,0,0,342,2269,1,0,0,0,344,2272,
+        1,0,0,0,346,2282,1,0,0,0,348,2293,1,0,0,0,350,2338,1,0,0,0,352,2344,
+        1,0,0,0,354,2352,1,0,0,0,356,2354,1,0,0,0,358,2362,1,0,0,0,360,2370,
+        1,0,0,0,362,2378,1,0,0,0,364,2382,1,0,0,0,366,2389,1,0,0,0,368,2397,
+        1,0,0,0,370,2405,1,0,0,0,372,2415,1,0,0,0,374,2423,1,0,0,0,376,2432,
+        1,0,0,0,378,2443,1,0,0,0,380,2455,1,0,0,0,382,2457,1,0,0,0,384,2465,
+        1,0,0,0,386,2467,1,0,0,0,388,2469,1,0,0,0,390,2471,1,0,0,0,392,2475,
+        1,0,0,0,394,396,3,140,70,0,395,394,1,0,0,0,396,399,1,0,0,0,397,395,
+        1,0,0,0,397,398,1,0,0,0,398,403,1,0,0,0,399,397,1,0,0,0,400,402,
+        3,34,17,0,401,400,1,0,0,0,402,405,1,0,0,0,403,401,1,0,0,0,403,404,
+        1,0,0,0,404,406,1,0,0,0,405,403,1,0,0,0,406,407,5,0,0,1,407,1,1,
+        0,0,0,408,409,3,340,170,0,409,410,5,88,0,0,410,411,3,4,2,0,411,3,
+        1,0,0,0,412,416,5,129,0,0,413,415,3,6,3,0,414,413,1,0,0,0,415,418,
+        1,0,0,0,416,414,1,0,0,0,416,417,1,0,0,0,417,419,1,0,0,0,418,416,
+        1,0,0,0,419,437,5,130,0,0,420,424,5,127,0,0,421,423,3,6,3,0,422,
+        421,1,0,0,0,423,426,1,0,0,0,424,422,1,0,0,0,424,425,1,0,0,0,425,
+        427,1,0,0,0,426,424,1,0,0,0,427,437,5,128,0,0,428,432,5,125,0,0,
+        429,431,3,6,3,0,430,429,1,0,0,0,431,434,1,0,0,0,432,430,1,0,0,0,
+        432,433,1,0,0,0,433,435,1,0,0,0,434,432,1,0,0,0,435,437,5,126,0,
+        0,436,412,1,0,0,0,436,420,1,0,0,0,436,428,1,0,0,0,437,5,1,0,0,0,
+        438,440,3,8,4,0,439,438,1,0,0,0,440,441,1,0,0,0,441,439,1,0,0,0,
+        441,442,1,0,0,0,442,445,1,0,0,0,443,445,3,4,2,0,444,439,1,0,0,0,
+        444,443,1,0,0,0,445,7,1,0,0,0,446,452,3,384,192,0,447,452,3,386,
+        193,0,448,452,3,388,194,0,449,452,3,30,15,0,450,452,5,123,0,0,451,
+        446,1,0,0,0,451,447,1,0,0,0,451,448,1,0,0,0,451,449,1,0,0,0,451,
+        450,1,0,0,0,452,9,1,0,0,0,453,454,3,340,170,0,454,455,5,88,0,0,455,
+        459,5,129,0,0,456,458,3,6,3,0,457,456,1,0,0,0,458,461,1,0,0,0,459,
+        457,1,0,0,0,459,460,1,0,0,0,460,462,1,0,0,0,461,459,1,0,0,0,462,
+        463,5,130,0,0,463,464,5,117,0,0,464,489,1,0,0,0,465,466,3,340,170,
+        0,466,467,5,88,0,0,467,471,5,127,0,0,468,470,3,6,3,0,469,468,1,0,
+        0,0,470,473,1,0,0,0,471,469,1,0,0,0,471,472,1,0,0,0,472,474,1,0,
+        0,0,473,471,1,0,0,0,474,475,5,128,0,0,475,476,5,117,0,0,476,489,
+        1,0,0,0,477,478,3,340,170,0,478,479,5,88,0,0,479,483,5,125,0,0,480,
+        482,3,6,3,0,481,480,1,0,0,0,482,485,1,0,0,0,483,481,1,0,0,0,483,
+        484,1,0,0,0,484,486,1,0,0,0,485,483,1,0,0,0,486,487,5,126,0,0,487,
+        489,1,0,0,0,488,453,1,0,0,0,488,465,1,0,0,0,488,477,1,0,0,0,489,
+        11,1,0,0,0,490,491,5,54,0,0,491,492,5,88,0,0,492,493,3,380,190,0,
+        493,494,3,14,7,0,494,13,1,0,0,0,495,496,5,129,0,0,496,497,3,16,8,
+        0,497,498,5,130,0,0,498,499,5,117,0,0,499,510,1,0,0,0,500,501,5,
+        127,0,0,501,502,3,16,8,0,502,503,5,128,0,0,503,504,5,117,0,0,504,
+        510,1,0,0,0,505,506,5,125,0,0,506,507,3,16,8,0,507,508,5,126,0,0,
+        508,510,1,0,0,0,509,495,1,0,0,0,509,500,1,0,0,0,509,505,1,0,0,0,
+        510,15,1,0,0,0,511,516,3,18,9,0,512,513,5,117,0,0,513,515,3,18,9,
+        0,514,512,1,0,0,0,515,518,1,0,0,0,516,514,1,0,0,0,516,517,1,0,0,
+        0,517,520,1,0,0,0,518,516,1,0,0,0,519,521,5,117,0,0,520,519,1,0,
+        0,0,520,521,1,0,0,0,521,17,1,0,0,0,522,523,3,20,10,0,523,524,5,121,
+        0,0,524,525,3,32,16,0,525,19,1,0,0,0,526,530,5,129,0,0,527,529,3,
+        22,11,0,528,527,1,0,0,0,529,532,1,0,0,0,530,528,1,0,0,0,530,531,
+        1,0,0,0,531,533,1,0,0,0,532,530,1,0,0,0,533,551,5,130,0,0,534,538,
+        5,127,0,0,535,537,3,22,11,0,536,535,1,0,0,0,537,540,1,0,0,0,538,
+        536,1,0,0,0,538,539,1,0,0,0,539,541,1,0,0,0,540,538,1,0,0,0,541,
+        551,5,128,0,0,542,546,5,125,0,0,543,545,3,22,11,0,544,543,1,0,0,
+        0,545,548,1,0,0,0,546,544,1,0,0,0,546,547,1,0,0,0,547,549,1,0,0,
+        0,548,546,1,0,0,0,549,551,5,126,0,0,550,526,1,0,0,0,550,534,1,0,
+        0,0,550,542,1,0,0,0,551,21,1,0,0,0,552,554,3,24,12,0,553,552,1,0,
+        0,0,554,555,1,0,0,0,555,553,1,0,0,0,555,556,1,0,0,0,556,579,1,0,
+        0,0,557,579,3,20,10,0,558,561,5,123,0,0,559,562,3,380,190,0,560,
+        562,5,24,0,0,561,559,1,0,0,0,561,560,1,0,0,0,562,563,1,0,0,0,563,
+        564,5,118,0,0,564,579,3,26,13,0,565,566,5,123,0,0,566,568,5,129,
+        0,0,567,569,3,22,11,0,568,567,1,0,0,0,569,570,1,0,0,0,570,568,1,
+        0,0,0,570,571,1,0,0,0,571,572,1,0,0,0,572,574,5,130,0,0,573,575,
+        3,28,14,0,574,573,1,0,0,0,574,575,1,0,0,0,575,576,1,0,0,0,576,577,
+        3,30,15,0,577,579,1,0,0,0,578,553,1,0,0,0,578,557,1,0,0,0,578,558,
+        1,0,0,0,578,565,1,0,0,0,579,23,1,0,0,0,580,585,3,384,192,0,581,585,
+        3,386,193,0,582,585,3,388,194,0,583,585,3,30,15,0,584,580,1,0,0,
+        0,584,581,1,0,0,0,584,582,1,0,0,0,584,583,1,0,0,0,585,25,1,0,0,0,
+        586,587,3,380,190,0,587,27,1,0,0,0,588,593,3,384,192,0,589,593,3,
+        386,193,0,590,593,3,388,194,0,591,593,5,123,0,0,592,588,1,0,0,0,
+        592,589,1,0,0,0,592,590,1,0,0,0,592,591,1,0,0,0,593,29,1,0,0,0,594,
+        595,7,0,0,0,595,31,1,0,0,0,596,597,3,4,2,0,597,33,1,0,0,0,598,600,
+        3,142,71,0,599,598,1,0,0,0,600,603,1,0,0,0,601,599,1,0,0,0,601,602,
+        1,0,0,0,602,606,1,0,0,0,603,601,1,0,0,0,604,607,3,36,18,0,605,607,
+        3,38,19,0,606,604,1,0,0,0,606,605,1,0,0,0,607,35,1,0,0,0,608,610,
+        3,378,189,0,609,608,1,0,0,0,609,610,1,0,0,0,610,624,1,0,0,0,611,
+        625,3,40,20,0,612,625,3,42,21,0,613,625,3,48,24,0,614,625,3,52,26,
+        0,615,625,3,72,36,0,616,625,3,74,37,0,617,625,3,88,44,0,618,625,
+        3,100,50,0,619,625,3,102,51,0,620,625,3,104,52,0,621,625,3,106,53,
         0,622,625,3,108,54,0,623,625,3,114,57,0,624,611,1,0,0,0,624,612,
         1,0,0,0,624,613,1,0,0,0,624,614,1,0,0,0,624,615,1,0,0,0,624,616,
         1,0,0,0,624,617,1,0,0,0,624,618,1,0,0,0,624,619,1,0,0,0,624,620,
@@ -22114,6 +22135,9 @@ export class IdentifierContext extends antlr.ParserRuleContext {
     }
     public KW_MACRORULES(): antlr.TerminalNode | null {
         return this.getToken(RustParser.KW_MACRORULES, 0);
+    }
+    public HOLE(): antlr.TerminalNode | null {
+        return this.getToken(RustParser.HOLE, 0);
     }
     public override get ruleIndex(): number {
         return RustParser.RULE_identifier;

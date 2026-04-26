@@ -567,8 +567,9 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         const receiver = ctx.expression();
         const fieldName = ctx.identifier()?.getText();
 
-        this.visit(ctx.identifier())
+        const visitedField = this.visit(ctx.identifier())
 
+        console.log("Field: ", visitedField)
         if (!fieldName) {
             throw new Error("Unable to resolve field name for FieldExpression");
         }

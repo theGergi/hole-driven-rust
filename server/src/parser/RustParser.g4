@@ -1074,6 +1074,7 @@ identifier
     : NON_KEYWORD_IDENTIFIER
     | RAW_IDENTIFIER
     | KW_MACRORULES
+    | HOLE
     ;
 
 keyword
