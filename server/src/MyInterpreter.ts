@@ -76,6 +76,8 @@ export interface Hole {
 export interface HoleContext {
     variables: Variable[];
     functions: Function[];
+    fields: Param[];
+    methods: Function[];
 }
 
 export interface ReturnType {
@@ -200,7 +202,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
     getBoundVariable(variableName: string): Variable {
         const variable = this.variables.find(variable => (variable.name === variableName))
-
+        console.log("Looking for variable:", variableName, "Found:", variable)
         if(variable) {
             return variable;
         } else {
@@ -570,6 +572,20 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         const visitedField = this.visit(ctx.identifier())
 
         console.log("Field: ", visitedField)
+
+        console.log(visitedField?.type?.valType)
+
+        const variable = this.getBoundVariable(receiver.getText());
+
+        if (visitedField?.type?.valType === ValType.HOLE) {
+            const hole = {location: getLocation(ctx), type: this.currentParentType, suggestions: []}
+            console.log(this.currentParentType)
+            console.log("Generating struct hole for field access on type:", this.currentParentType)
+            console.log("Receiver type:", variable.type.structName)
+            this.generateStructHole(hole, variable.type.structName ?? 'unknown')
+            return { type: visitedField.type, location: getLocation(ctx) };
+        }
+
         if (!fieldName) {
             throw new Error("Unable to resolve field name for FieldExpression");
         }
@@ -664,7 +680,11 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             }
         }
 
-        this.functions.push(functionRecord);
+
+
+        if (!selfParam) {
+            this.functions.push(functionRecord);
+        }
 
         const blockCtx = ctx.blockExpression();
         
@@ -850,7 +870,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         
         if (ctx.getText() === "??") {
             const hole = {location: location, type: type, suggestions: []}
-            this.generateHole(hole)
+            // this.generateHole(hole)
         }
 
         return {
@@ -927,10 +947,41 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             }
         })
 
-        hole.suggestions = holeSuggestions
+        hole.suggestions = holeSuggestions;
         hole.context = {
             variables: structuredClone(this.variables),
-            functions: structuredClone(this.functions)
+            functions: structuredClone(this.functions),
+            fields: [],
+            methods: []
+        };
+        this.holes.push(hole);
+    }
+    
+    public generateStructHole(hole: Hole, structName: string) {
+        console.log("Generating struct hole for struct:", structName)
+        const struct = this.structs.find(s => s.name === structName);
+        if (!struct) return;
+        let holeSuggestions = [] as Suggestion[];
+        // console.log("Struct fields:", struct.fields)
+        console.log("Hole type:", hole.type)
+        struct.fields.forEach((field: Param) => {
+            if (field.type && canBeAssigned(hole.type, field.type)) {
+                holeSuggestions.push({suggestionType: 'field', suggestion: field});
+            }
+        });
+        
+        struct.methods.forEach((method: Function) => {
+            if (method.type && canBeAssigned(hole.type, method.type)) {
+                holeSuggestions.push({suggestionType: 'method', suggestion: method});
+            }
+        });
+        
+        hole.suggestions = holeSuggestions;
+        hole.context = {
+            variables: structuredClone(this.variables),
+            functions: structuredClone(this.functions),
+            fields: structuredClone(struct.fields),
+            methods: structuredClone(struct.methods)
         };
         this.holes.push(hole);
     }

@@ -147,6 +147,8 @@ connection.onHover((params: HoverParams): Hover | null => {
             ];
             const holeCommandUri = `command:myExtension.showHoleInfo?${encodeURIComponent(JSON.stringify(holeArgs))}`;
 
+            console.log("Suggestions:", suggestions);
+
             const validSuggestions = suggestions.map((suggestion: any) => {
                 console.log("hey")
                 console.log(suggestion)
@@ -155,8 +157,18 @@ connection.onHover((params: HoverParams): Hover | null => {
                     replacement = suggestion.suggestion.name
                 } else if (suggestion.suggestionType === 'function'){
                     let paramString = suggestion.suggestion.params.map((param: any) => `??: ${param.type}`).join(', ')
+                    let name = suggestion.suggestion.name
+                    if (suggestion.suggestion.structName) {
+                        name = `${suggestion.suggestion.structName}::${suggestion.suggestion.name}`
+                    }
+                    replacement = `${name}(${paramString})`
+                } else if (suggestion.suggestionType === 'method') {
+                    let paramString = suggestion.suggestion.params.map((param: any) => `??: ${param.type}`).join(', ')
                     replacement = `${suggestion.suggestion.name}(${paramString})`
+                } else if (suggestion.suggestionType === 'field') {
+                    replacement = suggestion.suggestion.name
                 }
+
                 const args = [
                     textDocument.uri,
                     replaceRange,

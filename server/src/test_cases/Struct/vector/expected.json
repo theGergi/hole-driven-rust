@@ -1,7 +1,7 @@
 [
 	{
 		"line": 17,
-		"type": { "valType": "UNKNOWN" },
-		"suggestionNames": ["x"]
+		"type": { "valType": "integer" },
+		"suggestionNames": ["cap", "len"]
 	}
 ]
