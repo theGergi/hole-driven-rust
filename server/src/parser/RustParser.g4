@@ -440,6 +440,7 @@ expressionStatement
 expression
     : outerAttribute+ expression                                     # AttributedExpression // technical, remove left recursive
     | literalExpression                                              # LiteralExpression_
+	| holeExpression                                                 # HoleExpression_
     | pathExpression                                                 # PathExpression_
     | expression DOT pathExprSegment LPAREN callParams? RPAREN       # MethodCallExpression          // 8.2.10
     | expression DOT identifier                                      # FieldExpression               // 8.2.11
@@ -478,7 +479,6 @@ expression
     | closureExpression                                              # ClosureExpression_            // 8.2.12
     | expressionWithBlock                                            # ExpressionWithBlock_
     | macroInvocation                                                # MacroInvocationAsExpression
-	| holeExpression                                                 # HoleExpression_
     ;
 
 holeExpression

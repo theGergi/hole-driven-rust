@@ -5041,19 +5041,28 @@ export class RustParser extends RustParserBase {
                 break;
             case 3:
                 {
-                localContext = new PathExpression_Context(localContext);
+                localContext = new HoleExpression_Context(localContext);
                 this.context = localContext;
                 previousContext = localContext;
                 this.state = 1297;
-                this.pathExpression();
+                this.holeExpression();
                 }
                 break;
             case 4:
                 {
-                localContext = new BorrowExpressionContext(localContext);
+                localContext = new PathExpression_Context(localContext);
                 this.context = localContext;
                 previousContext = localContext;
                 this.state = 1298;
+                this.pathExpression();
+                }
+                break;
+            case 5:
+                {
+                localContext = new BorrowExpressionContext(localContext);
+                this.context = localContext;
+                previousContext = localContext;
+                this.state = 1299;
                 _la = this.tokenStream.LA(1);
                 if(!(_la === 89 || _la === 91)) {
                 this.errorHandler.recoverInline(this);
@@ -5062,37 +5071,37 @@ export class RustParser extends RustParserBase {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 1300;
+                this.state = 1301;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 if (_la === 20) {
                     {
-                    this.state = 1299;
+                    this.state = 1300;
                     this.match(RustParser.KW_MUT);
                     }
                 }
 
-                this.state = 1302;
-                this.expression(31);
-                }
-                break;
-            case 5:
-                {
-                localContext = new DereferenceExpressionContext(localContext);
-                this.context = localContext;
-                previousContext = localContext;
                 this.state = 1303;
-                this.match(RustParser.STAR);
-                this.state = 1304;
                 this.expression(30);
                 }
                 break;
             case 6:
                 {
+                localContext = new DereferenceExpressionContext(localContext);
+                this.context = localContext;
+                previousContext = localContext;
+                this.state = 1304;
+                this.match(RustParser.STAR);
+                this.state = 1305;
+                this.expression(29);
+                }
+                break;
+            case 7:
+                {
                 localContext = new NegationExpressionContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
-                this.state = 1305;
+                this.state = 1306;
                 _la = this.tokenStream.LA(1);
                 if(!(_la === 83 || _la === 88)) {
                 this.errorHandler.recoverInline(this);
@@ -5101,27 +5110,8 @@ export class RustParser extends RustParserBase {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 1306;
-                this.expression(29);
-                }
-                break;
-            case 7:
-                {
-                localContext = new RangeExpressionContext(localContext);
-                this.context = localContext;
-                previousContext = localContext;
                 this.state = 1307;
-                this.match(RustParser.DOTDOT);
-                this.state = 1309;
-                this.errorHandler.sync(this);
-                switch (this.interpreter.adaptivePredict(this.tokenStream, 163, this.context) ) {
-                case 1:
-                    {
-                    this.state = 1308;
-                    this.expression(0);
-                    }
-                    break;
-                }
+                this.expression(28);
                 }
                 break;
             case 8:
@@ -5129,64 +5119,54 @@ export class RustParser extends RustParserBase {
                 localContext = new RangeExpressionContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
-                this.state = 1311;
-                this.match(RustParser.DOTDOTEQ);
-                this.state = 1312;
-                this.expression(16);
-                }
-                break;
-            case 9:
-                {
-                localContext = new ContinueExpressionContext(localContext);
-                this.context = localContext;
-                previousContext = localContext;
-                this.state = 1313;
-                this.match(RustParser.KW_CONTINUE);
-                this.state = 1315;
+                this.state = 1308;
+                this.match(RustParser.DOTDOT);
+                this.state = 1310;
                 this.errorHandler.sync(this);
-                switch (this.interpreter.adaptivePredict(this.tokenStream, 164, this.context) ) {
+                switch (this.interpreter.adaptivePredict(this.tokenStream, 163, this.context) ) {
                 case 1:
                     {
-                    this.state = 1314;
-                    this.match(RustParser.LIFETIME_OR_LABEL);
-                    }
-                    break;
-                }
-                this.state = 1318;
-                this.errorHandler.sync(this);
-                switch (this.interpreter.adaptivePredict(this.tokenStream, 165, this.context) ) {
-                case 1:
-                    {
-                    this.state = 1317;
+                    this.state = 1309;
                     this.expression(0);
                     }
                     break;
                 }
                 }
                 break;
-            case 10:
+            case 9:
                 {
-                localContext = new BreakExpressionContext(localContext);
+                localContext = new RangeExpressionContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
-                this.state = 1320;
-                this.match(RustParser.KW_BREAK);
-                this.state = 1322;
+                this.state = 1312;
+                this.match(RustParser.DOTDOTEQ);
+                this.state = 1313;
+                this.expression(15);
+                }
+                break;
+            case 10:
+                {
+                localContext = new ContinueExpressionContext(localContext);
+                this.context = localContext;
+                previousContext = localContext;
+                this.state = 1314;
+                this.match(RustParser.KW_CONTINUE);
+                this.state = 1316;
                 this.errorHandler.sync(this);
-                switch (this.interpreter.adaptivePredict(this.tokenStream, 166, this.context) ) {
+                switch (this.interpreter.adaptivePredict(this.tokenStream, 164, this.context) ) {
                 case 1:
                     {
-                    this.state = 1321;
+                    this.state = 1315;
                     this.match(RustParser.LIFETIME_OR_LABEL);
                     }
                     break;
                 }
-                this.state = 1325;
+                this.state = 1319;
                 this.errorHandler.sync(this);
-                switch (this.interpreter.adaptivePredict(this.tokenStream, 167, this.context) ) {
+                switch (this.interpreter.adaptivePredict(this.tokenStream, 165, this.context) ) {
                 case 1:
                     {
-                    this.state = 1324;
+                    this.state = 1318;
                     this.expression(0);
                     }
                     break;
@@ -5195,17 +5175,27 @@ export class RustParser extends RustParserBase {
                 break;
             case 11:
                 {
-                localContext = new ReturnExpressionContext(localContext);
+                localContext = new BreakExpressionContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
-                this.state = 1327;
-                this.match(RustParser.KW_RETURN);
-                this.state = 1329;
+                this.state = 1321;
+                this.match(RustParser.KW_BREAK);
+                this.state = 1323;
                 this.errorHandler.sync(this);
-                switch (this.interpreter.adaptivePredict(this.tokenStream, 168, this.context) ) {
+                switch (this.interpreter.adaptivePredict(this.tokenStream, 166, this.context) ) {
                 case 1:
                     {
-                    this.state = 1328;
+                    this.state = 1322;
+                    this.match(RustParser.LIFETIME_OR_LABEL);
+                    }
+                    break;
+                }
+                this.state = 1326;
+                this.errorHandler.sync(this);
+                switch (this.interpreter.adaptivePredict(this.tokenStream, 167, this.context) ) {
+                case 1:
+                    {
+                    this.state = 1325;
                     this.expression(0);
                     }
                     break;
@@ -5214,159 +5204,169 @@ export class RustParser extends RustParserBase {
                 break;
             case 12:
                 {
+                localContext = new ReturnExpressionContext(localContext);
+                this.context = localContext;
+                previousContext = localContext;
+                this.state = 1328;
+                this.match(RustParser.KW_RETURN);
+                this.state = 1330;
+                this.errorHandler.sync(this);
+                switch (this.interpreter.adaptivePredict(this.tokenStream, 168, this.context) ) {
+                case 1:
+                    {
+                    this.state = 1329;
+                    this.expression(0);
+                    }
+                    break;
+                }
+                }
+                break;
+            case 13:
+                {
                 localContext = new GroupedExpressionContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
-                this.state = 1331;
+                this.state = 1332;
                 this.match(RustParser.LPAREN);
-                this.state = 1335;
+                this.state = 1336;
                 this.errorHandler.sync(this);
                 alternative = this.interpreter.adaptivePredict(this.tokenStream, 169, this.context);
                 while (alternative !== 2 && alternative !== antlr.ATN.INVALID_ALT_NUMBER) {
                     if (alternative === 1) {
                         {
                         {
-                        this.state = 1332;
+                        this.state = 1333;
                         this.innerAttribute();
                         }
                         }
                     }
-                    this.state = 1337;
+                    this.state = 1338;
                     this.errorHandler.sync(this);
                     alternative = this.interpreter.adaptivePredict(this.tokenStream, 169, this.context);
                 }
-                this.state = 1338;
-                this.expression(0);
                 this.state = 1339;
+                this.expression(0);
+                this.state = 1340;
                 this.match(RustParser.RPAREN);
                 }
                 break;
-            case 13:
+            case 14:
                 {
                 localContext = new ArrayExpressionContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
-                this.state = 1341;
+                this.state = 1342;
                 this.match(RustParser.LSQUAREBRACKET);
-                this.state = 1345;
+                this.state = 1346;
                 this.errorHandler.sync(this);
                 alternative = this.interpreter.adaptivePredict(this.tokenStream, 170, this.context);
                 while (alternative !== 2 && alternative !== antlr.ATN.INVALID_ALT_NUMBER) {
                     if (alternative === 1) {
                         {
                         {
-                        this.state = 1342;
+                        this.state = 1343;
                         this.innerAttribute();
                         }
                         }
                     }
-                    this.state = 1347;
+                    this.state = 1348;
                     this.errorHandler.sync(this);
                     alternative = this.interpreter.adaptivePredict(this.tokenStream, 170, this.context);
                 }
-                this.state = 1349;
+                this.state = 1350;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1401625140) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 121634841) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 16308351) !== 0) || ((((_la - 107)) & ~0x1F) === 0 && ((1 << (_la - 107)) & 22319425) !== 0)) {
                     {
-                    this.state = 1348;
+                    this.state = 1349;
                     this.arrayElements();
                     }
                 }
 
-                this.state = 1351;
+                this.state = 1352;
                 this.match(RustParser.RSQUAREBRACKET);
                 }
                 break;
-            case 14:
+            case 15:
                 {
                 localContext = new TupleExpressionContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
-                this.state = 1352;
+                this.state = 1353;
                 this.match(RustParser.LPAREN);
-                this.state = 1356;
+                this.state = 1357;
                 this.errorHandler.sync(this);
                 alternative = this.interpreter.adaptivePredict(this.tokenStream, 172, this.context);
                 while (alternative !== 2 && alternative !== antlr.ATN.INVALID_ALT_NUMBER) {
                     if (alternative === 1) {
                         {
                         {
-                        this.state = 1353;
+                        this.state = 1354;
                         this.innerAttribute();
                         }
                         }
                     }
-                    this.state = 1358;
+                    this.state = 1359;
                     this.errorHandler.sync(this);
                     alternative = this.interpreter.adaptivePredict(this.tokenStream, 172, this.context);
                 }
-                this.state = 1360;
+                this.state = 1361;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1401625140) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 121634841) !== 0) || ((((_la - 69)) & ~0x1F) === 0 && ((1 << (_la - 69)) & 16308351) !== 0) || ((((_la - 107)) & ~0x1F) === 0 && ((1 << (_la - 107)) & 22319425) !== 0)) {
                     {
-                    this.state = 1359;
+                    this.state = 1360;
                     this.tupleElements();
                     }
                 }
 
-                this.state = 1362;
-                this.match(RustParser.RPAREN);
-                }
-                break;
-            case 15:
-                {
-                localContext = new StructExpression_Context(localContext);
-                this.context = localContext;
-                previousContext = localContext;
                 this.state = 1363;
-                this.structExpression();
+                this.match(RustParser.RPAREN);
                 }
                 break;
             case 16:
                 {
-                localContext = new EnumerationVariantExpression_Context(localContext);
+                localContext = new StructExpression_Context(localContext);
                 this.context = localContext;
                 previousContext = localContext;
                 this.state = 1364;
-                this.enumerationVariantExpression();
+                this.structExpression();
                 }
                 break;
             case 17:
                 {
-                localContext = new ClosureExpression_Context(localContext);
+                localContext = new EnumerationVariantExpression_Context(localContext);
                 this.context = localContext;
                 previousContext = localContext;
                 this.state = 1365;
-                this.closureExpression();
+                this.enumerationVariantExpression();
                 }
                 break;
             case 18:
                 {
-                localContext = new ExpressionWithBlock_Context(localContext);
+                localContext = new ClosureExpression_Context(localContext);
                 this.context = localContext;
                 previousContext = localContext;
                 this.state = 1366;
-                this.expressionWithBlock();
+                this.closureExpression();
                 }
                 break;
             case 19:
                 {
-                localContext = new MacroInvocationAsExpressionContext(localContext);
+                localContext = new ExpressionWithBlock_Context(localContext);
                 this.context = localContext;
                 previousContext = localContext;
                 this.state = 1367;
-                this.macroInvocation();
+                this.expressionWithBlock();
                 }
                 break;
             case 20:
                 {
-                localContext = new HoleExpression_Context(localContext);
+                localContext = new MacroInvocationAsExpressionContext(localContext);
                 this.context = localContext;
                 previousContext = localContext;
                 this.state = 1368;
-                this.holeExpression();
+                this.macroInvocation();
                 }
                 break;
             }
@@ -5389,8 +5389,8 @@ export class RustParser extends RustParserBase {
                         localContext = new ArithmeticOrLogicalExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1371;
-                        if (!(this.precpred(this.context, 27))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 27)");
+                        if (!(this.precpred(this.context, 26))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 26)");
                         }
                         this.state = 1372;
                         _la = this.tokenStream.LA(1);
@@ -5402,7 +5402,7 @@ export class RustParser extends RustParserBase {
                             this.consume();
                         }
                         this.state = 1373;
-                        this.expression(28);
+                        this.expression(27);
                         }
                         break;
                     case 2:
@@ -5410,8 +5410,8 @@ export class RustParser extends RustParserBase {
                         localContext = new ArithmeticOrLogicalExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1374;
-                        if (!(this.precpred(this.context, 26))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 26)");
+                        if (!(this.precpred(this.context, 25))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 25)");
                         }
                         this.state = 1375;
                         _la = this.tokenStream.LA(1);
@@ -5423,7 +5423,7 @@ export class RustParser extends RustParserBase {
                             this.consume();
                         }
                         this.state = 1376;
-                        this.expression(27);
+                        this.expression(26);
                         }
                         break;
                     case 3:
@@ -5431,8 +5431,8 @@ export class RustParser extends RustParserBase {
                         localContext = new ArithmeticOrLogicalExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1377;
-                        if (!(this.precpred(this.context, 25))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 25)");
+                        if (!(this.precpred(this.context, 24))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 24)");
                         }
                         this.state = 1380;
                         this.errorHandler.sync(this);
@@ -5453,7 +5453,7 @@ export class RustParser extends RustParserBase {
                             throw new antlr.NoViableAltException(this);
                         }
                         this.state = 1382;
-                        this.expression(26);
+                        this.expression(25);
                         }
                         break;
                     case 4:
@@ -5461,13 +5461,13 @@ export class RustParser extends RustParserBase {
                         localContext = new ArithmeticOrLogicalExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1384;
-                        if (!(this.precpred(this.context, 24))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 24)");
+                        if (!(this.precpred(this.context, 23))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 23)");
                         }
                         this.state = 1385;
                         this.match(RustParser.AND);
                         this.state = 1386;
-                        this.expression(25);
+                        this.expression(24);
                         }
                         break;
                     case 5:
@@ -5475,13 +5475,13 @@ export class RustParser extends RustParserBase {
                         localContext = new ArithmeticOrLogicalExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1387;
-                        if (!(this.precpred(this.context, 23))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 23)");
+                        if (!(this.precpred(this.context, 22))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 22)");
                         }
                         this.state = 1388;
                         this.match(RustParser.CARET);
                         this.state = 1389;
-                        this.expression(24);
+                        this.expression(23);
                         }
                         break;
                     case 6:
@@ -5489,13 +5489,13 @@ export class RustParser extends RustParserBase {
                         localContext = new ArithmeticOrLogicalExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1390;
-                        if (!(this.precpred(this.context, 22))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 22)");
+                        if (!(this.precpred(this.context, 21))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 21)");
                         }
                         this.state = 1391;
                         this.match(RustParser.OR);
                         this.state = 1392;
-                        this.expression(23);
+                        this.expression(22);
                         }
                         break;
                     case 7:
@@ -5503,13 +5503,13 @@ export class RustParser extends RustParserBase {
                         localContext = new ComparisonExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1393;
-                        if (!(this.precpred(this.context, 21))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 21)");
+                        if (!(this.precpred(this.context, 20))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 20)");
                         }
                         this.state = 1394;
                         this.comparisonOperator();
                         this.state = 1395;
-                        this.expression(22);
+                        this.expression(21);
                         }
                         break;
                     case 8:
@@ -5517,13 +5517,13 @@ export class RustParser extends RustParserBase {
                         localContext = new LazyBooleanExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1397;
-                        if (!(this.precpred(this.context, 20))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 20)");
+                        if (!(this.precpred(this.context, 19))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 19)");
                         }
                         this.state = 1398;
                         this.match(RustParser.ANDAND);
                         this.state = 1399;
-                        this.expression(21);
+                        this.expression(20);
                         }
                         break;
                     case 9:
@@ -5531,13 +5531,13 @@ export class RustParser extends RustParserBase {
                         localContext = new LazyBooleanExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1400;
-                        if (!(this.precpred(this.context, 19))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 19)");
+                        if (!(this.precpred(this.context, 18))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 18)");
                         }
                         this.state = 1401;
                         this.match(RustParser.OROR);
                         this.state = 1402;
-                        this.expression(20);
+                        this.expression(19);
                         }
                         break;
                     case 10:
@@ -5545,13 +5545,13 @@ export class RustParser extends RustParserBase {
                         localContext = new RangeExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1403;
-                        if (!(this.precpred(this.context, 15))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 15)");
+                        if (!(this.precpred(this.context, 14))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 14)");
                         }
                         this.state = 1404;
                         this.match(RustParser.DOTDOTEQ);
                         this.state = 1405;
-                        this.expression(16);
+                        this.expression(15);
                         }
                         break;
                     case 11:
@@ -5559,13 +5559,13 @@ export class RustParser extends RustParserBase {
                         localContext = new AssignmentExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1406;
-                        if (!(this.precpred(this.context, 14))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 14)");
+                        if (!(this.precpred(this.context, 13))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 13)");
                         }
                         this.state = 1407;
                         this.match(RustParser.EQ);
                         this.state = 1408;
-                        this.expression(15);
+                        this.expression(14);
                         }
                         break;
                     case 12:
@@ -5573,13 +5573,13 @@ export class RustParser extends RustParserBase {
                         localContext = new CompoundAssignmentExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1409;
-                        if (!(this.precpred(this.context, 13))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 13)");
+                        if (!(this.precpred(this.context, 12))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 12)");
                         }
                         this.state = 1410;
                         this.compoundAssignOperator();
                         this.state = 1411;
-                        this.expression(14);
+                        this.expression(13);
                         }
                         break;
                     case 13:
@@ -5587,8 +5587,8 @@ export class RustParser extends RustParserBase {
                         localContext = new MethodCallExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1413;
-                        if (!(this.precpred(this.context, 38))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 38)");
+                        if (!(this.precpred(this.context, 37))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 37)");
                         }
                         this.state = 1414;
                         this.match(RustParser.DOT);
@@ -5615,8 +5615,8 @@ export class RustParser extends RustParserBase {
                         localContext = new FieldExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1422;
-                        if (!(this.precpred(this.context, 37))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 37)");
+                        if (!(this.precpred(this.context, 36))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 36)");
                         }
                         this.state = 1423;
                         this.match(RustParser.DOT);
@@ -5629,8 +5629,8 @@ export class RustParser extends RustParserBase {
                         localContext = new TupleIndexingExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1425;
-                        if (!(this.precpred(this.context, 36))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 36)");
+                        if (!(this.precpred(this.context, 35))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 35)");
                         }
                         this.state = 1426;
                         this.match(RustParser.DOT);
@@ -5643,8 +5643,8 @@ export class RustParser extends RustParserBase {
                         localContext = new AwaitExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1428;
-                        if (!(this.precpred(this.context, 35))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 35)");
+                        if (!(this.precpred(this.context, 34))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 34)");
                         }
                         this.state = 1429;
                         this.match(RustParser.DOT);
@@ -5657,8 +5657,8 @@ export class RustParser extends RustParserBase {
                         localContext = new CallExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1431;
-                        if (!(this.precpred(this.context, 34))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 34)");
+                        if (!(this.precpred(this.context, 33))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 33)");
                         }
                         this.state = 1432;
                         this.match(RustParser.LPAREN);
@@ -5681,8 +5681,8 @@ export class RustParser extends RustParserBase {
                         localContext = new IndexExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1437;
-                        if (!(this.precpred(this.context, 33))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 33)");
+                        if (!(this.precpred(this.context, 32))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 32)");
                         }
                         this.state = 1438;
                         this.match(RustParser.LSQUAREBRACKET);
@@ -5697,8 +5697,8 @@ export class RustParser extends RustParserBase {
                         localContext = new ErrorPropagationExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1442;
-                        if (!(this.precpred(this.context, 32))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 32)");
+                        if (!(this.precpred(this.context, 31))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 31)");
                         }
                         this.state = 1443;
                         this.match(RustParser.QUESTION);
@@ -5709,8 +5709,8 @@ export class RustParser extends RustParserBase {
                         localContext = new TypeCastExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1444;
-                        if (!(this.precpred(this.context, 28))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 28)");
+                        if (!(this.precpred(this.context, 27))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 27)");
                         }
                         this.state = 1445;
                         this.match(RustParser.KW_AS);
@@ -5723,8 +5723,8 @@ export class RustParser extends RustParserBase {
                         localContext = new RangeExpressionContext(new ExpressionContext(parentContext, parentState));
                         this.pushNewRecursionContext(localContext, _startState, RustParser.RULE_expression);
                         this.state = 1447;
-                        if (!(this.precpred(this.context, 18))) {
-                            throw this.createFailedPredicateException("this.precpred(this.context, 18)");
+                        if (!(this.precpred(this.context, 17))) {
+                            throw this.createFailedPredicateException("this.precpred(this.context, 17)");
                         }
                         this.state = 1448;
                         this.match(RustParser.DOTDOT);
@@ -11636,47 +11636,47 @@ export class RustParser extends RustParserBase {
     private expression_sempred(localContext: ExpressionContext | null, predIndex: number): boolean {
         switch (predIndex) {
         case 0:
-            return this.precpred(this.context, 27);
-        case 1:
             return this.precpred(this.context, 26);
-        case 2:
+        case 1:
             return this.precpred(this.context, 25);
-        case 3:
+        case 2:
             return this.precpred(this.context, 24);
-        case 4:
+        case 3:
             return this.precpred(this.context, 23);
-        case 5:
+        case 4:
             return this.precpred(this.context, 22);
-        case 6:
+        case 5:
             return this.precpred(this.context, 21);
-        case 7:
+        case 6:
             return this.precpred(this.context, 20);
-        case 8:
+        case 7:
             return this.precpred(this.context, 19);
-        case 9:
-            return this.precpred(this.context, 15);
-        case 10:
-            return this.precpred(this.context, 14);
-        case 11:
-            return this.precpred(this.context, 13);
-        case 12:
-            return this.precpred(this.context, 38);
-        case 13:
-            return this.precpred(this.context, 37);
-        case 14:
-            return this.precpred(this.context, 36);
-        case 15:
-            return this.precpred(this.context, 35);
-        case 16:
-            return this.precpred(this.context, 34);
-        case 17:
-            return this.precpred(this.context, 33);
-        case 18:
-            return this.precpred(this.context, 32);
-        case 19:
-            return this.precpred(this.context, 28);
-        case 20:
+        case 8:
             return this.precpred(this.context, 18);
+        case 9:
+            return this.precpred(this.context, 14);
+        case 10:
+            return this.precpred(this.context, 13);
+        case 11:
+            return this.precpred(this.context, 12);
+        case 12:
+            return this.precpred(this.context, 37);
+        case 13:
+            return this.precpred(this.context, 36);
+        case 14:
+            return this.precpred(this.context, 35);
+        case 15:
+            return this.precpred(this.context, 34);
+        case 16:
+            return this.precpred(this.context, 33);
+        case 17:
+            return this.precpred(this.context, 32);
+        case 18:
+            return this.precpred(this.context, 31);
+        case 19:
+            return this.precpred(this.context, 27);
+        case 20:
+            return this.precpred(this.context, 17);
         }
         return true;
     }
@@ -11811,20 +11811,20 @@ export class RustParser extends RustParserBase {
         8,74,1,75,5,75,1263,8,75,10,75,12,75,1266,9,75,1,75,1,75,1,75,1,
         75,3,75,1272,8,75,1,75,1,75,3,75,1276,8,75,1,75,1,75,1,76,1,76,1,
         76,1,76,1,76,3,76,1285,8,76,3,76,1287,8,76,1,77,1,77,4,77,1291,8,
-        77,11,77,12,77,1292,1,77,1,77,1,77,1,77,1,77,1,77,3,77,1301,8,77,
-        1,77,1,77,1,77,1,77,1,77,1,77,1,77,3,77,1310,8,77,1,77,1,77,1,77,
-        1,77,3,77,1316,8,77,1,77,3,77,1319,8,77,1,77,1,77,3,77,1323,8,77,
-        1,77,3,77,1326,8,77,1,77,1,77,3,77,1330,8,77,1,77,1,77,5,77,1334,
-        8,77,10,77,12,77,1337,9,77,1,77,1,77,1,77,1,77,1,77,5,77,1344,8,
-        77,10,77,12,77,1347,9,77,1,77,3,77,1350,8,77,1,77,1,77,1,77,5,77,
-        1355,8,77,10,77,12,77,1358,9,77,1,77,3,77,1361,8,77,1,77,1,77,1,
-        77,1,77,1,77,1,77,1,77,3,77,1370,8,77,1,77,1,77,1,77,1,77,1,77,1,
-        77,1,77,1,77,1,77,3,77,1381,8,77,1,77,1,77,1,77,1,77,1,77,1,77,1,
-        77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,
-        77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,
-        77,1,77,1,77,1,77,3,77,1419,8,77,1,77,1,77,1,77,1,77,1,77,1,77,1,
-        77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,3,77,1435,8,77,1,77,1,77,1,
-        77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,3,77,1451,
+        77,11,77,12,77,1292,1,77,1,77,1,77,1,77,1,77,1,77,1,77,3,77,1302,
+        8,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,3,77,1311,8,77,1,77,1,77,
+        1,77,1,77,3,77,1317,8,77,1,77,3,77,1320,8,77,1,77,1,77,3,77,1324,
+        8,77,1,77,3,77,1327,8,77,1,77,1,77,3,77,1331,8,77,1,77,1,77,5,77,
+        1335,8,77,10,77,12,77,1338,9,77,1,77,1,77,1,77,1,77,1,77,5,77,1345,
+        8,77,10,77,12,77,1348,9,77,1,77,3,77,1351,8,77,1,77,1,77,1,77,5,
+        77,1356,8,77,10,77,12,77,1359,9,77,1,77,3,77,1362,8,77,1,77,1,77,
+        1,77,1,77,1,77,1,77,3,77,1370,8,77,1,77,1,77,1,77,1,77,1,77,1,77,
+        1,77,1,77,1,77,3,77,1381,8,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,
+        1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,
+        1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,
+        1,77,1,77,1,77,3,77,1419,8,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,
+        1,77,1,77,1,77,1,77,1,77,1,77,1,77,3,77,1435,8,77,1,77,1,77,1,77,
+        1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,1,77,3,77,1451,
         8,77,5,77,1453,8,77,10,77,12,77,1456,9,77,1,78,1,78,1,79,1,79,1,
         80,1,80,1,81,4,81,1465,8,81,11,81,12,81,1466,1,81,1,81,1,81,1,81,
         1,81,1,81,1,81,1,81,1,81,3,81,1478,8,81,1,82,1,82,1,83,1,83,3,83,
@@ -12292,62 +12292,62 @@ export class RustParser extends RustParserBase {
         1,0,0,0,1287,153,1,0,0,0,1288,1290,6,77,-1,0,1289,1291,3,142,71,
         0,1290,1289,1,0,0,0,1291,1292,1,0,0,0,1292,1290,1,0,0,0,1292,1293,
         1,0,0,0,1293,1294,1,0,0,0,1294,1295,3,154,77,41,1295,1370,1,0,0,
-        0,1296,1370,3,164,82,0,1297,1370,3,166,83,0,1298,1300,7,2,0,0,1299,
-        1301,5,20,0,0,1300,1299,1,0,0,0,1300,1301,1,0,0,0,1301,1302,1,0,
-        0,0,1302,1370,3,154,77,31,1303,1304,5,84,0,0,1304,1370,3,154,77,
-        30,1305,1306,7,3,0,0,1306,1370,3,154,77,29,1307,1309,5,113,0,0,1308,
-        1310,3,154,77,0,1309,1308,1,0,0,0,1309,1310,1,0,0,0,1310,1370,1,
-        0,0,0,1311,1312,5,115,0,0,1312,1370,3,154,77,16,1313,1315,5,4,0,
-        0,1314,1316,5,81,0,0,1315,1314,1,0,0,0,1315,1316,1,0,0,0,1316,1318,
-        1,0,0,0,1317,1319,3,154,77,0,1318,1317,1,0,0,0,1318,1319,1,0,0,0,
-        1319,1370,1,0,0,0,1320,1322,5,2,0,0,1321,1323,5,81,0,0,1322,1321,
-        1,0,0,0,1322,1323,1,0,0,0,1323,1325,1,0,0,0,1324,1326,3,154,77,0,
-        1325,1324,1,0,0,0,1325,1326,1,0,0,0,1326,1370,1,0,0,0,1327,1329,
-        5,23,0,0,1328,1330,3,154,77,0,1329,1328,1,0,0,0,1329,1330,1,0,0,
-        0,1330,1370,1,0,0,0,1331,1335,5,129,0,0,1332,1334,3,140,70,0,1333,
-        1332,1,0,0,0,1334,1337,1,0,0,0,1335,1333,1,0,0,0,1335,1336,1,0,0,
-        0,1336,1338,1,0,0,0,1337,1335,1,0,0,0,1338,1339,3,154,77,0,1339,
-        1340,5,130,0,0,1340,1370,1,0,0,0,1341,1345,5,127,0,0,1342,1344,3,
-        140,70,0,1343,1342,1,0,0,0,1344,1347,1,0,0,0,1345,1343,1,0,0,0,1345,
-        1346,1,0,0,0,1346,1349,1,0,0,0,1347,1345,1,0,0,0,1348,1350,3,176,
-        88,0,1349,1348,1,0,0,0,1349,1350,1,0,0,0,1350,1351,1,0,0,0,1351,
-        1370,5,128,0,0,1352,1356,5,129,0,0,1353,1355,3,140,70,0,1354,1353,
-        1,0,0,0,1355,1358,1,0,0,0,1356,1354,1,0,0,0,1356,1357,1,0,0,0,1357,
-        1360,1,0,0,0,1358,1356,1,0,0,0,1359,1361,3,178,89,0,1360,1359,1,
-        0,0,0,1360,1361,1,0,0,0,1361,1362,1,0,0,0,1362,1370,5,130,0,0,1363,
-        1370,3,182,91,0,1364,1370,3,196,98,0,1365,1370,3,210,105,0,1366,
-        1370,3,162,81,0,1367,1370,3,2,1,0,1368,1370,3,156,78,0,1369,1288,
+        0,1296,1370,3,164,82,0,1297,1370,3,156,78,0,1298,1370,3,166,83,0,
+        1299,1301,7,2,0,0,1300,1302,5,20,0,0,1301,1300,1,0,0,0,1301,1302,
+        1,0,0,0,1302,1303,1,0,0,0,1303,1370,3,154,77,30,1304,1305,5,84,0,
+        0,1305,1370,3,154,77,29,1306,1307,7,3,0,0,1307,1370,3,154,77,28,
+        1308,1310,5,113,0,0,1309,1311,3,154,77,0,1310,1309,1,0,0,0,1310,
+        1311,1,0,0,0,1311,1370,1,0,0,0,1312,1313,5,115,0,0,1313,1370,3,154,
+        77,15,1314,1316,5,4,0,0,1315,1317,5,81,0,0,1316,1315,1,0,0,0,1316,
+        1317,1,0,0,0,1317,1319,1,0,0,0,1318,1320,3,154,77,0,1319,1318,1,
+        0,0,0,1319,1320,1,0,0,0,1320,1370,1,0,0,0,1321,1323,5,2,0,0,1322,
+        1324,5,81,0,0,1323,1322,1,0,0,0,1323,1324,1,0,0,0,1324,1326,1,0,
+        0,0,1325,1327,3,154,77,0,1326,1325,1,0,0,0,1326,1327,1,0,0,0,1327,
+        1370,1,0,0,0,1328,1330,5,23,0,0,1329,1331,3,154,77,0,1330,1329,1,
+        0,0,0,1330,1331,1,0,0,0,1331,1370,1,0,0,0,1332,1336,5,129,0,0,1333,
+        1335,3,140,70,0,1334,1333,1,0,0,0,1335,1338,1,0,0,0,1336,1334,1,
+        0,0,0,1336,1337,1,0,0,0,1337,1339,1,0,0,0,1338,1336,1,0,0,0,1339,
+        1340,3,154,77,0,1340,1341,5,130,0,0,1341,1370,1,0,0,0,1342,1346,
+        5,127,0,0,1343,1345,3,140,70,0,1344,1343,1,0,0,0,1345,1348,1,0,0,
+        0,1346,1344,1,0,0,0,1346,1347,1,0,0,0,1347,1350,1,0,0,0,1348,1346,
+        1,0,0,0,1349,1351,3,176,88,0,1350,1349,1,0,0,0,1350,1351,1,0,0,0,
+        1351,1352,1,0,0,0,1352,1370,5,128,0,0,1353,1357,5,129,0,0,1354,1356,
+        3,140,70,0,1355,1354,1,0,0,0,1356,1359,1,0,0,0,1357,1355,1,0,0,0,
+        1357,1358,1,0,0,0,1358,1361,1,0,0,0,1359,1357,1,0,0,0,1360,1362,
+        3,178,89,0,1361,1360,1,0,0,0,1361,1362,1,0,0,0,1362,1363,1,0,0,0,
+        1363,1370,5,130,0,0,1364,1370,3,182,91,0,1365,1370,3,196,98,0,1366,
+        1370,3,210,105,0,1367,1370,3,162,81,0,1368,1370,3,2,1,0,1369,1288,
         1,0,0,0,1369,1296,1,0,0,0,1369,1297,1,0,0,0,1369,1298,1,0,0,0,1369,
-        1303,1,0,0,0,1369,1305,1,0,0,0,1369,1307,1,0,0,0,1369,1311,1,0,0,
-        0,1369,1313,1,0,0,0,1369,1320,1,0,0,0,1369,1327,1,0,0,0,1369,1331,
-        1,0,0,0,1369,1341,1,0,0,0,1369,1352,1,0,0,0,1369,1363,1,0,0,0,1369,
+        1299,1,0,0,0,1369,1304,1,0,0,0,1369,1306,1,0,0,0,1369,1308,1,0,0,
+        0,1369,1312,1,0,0,0,1369,1314,1,0,0,0,1369,1321,1,0,0,0,1369,1328,
+        1,0,0,0,1369,1332,1,0,0,0,1369,1342,1,0,0,0,1369,1353,1,0,0,0,1369,
         1364,1,0,0,0,1369,1365,1,0,0,0,1369,1366,1,0,0,0,1369,1367,1,0,0,
-        0,1369,1368,1,0,0,0,1370,1454,1,0,0,0,1371,1372,10,27,0,0,1372,1373,
-        7,4,0,0,1373,1453,3,154,77,28,1374,1375,10,26,0,0,1375,1376,7,5,
-        0,0,1376,1453,3,154,77,27,1377,1380,10,25,0,0,1378,1381,3,390,195,
+        0,1369,1368,1,0,0,0,1370,1454,1,0,0,0,1371,1372,10,26,0,0,1372,1373,
+        7,4,0,0,1373,1453,3,154,77,27,1374,1375,10,25,0,0,1375,1376,7,5,
+        0,0,1376,1453,3,154,77,26,1377,1380,10,24,0,0,1378,1381,3,390,195,
         0,1379,1381,3,392,196,0,1380,1378,1,0,0,0,1380,1379,1,0,0,0,1381,
-        1382,1,0,0,0,1382,1383,3,154,77,26,1383,1453,1,0,0,0,1384,1385,10,
-        24,0,0,1385,1386,5,89,0,0,1386,1453,3,154,77,25,1387,1388,10,23,
-        0,0,1388,1389,5,87,0,0,1389,1453,3,154,77,24,1390,1391,10,22,0,0,
-        1391,1392,5,90,0,0,1392,1453,3,154,77,23,1393,1394,10,21,0,0,1394,
-        1395,3,158,79,0,1395,1396,3,154,77,22,1396,1453,1,0,0,0,1397,1398,
-        10,20,0,0,1398,1399,5,91,0,0,1399,1453,3,154,77,21,1400,1401,10,
-        19,0,0,1401,1402,5,92,0,0,1402,1453,3,154,77,20,1403,1404,10,15,
-        0,0,1404,1405,5,115,0,0,1405,1453,3,154,77,16,1406,1407,10,14,0,
-        0,1407,1408,5,103,0,0,1408,1453,3,154,77,15,1409,1410,10,13,0,0,
-        1410,1411,3,160,80,0,1411,1412,3,154,77,14,1412,1453,1,0,0,0,1413,
-        1414,10,38,0,0,1414,1415,5,112,0,0,1415,1416,3,346,173,0,1416,1418,
+        1382,1,0,0,0,1382,1383,3,154,77,25,1383,1453,1,0,0,0,1384,1385,10,
+        23,0,0,1385,1386,5,89,0,0,1386,1453,3,154,77,24,1387,1388,10,22,
+        0,0,1388,1389,5,87,0,0,1389,1453,3,154,77,23,1390,1391,10,21,0,0,
+        1391,1392,5,90,0,0,1392,1453,3,154,77,22,1393,1394,10,20,0,0,1394,
+        1395,3,158,79,0,1395,1396,3,154,77,21,1396,1453,1,0,0,0,1397,1398,
+        10,19,0,0,1398,1399,5,91,0,0,1399,1453,3,154,77,20,1400,1401,10,
+        18,0,0,1401,1402,5,92,0,0,1402,1453,3,154,77,19,1403,1404,10,14,
+        0,0,1404,1405,5,115,0,0,1405,1453,3,154,77,15,1406,1407,10,13,0,
+        0,1407,1408,5,103,0,0,1408,1453,3,154,77,14,1409,1410,10,12,0,0,
+        1410,1411,3,160,80,0,1411,1412,3,154,77,13,1412,1453,1,0,0,0,1413,
+        1414,10,37,0,0,1414,1415,5,112,0,0,1415,1416,3,346,173,0,1416,1418,
         5,129,0,0,1417,1419,3,208,104,0,1418,1417,1,0,0,0,1418,1419,1,0,
         0,0,1419,1420,1,0,0,0,1420,1421,5,130,0,0,1421,1453,1,0,0,0,1422,
-        1423,10,37,0,0,1423,1424,5,112,0,0,1424,1453,3,380,190,0,1425,1426,
-        10,36,0,0,1426,1427,5,112,0,0,1427,1453,3,180,90,0,1428,1429,10,
-        35,0,0,1429,1430,5,112,0,0,1430,1453,5,37,0,0,1431,1432,10,34,0,
+        1423,10,36,0,0,1423,1424,5,112,0,0,1424,1453,3,380,190,0,1425,1426,
+        10,35,0,0,1426,1427,5,112,0,0,1427,1453,3,180,90,0,1428,1429,10,
+        34,0,0,1429,1430,5,112,0,0,1430,1453,5,37,0,0,1431,1432,10,33,0,
         0,1432,1434,5,129,0,0,1433,1435,3,208,104,0,1434,1433,1,0,0,0,1434,
         1435,1,0,0,0,1435,1436,1,0,0,0,1436,1453,5,130,0,0,1437,1438,10,
-        33,0,0,1438,1439,5,127,0,0,1439,1440,3,154,77,0,1440,1441,5,128,
-        0,0,1441,1453,1,0,0,0,1442,1443,10,32,0,0,1443,1453,5,124,0,0,1444,
-        1445,10,28,0,0,1445,1446,5,1,0,0,1446,1453,3,290,145,0,1447,1448,
-        10,18,0,0,1448,1450,5,113,0,0,1449,1451,3,154,77,0,1450,1449,1,0,
+        32,0,0,1438,1439,5,127,0,0,1439,1440,3,154,77,0,1440,1441,5,128,
+        0,0,1441,1453,1,0,0,0,1442,1443,10,31,0,0,1443,1453,5,124,0,0,1444,
+        1445,10,27,0,0,1445,1446,5,1,0,0,1446,1453,3,290,145,0,1447,1448,
+        10,17,0,0,1448,1450,5,113,0,0,1449,1451,3,154,77,0,1450,1449,1,0,
         0,0,1450,1451,1,0,0,0,1451,1453,1,0,0,0,1452,1371,1,0,0,0,1452,1374,
         1,0,0,0,1452,1377,1,0,0,0,1452,1384,1,0,0,0,1452,1387,1,0,0,0,1452,
         1390,1,0,0,0,1452,1393,1,0,0,0,1452,1397,1,0,0,0,1452,1400,1,0,0,
@@ -12730,8 +12730,8 @@ export class RustParser extends RustParserBase {
         1063,1067,1070,1076,1082,1088,1094,1098,1104,1110,1118,1123,1127,
         1129,1137,1142,1144,1151,1157,1160,1165,1168,1173,1175,1179,1192,
         1196,1200,1207,1212,1220,1225,1230,1232,1247,1252,1259,1264,1271,
-        1275,1284,1286,1292,1300,1309,1315,1318,1322,1325,1329,1335,1345,
-        1349,1356,1360,1369,1380,1418,1434,1450,1452,1454,1466,1477,1483,
+        1275,1284,1286,1292,1301,1310,1316,1319,1323,1326,1330,1336,1346,
+        1350,1357,1361,1369,1380,1418,1434,1450,1452,1454,1466,1477,1483,
         1489,1493,1500,1503,1506,1510,1522,1526,1532,1539,1542,1549,1556,
         1561,1570,1576,1578,1583,1589,1594,1604,1612,1616,1618,1627,1632,
         1641,1645,1650,1655,1664,1668,1670,1681,1685,1688,1693,1696,1703,
@@ -16658,32 +16658,6 @@ export class LiteralExpression_Context extends ExpressionContext {
         }
     }
 }
-export class StructExpression_Context extends ExpressionContext {
-    public constructor(ctx: ExpressionContext) {
-        super(ctx.parent, ctx.invokingState);
-        super.copyFrom(ctx);
-    }
-    public structExpression(): StructExpressionContext {
-        return this.getRuleContext(0, StructExpressionContext)!;
-    }
-    public override enterRule(listener: RustParserListener): void {
-        if(listener.enterStructExpression_) {
-             listener.enterStructExpression_(this);
-        }
-    }
-    public override exitRule(listener: RustParserListener): void {
-        if(listener.exitStructExpression_) {
-             listener.exitStructExpression_(this);
-        }
-    }
-    public override accept<Result>(visitor: RustParserVisitor<Result>): Result | null {
-        if (visitor.visitStructExpression_) {
-            return visitor.visitStructExpression_(this);
-        } else {
-            return visitor.visitChildren(this);
-        }
-    }
-}
 export class HoleExpression_Context extends ExpressionContext {
     public constructor(ctx: ExpressionContext) {
         super(ctx.parent, ctx.invokingState);
@@ -16705,6 +16679,32 @@ export class HoleExpression_Context extends ExpressionContext {
     public override accept<Result>(visitor: RustParserVisitor<Result>): Result | null {
         if (visitor.visitHoleExpression_) {
             return visitor.visitHoleExpression_(this);
+        } else {
+            return visitor.visitChildren(this);
+        }
+    }
+}
+export class StructExpression_Context extends ExpressionContext {
+    public constructor(ctx: ExpressionContext) {
+        super(ctx.parent, ctx.invokingState);
+        super.copyFrom(ctx);
+    }
+    public structExpression(): StructExpressionContext {
+        return this.getRuleContext(0, StructExpressionContext)!;
+    }
+    public override enterRule(listener: RustParserListener): void {
+        if(listener.enterStructExpression_) {
+             listener.enterStructExpression_(this);
+        }
+    }
+    public override exitRule(listener: RustParserListener): void {
+        if(listener.exitStructExpression_) {
+             listener.exitStructExpression_(this);
+        }
+    }
+    public override accept<Result>(visitor: RustParserVisitor<Result>): Result | null {
+        if (visitor.visitStructExpression_) {
+            return visitor.visitStructExpression_(this);
         } else {
             return visitor.visitChildren(this);
         }

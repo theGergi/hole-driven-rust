@@ -93,8 +93,8 @@ import { ContinueExpressionContext } from "./RustParser.js";
 import { AssignmentExpressionContext } from "./RustParser.js";
 import { MethodCallExpressionContext } from "./RustParser.js";
 import { LiteralExpression_Context } from "./RustParser.js";
-import { StructExpression_Context } from "./RustParser.js";
 import { HoleExpression_Context } from "./RustParser.js";
+import { StructExpression_Context } from "./RustParser.js";
 import { TupleIndexingExpressionContext } from "./RustParser.js";
 import { NegationExpressionContext } from "./RustParser.js";
 import { CallExpressionContext } from "./RustParser.js";
@@ -1167,18 +1167,6 @@ export class RustParserListener implements ParseTreeListener {
      */
     exitLiteralExpression_?: (ctx: LiteralExpression_Context) => void;
     /**
-     * Enter a parse tree produced by the `StructExpression_`
-     * labeled alternative in `RustParser.expression`.
-     * @param ctx the parse tree
-     */
-    enterStructExpression_?: (ctx: StructExpression_Context) => void;
-    /**
-     * Exit a parse tree produced by the `StructExpression_`
-     * labeled alternative in `RustParser.expression`.
-     * @param ctx the parse tree
-     */
-    exitStructExpression_?: (ctx: StructExpression_Context) => void;
-    /**
      * Enter a parse tree produced by the `HoleExpression_`
      * labeled alternative in `RustParser.expression`.
      * @param ctx the parse tree
@@ -1190,6 +1178,18 @@ export class RustParserListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitHoleExpression_?: (ctx: HoleExpression_Context) => void;
+    /**
+     * Enter a parse tree produced by the `StructExpression_`
+     * labeled alternative in `RustParser.expression`.
+     * @param ctx the parse tree
+     */
+    enterStructExpression_?: (ctx: StructExpression_Context) => void;
+    /**
+     * Exit a parse tree produced by the `StructExpression_`
+     * labeled alternative in `RustParser.expression`.
+     * @param ctx the parse tree
+     */
+    exitStructExpression_?: (ctx: StructExpression_Context) => void;
     /**
      * Enter a parse tree produced by the `TupleIndexingExpression`
      * labeled alternative in `RustParser.expression`.

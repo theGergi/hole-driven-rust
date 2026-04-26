@@ -93,8 +93,8 @@ import { ContinueExpressionContext } from "./RustParser.js";
 import { AssignmentExpressionContext } from "./RustParser.js";
 import { MethodCallExpressionContext } from "./RustParser.js";
 import { LiteralExpression_Context } from "./RustParser.js";
-import { StructExpression_Context } from "./RustParser.js";
 import { HoleExpression_Context } from "./RustParser.js";
+import { StructExpression_Context } from "./RustParser.js";
 import { TupleIndexingExpressionContext } from "./RustParser.js";
 import { NegationExpressionContext } from "./RustParser.js";
 import { CallExpressionContext } from "./RustParser.js";
@@ -797,19 +797,19 @@ export class RustParserVisitor<Result> extends AbstractParseTreeVisitor<Result> 
      */
     visitLiteralExpression_?: (ctx: LiteralExpression_Context) => Result;
     /**
-     * Visit a parse tree produced by the `StructExpression_`
-     * labeled alternative in `RustParser.expression`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitStructExpression_?: (ctx: StructExpression_Context) => Result;
-    /**
      * Visit a parse tree produced by the `HoleExpression_`
      * labeled alternative in `RustParser.expression`.
      * @param ctx the parse tree
      * @return the visitor result
      */
     visitHoleExpression_?: (ctx: HoleExpression_Context) => Result;
+    /**
+     * Visit a parse tree produced by the `StructExpression_`
+     * labeled alternative in `RustParser.expression`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitStructExpression_?: (ctx: StructExpression_Context) => Result;
     /**
      * Visit a parse tree produced by the `TupleIndexingExpression`
      * labeled alternative in `RustParser.expression`.
