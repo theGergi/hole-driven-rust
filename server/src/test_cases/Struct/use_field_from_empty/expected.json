@@ -1,0 +1,7 @@
+[
+	{
+		"line": 17,
+		"type": { "valType": "integer" },
+		"suggestionNames": ["z.cap", "z.len", "z.len_func()"]
+	}
+]

@@ -14,5 +14,5 @@ impl<T> VecCustom<T> {
 
 pub fn rabin_karp(text: &string, pattern: &string) -> VecCustom<integer> {
     let z = VecCustom::new();
-    let y: integer = z.??;
+    let y: integer = ??;
 }

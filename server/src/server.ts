@@ -22,9 +22,11 @@ import {
 
 import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
-import MyInterpreter, { getSourceLocationKey, SourceLocation, Type, Variable } from './MyInterpreter.js';
+import MyInterpreter from './MyInterpreter.js';
 import { CharStream, CommonTokenStream, ParseTreeWalker } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
+import { Type } from './types.js';
+import { getSourceLocationKey } from './utils.js';
 
 
 

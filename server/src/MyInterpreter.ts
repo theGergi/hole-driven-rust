@@ -2,152 +2,8 @@ import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
-import { ref } from 'process';
-
-export enum ValType {
-    ROOT = "ROOT",
-    FUNCTION = "FUNCTION",
-    INT = "integer",
-    STRING = "string",
-    HOLE = "HOLE",
-    UNKNOWN = "UNKNOWN",
-    VECTOR = "Vec",
-    REFERENCE = "reference",
-    STRUCT = "struct"
-}
-
-export enum Borrow {
-    BFree,
-    BMut,
-    BImmut
-}
-
-export interface Type {
-    elementType?: ValType; // For vectors and references
-    valType: ValType;
-    primitive: boolean;
-    mutable: boolean | null;
-    mutableReference?: boolean; // Only for references, indicates if the reference itself is mutable (e.g., &mut T vs &T)
-    consumed: boolean;
-    borrows: Borrow;
-    owner?: Variable;
-    structName?: string; // For struct types
-    property?: boolean; // Marked when a method call accesses a property on this type
-}
-
-export interface Suggestion {
-    suggestionType: string;
-    suggestion: any;
-}
-
-export interface Variable {
-    name: string;
-    location: SourceLocation;
-    type: Type;
-}
-
-export interface Function {
-    name: string;
-    location: SourceLocation;
-    type?: Type;
-    params: Param[];
-    structName?: string;
-}
-
-export interface Struct {
-    name: string;
-    location: SourceLocation;
-    fields: Param[];
-    methods: Function[];
-}
-
-export interface Param {
-    name: string;
-    type?: Type;
-}
-
-export interface Hole {
-    location: SourceLocation;
-    type: Type;
-    context?: HoleContext;
-    suggestions: Suggestion[]
-}
-
-export interface HoleContext {
-    variables: Variable[];
-    functions: Function[];
-    fields: Param[];
-    methods: Function[];
-}
-
-export interface ReturnType {
-    type?: Type;
-    location: SourceLocation;
-}
-
-export interface SourceLocation {
-    line: number;
-    column: number;
-    length: number;
-}
-
-export const getSourceLocationKey = (loc: SourceLocation): string => {
-    return `${loc.line}:${loc.column}:${loc.length}`;
-};
-
-function getLocation(ctx: ParserRuleContext): SourceLocation {
-    const start = ctx.start!;
-    const stop = ctx.stop!;
-    
-    return {
-        line: start.line,
-        column: start.column,
-        length: stop.stop - start.start + 1
-    };
-}
-
-export function toType(overrides: Partial<Type> & { valType: ValType }, variable?: Variable): Type {
-    let primitive = false;
-    console.log(overrides)
-    
-    if (overrides.valType === ValType.INT) {
-        primitive = true;
-    }
-
-    return {
-        primitive: primitive,
-        mutable: false,
-        consumed: false,
-        borrows: Borrow.BFree,
-        ...overrides
-    }
-}
-
-export function canBeAssigned(assignee: Type, assigned: Type): boolean {
-
-    if (assignee.mutable && !assigned.mutable) {
-        return false;
-    }
-    
-    if (assignee.valType === ValType.UNKNOWN) {
-        return true;
-    }
-    
-    if (assignee.valType === assigned.valType) {
-        if (assignee.valType === ValType.VECTOR ) {
-            return assignee.elementType === assigned.elementType;
-        } else if (assignee.valType === ValType.REFERENCE) {
-            if (assignee.mutableReference && !assigned.mutableReference) {
-                return false;
-            }
-            return assignee.elementType === assigned.elementType;
-        } else if (assignee.valType === ValType.STRUCT) {
-            return assignee.structName === assigned.structName;
-        }
-        return true;
-    }
-    return false;
-}
+import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion } from './types.js';
+import { toType, getSourceLocationKey, getLocation, canBeAssigned } from './utils';
 
 export default class MyInterpreter extends RustParserVisitor<ReturnType | null> {
     private typeStack: Type[] = [toType({valType: ValType.ROOT})];
@@ -167,6 +23,8 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         super();
         this.usageListener = usageListener;
     }
+
+    // ============================================= UTIL METHODS =============================================
 
     saveState() {
         return { variables: structuredClone(this.variables) }
@@ -305,9 +163,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             return toType({valType: ValType.REFERENCE, elementType: elementType.valType,mutableReference: mutableReference, mutable: null});
         }
 
-        console.log(this.structs)
-        console.log(typeString)
-
         // Check if it's a struct type
         if (this.structs.some(s => s.name === typeString)) {
             return toType({valType: ValType.STRUCT, structName: typeString});
@@ -320,21 +175,30 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         return toType({valType: ValType.UNKNOWN});
     }
 
-    visitCrate = (ctx: any): ReturnType => {
-        console.log("Crate")
-        const items = ctx.item();
-        // Map over every item and visit it; filter out nulls if some items aren't implemented
-        return items.map((item: ParseTree) => this.visit(item) as ReturnType).filter((n: ParseTree | null) => n !== null);
-    };
+    // ============================================= VISIT METHODS =============================================
 
-    visitItem = (ctx: any): ReturnType | null => {
-        console.log("Item")
-        const visItem = ctx.visItem();
-        if (visItem) {
-            return this.visit(visItem) as ReturnType;
+    visitLiteralExpression = (ctx: any): ReturnType => {
+        console.log("Literal Expression")
+
+        if (ctx.INTEGER_LITERAL()) {
+            return {
+                type: toType({valType: ValType.INT}),
+                location: getLocation(ctx)
+            };
         }
-        // Handle macroItem here if needed, otherwise return null
-        return null; 
+
+        if (ctx.STRING_LITERAL() || ctx.RAW_STRING_LITERAL()) {
+            return {
+                type: toType({valType: ValType.STRING}),
+                location: getLocation(ctx)
+            };
+        }
+
+        // Fallback
+        return {
+            type: toType({valType: ValType.UNKNOWN}),
+            location: getLocation(ctx)
+        };
     };
 
     visitStructStruct = (ctx: any): ReturnType | null => {
@@ -406,7 +270,81 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
         return null
     }
+    
+    visitLetStatement = (ctx: any): ReturnType | null => {
+        console.log("Let statement")
+        const variableName = ctx.patternNoTopAlt().patternWithoutRange().identifierPattern().identifier().getText();
+        const mutable = ctx.patternNoTopAlt().patternWithoutRange().identifierPattern().KW_MUT() != null;
+        
+        // # TODO Hardcoded to work only for one
+        const genericArgs = ctx.type_()?.typeNoBounds().traitObjectTypeOneBound()?.traitBound().typePath().typePathSegment(0).genericArgs()?.getText().slice(1, -1); 
+        let declaredTypeString = ctx.type_()?.typeNoBounds().traitObjectTypeOneBound()?.traitBound().typePath().typePathSegment(0).pathIdentSegment().identifier().getText();
+        if (!declaredTypeString) {
+            declaredTypeString = ctx.type_()?.getText();
+        }
+        
+        console.log("Generic args:", genericArgs)
+        const declaredType = this.parseType(declaredTypeString, genericArgs);
+        const expression = ctx.expression();
+        let recordVar = true;
+        
+        this.typeStack.push(declaredType);
+        let inferedType: Type = toType({valType: ValType.UNKNOWN});
+        
+        if (expression) {
+            inferedType = toType(this.visit(expression)?.type as Type);
+        }
+        if (inferedType.valType === ValType.HOLE) {
+            recordVar = false;
+        }
+        
+        if(expression instanceof PathExpression_Context && expression?.pathExpression()?.pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier()) { // a variable is being assigned
+            this.consume(expression.getText())
+        }
+        
+        this.typeStack.pop();
+        
+        if (inferedType.valType === ValType.UNKNOWN && declaredType.valType === ValType.UNKNOWN) {
+            throw new Error("No type");
+        } else if (inferedType.valType === ValType.HOLE && declaredType.valType !== ValType.UNKNOWN) {
+            inferedType = declaredType;
+        } else if (inferedType.valType !== ValType.UNKNOWN && declaredType.valType !== ValType.UNKNOWN) {
+            if (declaredType.valType !== inferedType.valType) {
+                throw new Error("Declared type is different from infered type: " + declaredType.valType + " vs " + inferedType.valType);
+            }
+            if (declaredType.valType === ValType.VECTOR || declaredType.valType === ValType.REFERENCE) {
+                if (inferedType.elementType === ValType.UNKNOWN && declaredType.elementType === ValType.UNKNOWN) {
+                    throw new Error("No type");
+                } else if (inferedType.elementType === ValType.HOLE && declaredType.elementType !== ValType.UNKNOWN) {
+                    inferedType = declaredType;
+                } else if (inferedType.elementType !== ValType.UNKNOWN && declaredType.elementType !== ValType.UNKNOWN) {
+                    if (declaredType.elementType !== inferedType.elementType) {
+                        throw new Error("Declared subtype is different from infered type: " + declaredType.elementType + " vs " + inferedType.elementType);
+                    }
+                }
+            }
+            
+            
+        }
+        
+        if (recordVar) {
+            
+            let valType = inferedType;
+            if ( inferedType.valType === ValType.UNKNOWN || inferedType.elementType === ValType.UNKNOWN ) {
+                valType = declaredType;
+            }
+            
+            const type = toType(valType);
+            type.mutable = mutable;
+            
+            const variable: Variable = {name: variableName, type: type, location: getLocation(ctx)};
+            
+            this.variables.push(variable)
+        }
+        return null;
+    }
 
+    // Parse an array like vec![1, 2, 3] and infer its type as Vec<integer>
     visitMacroInvocation = (ctx: any): ReturnType | null => {
         console.log("Macro invocation")
         
@@ -435,79 +373,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             }
         }
 
-        return null;
-    }
-
-    visitLetStatement = (ctx: any): ReturnType | null => {
-        console.log("Let statement")
-        const variableName = ctx.patternNoTopAlt().patternWithoutRange().identifierPattern().identifier().getText();
-        const mutable = ctx.patternNoTopAlt().patternWithoutRange().identifierPattern().KW_MUT() != null;
-
-        // # TODO Hardcoded to work only for one
-        const genericArgs = ctx.type_()?.typeNoBounds().traitObjectTypeOneBound()?.traitBound().typePath().typePathSegment(0).genericArgs()?.getText().slice(1, -1); 
-        let declaredTypeString = ctx.type_()?.typeNoBounds().traitObjectTypeOneBound()?.traitBound().typePath().typePathSegment(0).pathIdentSegment().identifier().getText();
-        if (!declaredTypeString) {
-            declaredTypeString = ctx.type_()?.getText();
-        }
-        
-        console.log("Generic args:", genericArgs)
-        const declaredType = this.parseType(declaredTypeString, genericArgs);
-        const expression = ctx.expression();
-        let recordVar = true;
-
-        this.typeStack.push(declaredType);
-        let inferedType: Type = toType({valType: ValType.UNKNOWN});
-
-        if (expression) {
-            inferedType = toType(this.visit(expression)?.type as Type);
-        }
-        if (inferedType.valType === ValType.HOLE) {
-            recordVar = false;
-        }
-
-        if(expression instanceof PathExpression_Context && expression?.pathExpression()?.pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier()) { // a variable is being assigned
-            this.consume(expression.getText())
-        }
-
-        this.typeStack.pop();
-        
-        if (inferedType.valType === ValType.UNKNOWN && declaredType.valType === ValType.UNKNOWN) {
-            throw new Error("No type");
-        } else if (inferedType.valType === ValType.HOLE && declaredType.valType !== ValType.UNKNOWN) {
-            inferedType = declaredType;
-        } else if (inferedType.valType !== ValType.UNKNOWN && declaredType.valType !== ValType.UNKNOWN) {
-            if (declaredType.valType !== inferedType.valType) {
-                throw new Error("Declared type is different from infered type: " + declaredType.valType + " vs " + inferedType.valType);
-            }
-            if (declaredType.valType === ValType.VECTOR || declaredType.valType === ValType.REFERENCE) {
-                if (inferedType.elementType === ValType.UNKNOWN && declaredType.elementType === ValType.UNKNOWN) {
-                    throw new Error("No type");
-                } else if (inferedType.elementType === ValType.HOLE && declaredType.elementType !== ValType.UNKNOWN) {
-                    inferedType = declaredType;
-                } else if (inferedType.elementType !== ValType.UNKNOWN && declaredType.elementType !== ValType.UNKNOWN) {
-                    if (declaredType.elementType !== inferedType.elementType) {
-                        throw new Error("Declared subtype is different from infered type: " + declaredType.elementType + " vs " + inferedType.elementType);
-                    }
-                }
-            }
-            
-            
-        }
-
-        if (recordVar) {
-
-            let valType = inferedType;
-            if ( inferedType.valType === ValType.UNKNOWN || inferedType.elementType === ValType.UNKNOWN ) {
-                valType = declaredType;
-            }
-
-            const type = toType(valType);
-            type.mutable = mutable;
-
-            const variable: Variable = {name: variableName, type: type, location: getLocation(ctx)};
-
-            this.variables.push(variable)
-        }
         return null;
     }
 
@@ -781,7 +646,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             throw new Error("Invalid binary expression: missing operands");
         }
         
-        // 2. Recursively build the left and right AST branches
         const left = this.visit(leftChild) as ReturnType;
         const right = this.visit(rightChild) as ReturnType;
 
@@ -795,7 +659,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             type = toType({valType: ValType.UNKNOWN});
         }
 
-        // 3. Return the structured AST node
         return {
             type: type,
             location: getLocation(ctx)
@@ -833,29 +696,8 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         };
     };
 
-    visitLiteralExpression = (ctx: any): ReturnType => {
-        console.log("Literal Expression")
 
-        if (ctx.INTEGER_LITERAL()) {
-            return {
-                type: toType({valType: ValType.INT}),
-                location: getLocation(ctx)
-            };
-        }
-
-        if (ctx.STRING_LITERAL() || ctx.RAW_STRING_LITERAL()) {
-            return {
-                type: toType({valType: ValType.STRING}),
-                location: getLocation(ctx)
-            };
-        }
-
-        // Fallback
-        return {
-            type: toType({valType: ValType.UNKNOWN}),
-            location: getLocation(ctx)
-        };
-    };
+    // ================================================= GENERATING HOLE SUGGESTIONS =================================================
 
     // TODO Remove or make work in general
     visitIdentifier = (ctx: any): ReturnType => {
@@ -935,12 +777,29 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                     }
                 }
             }
+            if (variable.type.valType === ValType.STRUCT) {
+                const struct = this.structs.find(s => s.name === variable.type.structName);
+                if (struct) {
+                    struct.fields.forEach((field: Param) => {
+                        if (field.type && canBeAssigned(hole.type, field.type)) {
+                            holeSuggestions.push({suggestionType: 'field', suggestion: {...field, name: variable.name + "." + field.name, location: variable.location}});
+                        }
+                    });
+                    struct.methods.forEach((method: Function) => {
+                        if (method.type && canBeAssigned(hole.type, method.type)) {
+                            holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: variable.name + "." + method.name + "()", location: variable.location}});
+                        }
+                    });
+                }
+            }
         });
+        
         functions.forEach((func: Function) => {
             if (func.type && canBeAssigned(hole.type, func.type)) {
-                holeSuggestions.push({suggestionType: 'function', suggestion: func});
+                holeSuggestions.push({suggestionType: 'function', suggestion: {...func, name: func.name + "()", location: func.location}});
             }
         })
+
 
         hole.suggestions = holeSuggestions;
         hole.context = {
@@ -979,83 +838,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             methods: structuredClone(struct.methods)
         };
         this.holes.push(hole);
-    }
-
-    static printHoleSuggestionContext(hole: Hole): void {
-        const formatType = (type?: Type): string => {
-            if (!type) {
-                return 'unknown';
-            }
-            const base = type.valType === ValType.VECTOR
-                ? `Vec<${type.elementType ?? 'unknown'}>`
-                : type.valType === ValType.REFERENCE
-                    ? `&${type.mutableReference ? 'mut ' : ''}${type.elementType ?? 'unknown'}`
-                    : type.valType;
-            const mut = type.mutable === true ? 'mut ' : '';
-            return `${mut}${base}`;
-        };
-
-        const formatLocation = (loc: SourceLocation): string =>
-            `line ${loc.line}, col ${loc.column}, len ${loc.length}`;
-
-        const printSection = (title: string, lines: string[]) => {
-            console.log(`${title}:`);
-            if (lines.length === 0) {
-                console.log('  (none)');
-                return;
-            }
-            lines.forEach(line => console.log(`  ${line}`));
-        };
-
-        const formatTypeMetadata = (type?: Type): string => {
-            if (!type) {
-                return 'unknown';
-            }
-            const ownerName = type.owner ? type.owner.name : 'none';
-            const borrowName = type.borrows === Borrow.BFree ? 'free' : type.borrows === Borrow.BMut ? 'mut' : 'immut';
-            return `{
-    valType: ${type.valType},
-    elementType: ${type.elementType ?? 'none'},
-    primitive: ${type.primitive},
-    mutable: ${type.mutable},
-    mutableReference: ${type.mutableReference},
-    consumed: ${type.consumed},
-    borrows: ${borrowName},
-    owner: ${ownerName}
-}`;
-        };
-
-        console.log('--- Hole suggestion context ---');
-        console.log(`Hole location: ${formatLocation(hole.location)}`);
-        console.log(`Hole type: ${formatType(hole.type)}`);
-        console.log(`Hole type metadata: ${formatTypeMetadata(hole.type)}`);
-
-        const suggestionLines = hole.suggestions.map(suggestion => {
-            if (suggestion.suggestionType === 'variable') {
-                const variable = suggestion.suggestion as Variable;
-                return `variable: ${variable.name} : ${formatType(variable.type)} ${formatTypeMetadata(variable.type)} (${formatLocation(variable.location)})`;
-            }
-            if (suggestion.suggestionType === 'function') {
-                const func = suggestion.suggestion as Function;
-                const params = func.params.map(p => `${p.name}: ${formatType(p.type)}`).join(', ');
-                return `function: ${func.name}(${params}) -> ${formatType(func.type)} (${formatLocation(func.location)})`;
-            }
-            return `${suggestion.suggestionType}: ${JSON.stringify(suggestion.suggestion)}`;
-        });
-
-        const variableLines = hole.context?.variables.map(variable =>
-            `${variable.name}: ${formatType(variable.type)} ${formatTypeMetadata(variable.type)} (${formatLocation(variable.location)})`
-        ) ?? [];
-
-        const functionLines = hole.context?.functions.map(func => {
-            const params = func.params.map(p => `${p.name}: ${formatType(p.type)}`).join(', ');
-            return `${func.name}(${params}) -> ${formatType(func.type)} (${formatLocation(func.location)})`;
-        }) ?? [];
-
-        printSection('Suggestions', suggestionLines);
-        printSection('Context variables', variableLines);
-        printSection('Context functions', functionLines);
-        console.log('--- End hole suggestion context ---\n\n');
     }
 
     public getFinalResult() {

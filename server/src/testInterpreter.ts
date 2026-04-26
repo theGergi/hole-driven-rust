@@ -1,7 +1,9 @@
 import { CharStream, CommonTokenStream } from 'antlr4ng';
 import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
-import MyInterpreter, { Hole, SourceLocation, Variable, Function as Func, toType, Type } from './MyInterpreter.js';
+import MyInterpreter from './MyInterpreter.js';
+import { Hole, SourceLocation, Variable, Function as Func, Type } from './types.js';
+import { toType, printHoleSuggestionContext } from './utils.js';
 import { RustParserListener } from './parser/RustParserListener';
 import { ParseTreeWalker } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
@@ -77,7 +79,7 @@ function matchesSubset(source: Type, subset: Partial<Type>): boolean {
 
 function runTest(testcase: {rustCode: string, expectedHoles: { line: number; type: Type; suggestionNames: string[] }[]}) {
 	const result = parseDocument(testcase.rustCode);
-	result.forEach(hole => MyInterpreter.printHoleSuggestionContext(hole));
+	result.forEach(hole => printHoleSuggestionContext(hole));
 	// Automated test for holes
 	assert.strictEqual(result.length, testcase.expectedHoles.length, 'Should have the correct number of holes');
 	console.log(result)
