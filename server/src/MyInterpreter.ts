@@ -1,5 +1,5 @@
 import { RustParserVisitor } from './parser/RustParserVisitor';
-import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext } from './parser/RustParser';
+import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
 import { ref } from 'process';
@@ -32,6 +32,7 @@ export interface Type {
     borrows: Borrow;
     owner?: Variable;
     structName?: string; // For struct types
+    property?: boolean; // Marked when a method call accesses a property on this type
 }
 
 export interface Suggestion {
@@ -56,7 +57,8 @@ export interface Function {
 export interface Struct {
     name: string;
     location: SourceLocation;
-    params: Param[];
+    fields: Param[];
+    methods: Function[];
 }
 
 export interface Param {
@@ -216,6 +218,32 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         }
     }
 
+    getBoundField(structName: string, identifier: string): Param {
+        const struct = this.structs.find(s => s.name === structName);
+        if (!struct) {
+            throw Error(`Struct '${structName}' not found`);
+        }
+        const field = struct.fields.find(f => f.name === identifier);
+        if (field) {
+            return field;
+        } else {
+            throw Error(`Field '${identifier}' not found in struct '${structName}'`);
+        }
+    }
+
+    getBoundMethod(structName: string, identifier: string): Function {
+        const struct = this.structs.find(s => s.name === structName);
+        if (!struct) {
+            throw Error(`Struct '${structName}' not found`);
+        }
+        const method = struct.methods.find(m => m.name === identifier);
+        if (method) {
+            return method;
+        } else {
+            throw Error(`Method '${identifier}' not found in struct '${structName}'`);
+        }
+    }
+
     borrow(variableName: string, mutable: boolean): Variable {
         const variable = this.getBoundVariable(variableName);
 
@@ -310,7 +338,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
         const structName = ctx.identifier().getText();
         const structFields = ctx.structFields()?.structField() || [];
-        const params: Param[] = structFields.map((field: any) => {
+        const fields: Param[] = structFields.map((field: any) => {
             const fieldName = field.identifier().getText();
             const fieldType = this.parseType(field.type_().getText());
             return {
@@ -319,10 +347,12 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             };
         });
 
+
         const struct: Struct = {
             name: structName,
             location: getLocation(ctx),
-            params: params
+            fields: fields,
+            methods: []
         };
 
         console.log("Defined struct:", struct);
@@ -450,8 +480,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             
             
         }
-        console.log("Declared type:", declaredType)
-        console.log("Infered type:", inferedType)
+
         if (recordVar) {
 
             let valType = inferedType;
@@ -491,6 +520,75 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
     }
 
+    visitMethodCallExpression = (ctx: any): ReturnType | null => {
+        console.log("MethodCallExpression");
+
+        const receiver = ctx.expression();
+        const methodSegment = ctx.pathExprSegment();
+        const methodName = methodSegment?.pathIdentSegment()?.identifier()?.getText();
+
+        this.visit(methodSegment?.pathIdentSegment()?.identifier())
+
+        console.log("Method name:", methodName)
+
+        // Mark the current expected type as having been used for a property-like method call
+        const currentType = this.currentParentType;
+        currentType.property = true;
+
+        let receiverType = toType({valType: ValType.UNKNOWN});
+        if (receiver) {
+            receiverType = this.visit(receiver)?.type || receiverType;
+        }
+
+        const structName = receiverType?.structName ?? null;
+        if (!methodName) {
+            throw new Error("Unable to resolve method name for MethodCallExpression");
+        }
+
+        const func = this.getBoundFunction(methodName, structName);
+        console.log("Method call:", func.name, "on struct", structName);
+
+        ctx.callParams()?.expression().forEach((expr: any, i: number) => {
+            const paramType = func.params[i]?.type || toType({valType: ValType.UNKNOWN});
+            this.typeStack.push(paramType);
+            this.visit(expr);
+            if (expr instanceof PathExpression_Context) {
+                this.consume(expr.getText());
+            }
+            this.typeStack.pop();
+        });
+
+        return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
+    }
+
+    visitFieldExpression = (ctx: any): ReturnType | null => {
+        console.log("FieldExpression");
+
+        const receiver = ctx.expression();
+        const fieldName = ctx.identifier()?.getText();
+
+        this.visit(ctx.identifier())
+
+        if (!fieldName) {
+            throw new Error("Unable to resolve field name for FieldExpression");
+        }
+
+        let receiverType = toType({valType: ValType.UNKNOWN});
+        if (receiver) {
+            receiverType = this.visit(receiver)?.type || receiverType;
+        }
+
+        const structName = receiverType?.structName ?? null;
+        if (!structName) {
+            throw new Error(`Cannot access field '${fieldName}' on non-struct type`);
+        }
+
+        const field = this.getBoundField(structName, fieldName);
+        console.log("Field access:", fieldName, "on struct", structName);
+
+        return { type: field.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
+    }
+
     visitPathExpression = (ctx: any): ReturnType | null => {
         console.log("Path expression")
         if(ctx.parent.parent instanceof CallExpressionContext) { // Kinda useless now
@@ -520,12 +618,9 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         const name = ctx.identifier().getText();
         
         const params = ctx.functionParameters()?.functionParam();
-
+        
         const paramsParsed = params?.map((param: any) => {
-            console.log("Parsing param:", param)
-
-            if param.selfParam()
-
+            
             const pattern = param.functionParamPattern().pattern().patternNoTopAlt(0).patternWithoutRange().identifierPattern();
             const paramName = pattern.identifier().getText();
             // console.log("Parsing param:", paramName)
@@ -541,17 +636,34 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                 type: type
             }
         })
+
+        const selfParam = ctx.functionParameters()?.selfParam();
         
-        this.functions.push({
+        if (selfParam) {
+            const type = toType({valType: ValType.STRUCT, structName: this.currentImplType ?? 'unknown'});
+            if (selfParam.typedSelf()?.KW_MUT() || selfParam.shorthandSelf()?.KW_MUT()) {
+                type.mutable = true;
+            }
+            this.variables.push({name: "self", type: type, location: getLocation(selfParam)});
+            paramsParsed?.unshift({name: "self", type: type})
+        }
+        
+        const functionRecord: Function = {
             name: name,
             location: getLocation(ctx),
             type: type,
             params: paramsParsed || []
-        })
-        
+        };
+
         if (this.currentImplType) {
-            this.functions[this.functions.length - 1].structName = this.currentImplType;
+            functionRecord.structName = this.currentImplType;
+            const targetStruct = this.structs.find(s => s.name === this.currentImplType);
+            if (targetStruct && selfParam) {
+                targetStruct.methods.push(functionRecord);
+            }
         }
+
+        this.functions.push(functionRecord);
 
         const blockCtx = ctx.blockExpression();
         
@@ -708,6 +820,44 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         };
     };
 
+    // visitStructExpression_ = (ctx: any): ReturnType | null => {
+    //     console.log("StructExpression_");
+
+    //     const structExpression = ctx.structExpression();
+    //     const structExprStruct = structExpression?.structExprStruct();
+    //     const structName = structExprStruct?.pathInExpression()?.getText() ?? 'unknown';
+    //     const structType = toType({valType: ValType.STRUCT, structName});
+
+    //     const structExprFields = structExprStruct?.structExprFields()?.structExprField() || [];
+    //     structExprFields.forEach((field: any) => {
+    //         if (field.expression()) {
+    //             this.visit(field.expression());
+    //         }
+    //     });
+
+    //     return {
+    //         type: structType,
+    //         location: getLocation(ctx)
+    //     };
+    // };
+
+    visitIdentifier = (ctx: any): ReturnType => {
+        console.log("Identifier")
+        const location = getLocation(ctx)
+        const type = this.currentParentType;
+        console.log("Alleged type:", type)
+        
+        if (ctx.getText() === "??") {
+            const hole = {location: location, type: type, suggestions: []}
+            this.generateHole(hole)
+        }
+
+        return {
+            type: toType({valType: ValType.HOLE}),
+            location: location
+        };
+    }
+
     visitHoleExpression = (ctx: any): ReturnType => {
         console.log("Hole expression")
 
@@ -723,6 +873,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             location: location
         };
     }
+
     public generateHole(hole: Hole) {
         const variables = this.variables;
         const functions = this.functions;
