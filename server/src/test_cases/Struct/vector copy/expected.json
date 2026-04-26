@@ -1,0 +1,7 @@
+[
+	{
+		"line": 17,
+		"type": { "valType": "integer" },
+		"suggestionNames": ["cap", "len", "len_func"]
+	}
+]

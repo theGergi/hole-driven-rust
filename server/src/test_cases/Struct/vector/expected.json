@@ -1,7 +1,7 @@
 [
 	{
-		"line": 17,
-		"type": { "valType": "integer" },
-		"suggestionNames": ["cap", "len"]
+		"line": 16,
+		"type": { "valType": "struct" },
+		"suggestionNames": ["new"]
 	}
 ]

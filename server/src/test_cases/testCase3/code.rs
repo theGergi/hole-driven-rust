@@ -10,7 +10,7 @@ fn immutable_borrow(s: &string) {
 
 fn mutable_borrow(s: &mut string) {
 	// We can change the value
-	s.push_str("... modified!");
+	// s.push_str("... modified!");
 	println!("Updated: {}", s);
 }
 	

@@ -22,7 +22,7 @@ import {
 
 import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
-import MyInterpreter, { getSourceLocationKey, SourceLocation, Variable } from './MyInterpreter.js';
+import MyInterpreter, { getSourceLocationKey, SourceLocation, Type, Variable } from './MyInterpreter.js';
 import { CharStream, CommonTokenStream, ParseTreeWalker } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
 
@@ -94,8 +94,23 @@ connection.onInitialized(() => {
     connection.console.log('Language Server initialized and ready.');
 });
 
+function constructTypeString(type: Type): string {
+    let typeString = "";
+    if (type.valType == 'reference') {
+        typeString += "&";
+        if (type.mutableReference) {
+            typeString += "mut ";
+        }
+        typeString += type.elementType;
+    } else if ((type.valType == 'Vec')) {
+        typeString += "Vec " + type.elementType;
+    } else {
+        typeString += type.valType;
+    }
+    return typeString;
+}
+
 connection.onHover((params: HoverParams): Hover | null => {
-    connection.console.log('HOVERING BITCH');
     const { textDocument, position } = params;
     const document = documents.get(textDocument.uri);
     
@@ -125,21 +140,12 @@ connection.onHover((params: HoverParams): Hover | null => {
             };
             const key = getSourceLocationKey({line: position.line + 1, column: startIndex, length: triggerSequence.length});
             const hole = results.get(key)
+            console.log(key)
+            console.log(hole)
             const suggestions = hole.suggestions;
             const type = hole.type;
 
-            let typeString = "Type: ";
-            if (type.valType == 'reference') {
-                typeString += "&";
-                if (type.mutableReference) {
-                    typeString += "mut ";
-                }
-                typeString += type.elementType;
-            } else if ((type.valType == 'Vec')) {
-                typeString += "Vec " + type.elementType;
-            } else {
-                typeString += type.valType;
-            }
+            
 
             const holeArgs = [
                 hole,
@@ -152,33 +158,42 @@ connection.onHover((params: HoverParams): Hover | null => {
             const validSuggestions = suggestions.map((suggestion: any) => {
                 console.log("hey")
                 console.log(suggestion)
-                let replacement = ''
+                let replacementWithTypes = ''
+                let replacementWithoutTypes = ''
                 if (suggestion.suggestionType === 'variable') {
-                    replacement = suggestion.suggestion.name
+                    replacementWithTypes = suggestion.suggestion.name
+                    replacementWithoutTypes = suggestion.suggestion.name
                 } else if (suggestion.suggestionType === 'function'){
-                    let paramString = suggestion.suggestion.params.map((param: any) => `??: ${param.type}`).join(', ')
+                    let paramStringWithTypes = suggestion.suggestion.params.map((param: any) => `??: ${constructTypeString(param.type)}`).join(', ')
+                    let paramStringWithoutTypes = suggestion.suggestion.params.map(() => `??`).join(', ')
                     let name = suggestion.suggestion.name
                     if (suggestion.suggestion.structName) {
                         name = `${suggestion.suggestion.structName}::${suggestion.suggestion.name}`
                     }
-                    replacement = `${name}(${paramString})`
+                    replacementWithTypes = `${name}(${paramStringWithTypes})`
+                    replacementWithoutTypes = `${name}(${paramStringWithoutTypes})`
                 } else if (suggestion.suggestionType === 'method') {
-                    let paramString = suggestion.suggestion.params.map((param: any) => `??: ${param.type}`).join(', ')
-                    replacement = `${suggestion.suggestion.name}(${paramString})`
+                    let paramStringWithTypes = suggestion.suggestion.params.slice(1).map((param: any) => `??: ${constructTypeString(param.type)}`).join(', ')
+                    let paramStringWithoutTypes = suggestion.suggestion.params.slice(1).map(() => `??`).join(', ')
+                    replacementWithTypes = `${suggestion.suggestion.name}(${paramStringWithTypes})`
+                    replacementWithoutTypes = `${suggestion.suggestion.name}(${paramStringWithoutTypes})`
                 } else if (suggestion.suggestionType === 'field') {
-                    replacement = suggestion.suggestion.name
+                    replacementWithTypes = suggestion.suggestion.name
+                    replacementWithoutTypes = suggestion.suggestion.name
                 }
 
                 const args = [
                     textDocument.uri,
                     replaceRange,
-                    replacement
+                    replacementWithoutTypes
                 ];
                 const commandUri = `command:myExtension.applySuggestion?${encodeURIComponent(JSON.stringify(args))}`;
-                return `**Suggestion:** [Replace](${commandUri}) with\`${replacement}\``;
+                return `**Suggestion:** [Replace](${commandUri}) with\`${replacementWithTypes}\``;
             });
+            console.log("Hey")
 
             let hoverContent = "";
+            const typeString = "Type: " + constructTypeString(type);
             if (validSuggestions.length > 0) {
                 hoverContent = typeString + "\n\n" + validSuggestions.join('\n\n') + `\n\n[Show Full Context](${holeCommandUri})`;
             } else {
