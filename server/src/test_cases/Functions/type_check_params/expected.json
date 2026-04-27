@@ -1,0 +1,87 @@
+[
+	{
+		"line": 14,
+		"type": { "valType": "reference" },
+		"suggestionNames": ["&z"]
+	},
+	{
+		"line": 15,
+		"type": { "valType": "reference" },
+		"suggestionNames": ["&mut z"]
+	},
+	{
+		"line": 16,
+		"type": { "valType": "string" },
+		"suggestionNames": ["z"]
+	},
+	{
+		"line": 17,
+		"type": { "valType": "string" },
+		"suggestionNames": ["z"]
+	},
+
+	
+	{
+		"line": 22,
+		"type": { "valType": "reference" },
+		"suggestionNames": ["&z"]
+	},
+	{
+		"line": 23,
+		"type": { "valType": "reference" },
+		"suggestionNames": []
+	},
+	{
+		"line": 24,
+		"type": { "valType": "string" },
+		"suggestionNames": ["z"]
+	},
+	{
+		"line": 25,
+		"type": { "valType": "string" },
+		"suggestionNames": []
+	},
+
+
+	{
+		"line": 31,
+		"type": { "valType": "reference" },
+		"suggestionNames": []
+	},
+	{
+		"line": 32,
+		"type": { "valType": "reference" },
+		"suggestionNames": []
+	},
+	{
+		"line": 33,
+		"type": { "valType": "string" },
+		"suggestionNames": []
+	},
+	{
+		"line": 34,
+		"type": { "valType": "string" },
+		"suggestionNames": []
+	},
+
+	{
+		"line": 41,
+		"type": { "valType": "reference" },
+		"suggestionNames": ["&z"]
+	},
+	{
+		"line": 42,
+		"type": { "valType": "reference" },
+		"suggestionNames": []
+	},
+	{
+		"line": 43,
+		"type": { "valType": "string" },
+		"suggestionNames": []
+	},
+	{
+		"line": 44,
+		"type": { "valType": "string" },
+		"suggestionNames": []
+	}
+]

@@ -20,7 +20,7 @@ export interface Type {
 	elementType?: ValType; // For vectors and references
 	valType: ValType;
 	primitive: boolean;
-	mutable: boolean | null;
+	mutable?: boolean;
 	mutableReference?: boolean; // Only for references, indicates if the reference itself is mutable (e.g., &mut T vs &T)
 	consumed: boolean;
 	borrows: Borrow;
@@ -57,7 +57,8 @@ export interface Struct {
 
 export interface Param {
 	name: string;
-	type?: Type;
+	location: SourceLocation;
+	type: Type;
 }
 
 export interface Hole {

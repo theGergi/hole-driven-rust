@@ -3,7 +3,7 @@ import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpres
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
 import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion } from './types.js';
-import { toType, getSourceLocationKey, getLocation, canBeAssigned } from './utils';
+import { toType, getSourceLocationKey, getLocation } from './utils';
 
 export default class MyInterpreter extends RustParserVisitor<ReturnType | null> {
     private typeStack: Type[] = [toType({valType: ValType.ROOT})];
@@ -116,6 +116,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                 throw Error("Cannot mutably borrow, already immutably borrowed")
             }
         }
+        variable.type.mutableReference = mutable;
         return variable;
     }
 
@@ -160,7 +161,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             const mutableReference = refMatch[2] === 'mut' ? true : false;
             const elementType = this.parseType(refMatch[3]);
 
-            return toType({valType: ValType.REFERENCE, elementType: elementType.valType,mutableReference: mutableReference, mutable: null});
+            return toType({valType: ValType.REFERENCE, elementType: elementType.valType,mutableReference: mutableReference});
         }
 
         // Check if it's a struct type
@@ -173,6 +174,52 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         }
 
         return toType({valType: ValType.UNKNOWN});
+    }
+
+    canBeAssigned(assignee: Hole | Param, assigned: Type, owner: Variable | null = null): boolean {
+
+        if (assignee.type.mutable && !assigned.mutable) {
+            return false;
+        }
+
+        console.log("Checking assignment compatibility. Assignee type:", assignee.type, "Assigned type:", assigned, "Owner:", owner)
+
+        if (assigned.borrows === Borrow.BMut) {
+            if (owner) {
+                const borrows = this.variables.filter(v => v.type.owner === owner && v !== owner)
+
+                if (!borrows.every(v => this.usageListener.isVariableFree(v.name, this.getCurrentBlock(), owner.location.line))) {
+                    return false;
+                }
+            }
+        } else if (assigned.borrows === Borrow.BImmut && ((assignee.type.valType === ValType.REFERENCE && assignee.type.mutableReference) || assignee.type.valType !== ValType.REFERENCE)  ) {
+            if (owner) {
+                const borrows = this.variables.filter(v => v.type.owner === owner && v !== owner)
+
+                if (!borrows.every(v => this.usageListener.isVariableFree(v.name, this.getCurrentBlock(), owner.location.line))) {
+                    return false;
+                }
+            }
+        }
+        
+        if (assignee.type.valType === ValType.UNKNOWN) {
+            return true;
+        }
+        
+        if (assignee.type.valType === assigned.valType) {
+            if (assignee.type.valType === ValType.VECTOR ) {
+                return assignee.type.elementType === assigned.elementType;
+            } else if (assignee.type.valType === ValType.REFERENCE) {
+                if (assignee.type.mutableReference && !assigned.mutableReference) {
+                    return false;
+                }
+                return assignee.type.elementType === assigned.elementType;
+            } else if (assignee.type.valType === ValType.STRUCT) {
+                return assignee.type.structName === assigned.structName;
+            }
+            return true;
+        }
+        return false;
     }
 
     // ============================================= VISIT METHODS =============================================
@@ -211,7 +258,8 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             const fieldType = this.parseType(field.type_().getText());
             return {
                 name: fieldName,
-                type: fieldType
+                type: fieldType,
+                location: getLocation(field)
             };
         });
 
@@ -464,7 +512,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
         if (visitedField?.type?.valType === ValType.HOLE) {
             const hole = {location: getLocation(ctx.identifier()), type: this.currentParentType, suggestions: []}
-            this.generateStructHole(hole, variable.type.structName ?? 'unknown')
+            this.generateStructHole(hole, variable)
             return { type: visitedField.type, location: getLocation(ctx) };
         }
 
@@ -531,19 +579,33 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             
             return {
                 name: paramName, 
-                type: type
+                type: type,
+                location: getLocation(param)
             }
         })
 
         const selfParam = ctx.functionParameters()?.selfParam();
         
         if (selfParam) {
+            console.log("Parsing self param: ", selfParam.getText(), selfParam.shorthandSelf()?.getText())
             const type = toType({valType: ValType.STRUCT, structName: this.currentImplType ?? 'unknown'});
-            if (selfParam.typedSelf()?.KW_MUT() || selfParam.shorthandSelf()?.KW_MUT()) {
-                type.mutable = true;
+            if (selfParam.shorthandSelf().KW_MUT()) {
+                if(selfParam.shorthandSelf().AND()) {
+                    type.valType = ValType.REFERENCE;
+                    type.elementType = ValType.STRUCT;
+                    type.mutableReference = true;
+                } else {
+                    type.mutable = true;
+                }
+            } else {
+                if(selfParam.shorthandSelf().AND()) {
+                    type.valType = ValType.REFERENCE;
+                    type.elementType = ValType.STRUCT;
+                    type.mutableReference = false;
+                }
             }
             this.variables.push({name: "self", type: type, location: getLocation(selfParam)});
-            paramsParsed?.unshift({name: "self", type: type})
+            paramsParsed?.unshift({name: "self", type: type, location: getLocation(selfParam)});
         }
         
         const functionRecord: Function = {
@@ -684,7 +746,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             valType: ValType.REFERENCE,
             elementType: expr.type!.valType,
             primitive: false,
-            mutable: null,
             consumed: false,
             borrows: Borrow.BFree,
             owner: owner
@@ -745,7 +806,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         
 
         variables.forEach((variable: Variable) => {
-            if (variable.type && canBeAssigned(hole.type, variable.type) && !variable.type.consumed) {
+            if (variable.type && this.canBeAssigned(hole, variable.type, variable) && !variable.type.consumed) {
                 const borrows = this.variables.filter(v => v.type.owner === variable.type.owner && v !== variable.type.owner)
 
                 if (borrows.every(v => this.usageListener.isVariableFree(v.name, this.getCurrentBlock(), hole.location.line))) {
@@ -781,12 +842,12 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                 const struct = this.structs.find(s => s.name === variable.type.structName);
                 if (struct) {
                     struct.fields.forEach((field: Param) => {
-                        if (field.type && canBeAssigned(hole.type, field.type)) {
+                        if (field.type && this.canBeAssigned(hole, field.type)) {
                             holeSuggestions.push({suggestionType: 'field', suggestion: {...field, name: variable.name + "." + field.name, location: variable.location}});
                         }
                     });
                     struct.methods.forEach((method: Function) => {
-                        if (method.type && canBeAssigned(hole.type, method.type)) {
+                        if (method.type && this.canBeAssigned(hole, method.type)) {
                             holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: variable.name + "." + method.name + "()", location: variable.location}});
                         }
                     });
@@ -795,7 +856,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         });
         
         functions.forEach((func: Function) => {
-            if (func.type && canBeAssigned(hole.type, func.type)) {
+            if (func.type && this.canBeAssigned(hole, func.type)) {
                 holeSuggestions.push({suggestionType: 'function', suggestion: {...func, name: func.name + "()", location: func.location}});
             }
         })
@@ -811,7 +872,8 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         this.holes.push(hole);
     }
     
-    public generateStructHole(hole: Hole, structName: string) {
+    public generateStructHole(hole: Hole, variable: Variable) {
+        const structName = variable.type.structName;
         console.log("Generating struct hole for struct:", structName)
         const struct = this.structs.find(s => s.name === structName);
         if (!struct) return;
@@ -819,14 +881,15 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         // console.log("Struct fields:", struct.fields)
         console.log("Hole type:", hole.type)
         struct.fields.forEach((field: Param) => {
-            if (field.type && canBeAssigned(hole.type, field.type)) {
+            if (field.type && this.canBeAssigned(hole, field.type)) {
                 holeSuggestions.push({suggestionType: 'field', suggestion: field});
             }
         });
         
         struct.methods.forEach((method: Function) => {
-            if (method.type && canBeAssigned(hole.type, method.type)) {
-                holeSuggestions.push({suggestionType: 'method', suggestion: method});
+            console.log("Checking method:", method.name)
+            if (method.type && this.canBeAssigned(hole, method.type) && (this.canBeAssigned(method.params[0], variable.type, variable) || this.canBeAssigned(method.params[0], {...variable.type, valType: ValType.REFERENCE, elementType: variable.type.valType, mutableReference: variable.type.mutable}, variable))) {
+                holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: method.name + "()"}});
             }
         });
         

@@ -114,6 +114,7 @@ export class UsageGraphListener extends RustParserListener {
         const parentBlock = this.allBlocks.find(block => block.id === blockId)?.parentId;
 
         const freeInCurrentBlock = !usagesInBlock.some(usage => usage.name === variableName && usage.line > line);
+
         if (parentBlock) {
             const freeInAncestorBlock = this.isVariableFree(variableName, parentBlock, line)
             return freeInAncestorBlock && freeInCurrentBlock;

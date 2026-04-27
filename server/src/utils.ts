@@ -35,31 +35,7 @@ export function toType(overrides: Partial<Type> & { valType: ValType }, variable
 	}
 }
 
-export function canBeAssigned(assignee: Type, assigned: Type): boolean {
 
-	if (assignee.mutable && !assigned.mutable) {
-		return false;
-	}
-	
-	if (assignee.valType === ValType.UNKNOWN) {
-		return true;
-	}
-	
-	if (assignee.valType === assigned.valType) {
-		if (assignee.valType === ValType.VECTOR ) {
-			return assignee.elementType === assigned.elementType;
-		} else if (assignee.valType === ValType.REFERENCE) {
-			if (assignee.mutableReference && !assigned.mutableReference) {
-				return false;
-			}
-			return assignee.elementType === assigned.elementType;
-		} else if (assignee.valType === ValType.STRUCT) {
-			return assignee.structName === assigned.structName;
-		}
-		return true;
-	}
-	return false;
-}
 
 export function printHoleSuggestionContext(hole: Hole): void {
 	const formatType = (type?: Type): string => {

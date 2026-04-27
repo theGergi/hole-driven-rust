@@ -1,0 +1,22 @@
+[
+	{
+		"line": 19,
+		"type": { "valType": "integer" },
+		"suggestionNames": ["mutable()", "immutable()", "consume_immutable()", "consume_mutable()"]
+	},
+	{
+		"line": 24,
+		"type": { "valType": "integer" },
+		"suggestionNames": ["immutable()", "consume_immutable()"]
+	},
+	{
+		"line": 30,
+		"type": { "valType": "integer" },
+		"suggestionNames": []
+	},
+	{
+		"line": 37,
+		"type": { "valType": "integer" },
+		"suggestionNames": ["immutable()"]
+	}
+]
