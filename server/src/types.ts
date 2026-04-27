@@ -26,7 +26,6 @@ export interface Type {
 	borrows: Borrow;
 	owner?: Variable;
 	structName?: string; // For struct types
-	property?: boolean; // Marked when a method call accesses a property on this type
 }
 
 export interface Suggestion {
@@ -53,6 +52,7 @@ export interface Struct {
 	location: SourceLocation;
 	fields: Param[];
 	methods: Function[];
+	iterable?: boolean; // Indicates if the type can be iterated over (e.g., Vec, arrays)
 }
 
 export interface Param {

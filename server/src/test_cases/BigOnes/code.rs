@@ -1,9 +1,12 @@
 // Original: https://github.com/TheAlgorithms/Rust/blob/master/src/string/rabin_karp.rs
 
+pub struct VecIterator<T> {
+}
+
+impl<T> VecIterator<T> {
+}
+
 pub struct Vec<T> {
-    ptr: *mut T,
-    cap: integer,
-    len: integer,
 }
 
 impl<T> Vec<T> {
@@ -11,10 +14,61 @@ impl<T> Vec<T> {
 
     pub fn push(&mut self, elem: T) {}
 
-	pub fn len(&mut self) -> integer {}
+	pub fn len(&self) -> integer {}
+
+    pub fn is_empty(&self) -> boolean {}
+
+    pub fn iter(&self) -> VecIterator<T> {}
 }
 
-pub fn rabin_karp(text: &string, pattern: &string) -> Vec<integer> {
+pub struct String {
+}
+
+impl String {
+    pub fn new() -> Self {}
+
+    pub fn push(&mut self, elem: T) {}
+
+	pub fn len(&self) -> integer {}
+
+    pub fn is_empty(&self) -> boolean {}
+
+    pub fn as_bytes(&self) -> Vec<integer> {}
+}
+
+fn compute_hash(s: &String) -> integer {
+    let MOD: integer = 101;
+    let RADIX: integer = 256;
+
+    let mut hash_val = 0;
+    for &byte in s.as_bytes().iter() {
+        hash_val = (hash_val * RADIX + byte as integer) % MOD;
+    }
+    hash_val
+}
+
+fn update_hash(
+    s: &String,
+    old_idx: integer,
+    new_idx: integer,
+    old_hash: integer,
+    radix_pow: integer,
+) -> integer {
+    let MOD: integer = 101;
+    let RADIX: integer = 256;
+
+    let mut new_hash = old_hash;
+    let old_char = s.as_bytes()[old_idx] as integer;
+    let new_char = s.as_bytes()[new_idx] as integer;
+    new_hash = (new_hash + MOD - (old_char * radix_pow % MOD)) % MOD;
+    new_hash = (new_hash * RADIX + new_char) % MOD;
+    new_hash
+}
+
+pub fn rabin_karp(text: &String, pattern: &String) -> Vec<integer> {
+    let MOD: integer = 101;
+    let RADIX: integer = 256;
+
     if text.is_empty() || pattern.is_empty() || pattern.len() > text.len() {
         return vec![];
     }
@@ -52,25 +106,3 @@ pub fn rabin_karp(text: &string, pattern: &string) -> Vec<integer> {
     result
 }
 
-fn compute_hash(s: &string) -> integer {
-    let mut hash_val = 0;
-    for &byte in s.as_bytes().iter() {
-        hash_val = (hash_val * RADIX + byte as integer) % MOD;
-    }
-    hash_val
-}
-
-fn update_hash(
-    s: &string,
-    old_idx: integer,
-    new_idx: integer,
-    old_hash: integer,
-    radix_pow: integer,
-) -> integer {
-    let mut new_hash = old_hash;
-    let old_char = s.as_bytes()[old_idx] as integer;
-    let new_char = s.as_bytes()[new_idx] as integer;
-    new_hash = (new_hash + MOD - (old_char * radix_pow % MOD)) % MOD;
-    new_hash = (new_hash * RADIX + new_char) % MOD;
-    new_hash
-}

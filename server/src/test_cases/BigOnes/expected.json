@@ -1,0 +1,7 @@
+[
+	{
+		"line": 81,
+		"type": { "valType": "integer" },
+		"suggestionNames": ["MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()"]
+	}
+]
