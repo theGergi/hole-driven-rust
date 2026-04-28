@@ -125,10 +125,11 @@ connection.onHover((params: HoverParams): Hover | null => {
     });
 
     const triggerSequence = '??';
-    const startIndex = lineText.indexOf(triggerSequence);
+    let startIndex = lineText.indexOf(triggerSequence);
 
     // If '??' exists on this line
-    if (startIndex !== -1) {
+    while (startIndex !== -1) {
+        const endIndex = startIndex + triggerSequence.length;
         // Check if the cursor is actually hovering over the '??'
         if (position.character >= startIndex && position.character <= startIndex + triggerSequence.length) {
             
@@ -213,6 +214,7 @@ connection.onHover((params: HoverParams): Hover | null => {
                 range: replaceRange
             }
         }
+        startIndex = lineText.indexOf(triggerSequence, endIndex);
     }
 
     return null;

@@ -7,7 +7,8 @@ export enum ValType {
 	UNKNOWN = "UNKNOWN",
 	VECTOR = "Vec",
 	REFERENCE = "reference",
-	STRUCT = "struct"
+	STRUCT = "struct",
+	RANGE = "range"
 }
 
 export enum Borrow {

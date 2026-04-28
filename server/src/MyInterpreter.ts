@@ -576,7 +576,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             const iteratorType = this.visit(ctx.expression())?.type || toType({valType: ValType.UNKNOWN});
             let elementType = toType({valType: ValType.UNKNOWN});
 
-            if (iteratorType.valType === ValType.VECTOR) {
+            if (iteratorType.valType === ValType.VECTOR || (iteratorType.valType === ValType.RANGE)) {
                 elementType = toType({valType: iteratorType.elementType ?? ValType.UNKNOWN});
             } else if (iteratorType.valType === ValType.REFERENCE && iteratorType.elementType === ValType.VECTOR) {
                 elementType = toType({valType: iteratorType.elementType ?? ValType.UNKNOWN});
@@ -958,6 +958,11 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         const type = toType({valType: ValType.UNKNOWN});
         const start = this.visit(ctx.expression(0));
         const end = ctx.expression(1) ? this.visit(ctx.expression(1)) : null;
+
+        if (start?.type?.valType === ValType.INT && (!end || end.type?.valType === ValType.INT)) {
+            type.valType = ValType.RANGE;
+            type.elementType = ValType.INT;
+        }
 
         return {
             type: type,
