@@ -52,7 +52,8 @@ export interface Struct {
 	location: SourceLocation;
 	fields: Param[];
 	methods: Function[];
-	iterable?: boolean; // Indicates if the type can be iterated over (e.g., Vec, arrays)
+	iterable?: boolean; // Indicates if the type can be iterated over
+	index?: boolean; // Indicates if the type can be indexed/sliced (e.g., Vec, arrays)
 }
 
 export interface Param {

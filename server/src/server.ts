@@ -168,7 +168,7 @@ connection.onHover((params: HoverParams): Hover | null => {
                 } else if (suggestion.suggestionType === 'function'){
                     let paramStringWithTypes = suggestion.suggestion.params.map((param: any) => `??: ${constructTypeString(param.type)}`).join(', ')
                     let paramStringWithoutTypes = suggestion.suggestion.params.map(() => `??`).join(', ')
-                    let name = suggestion.suggestion.name
+                    let name = suggestion.suggestion.name.slice(0, -2)
                     if (suggestion.suggestion.structName) {
                         name = `${suggestion.suggestion.structName}::${suggestion.suggestion.name}`
                     }
@@ -177,9 +177,12 @@ connection.onHover((params: HoverParams): Hover | null => {
                 } else if (suggestion.suggestionType === 'method') {
                     let paramStringWithTypes = suggestion.suggestion.params.slice(1).map((param: any) => `??: ${constructTypeString(param.type)}`).join(', ')
                     let paramStringWithoutTypes = suggestion.suggestion.params.slice(1).map(() => `??`).join(', ')
-                    replacementWithTypes = `${suggestion.suggestion.name}(${paramStringWithTypes})`
-                    replacementWithoutTypes = `${suggestion.suggestion.name}(${paramStringWithoutTypes})`
+                    replacementWithTypes = `${suggestion.suggestion.name.slice(0, -2)}(${paramStringWithTypes})`
+                    replacementWithoutTypes = `${suggestion.suggestion.name.slice(0, -2)}(${paramStringWithoutTypes})`
                 } else if (suggestion.suggestionType === 'field') {
+                    replacementWithTypes = suggestion.suggestion.name
+                    replacementWithoutTypes = suggestion.suggestion.name
+                } else if (suggestion.suggestionType === 'slice') {
                     replacementWithTypes = suggestion.suggestion.name
                     replacementWithoutTypes = suggestion.suggestion.name
                 }

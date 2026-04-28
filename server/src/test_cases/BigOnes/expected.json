@@ -1,7 +1,27 @@
 [
 	{
-		"line": 81,
+		"line": 85,
 		"type": { "valType": "integer" },
-		"suggestionNames": ["MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()"]
+		"suggestionNames": ["MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()", "pattern.len()", "text.len()"]
+	},
+	{
+		"line": 93,
+		"type": { "valType": "integer" },
+		"suggestionNames": ["MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()", "result.len()", "rolling_hash", "pattern.len()", "text.len()"]
+	},
+	{
+		"line": 94,
+		"type": { "valType": "reference" },
+		"suggestionNames": ["&result", "text", "&text[??..??]", "&pattern[??..??]"]
+	},
+	{
+		"line": 95,
+		"type": { "valType": "integer" },
+		"suggestionNames": ["MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()", "result.len()", "rolling_hash", "pattern.len()", "text.len()"]
+	},
+	{
+		"line": 95,
+		"type": { "valType": "integer" },
+		"suggestionNames": ["MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()", "result.len()", "rolling_hash", "pattern.len()", "text.len()"]
 	}
 ]

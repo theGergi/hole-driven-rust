@@ -36,6 +36,10 @@ impl String {
     pub fn as_bytes(&self) -> Vec<integer> {}
 }
 
+impl Index for String {
+
+}
+
 fn compute_hash(s: &String) -> integer {
     let MOD: integer = 101;
     let RADIX: integer = 256;
@@ -85,7 +89,10 @@ pub fn rabin_karp(text: &String, pattern: &String) -> Vec<integer> {
     let mut result = vec![];
     for i in 0..=text.len() - pattern.len() {
         rolling_hash = if i == 0 {
-            compute_hash(&text[0..pattern.len()])
+            // compute_hash(&text[0..pattern.len()])
+            ??;
+            compute_hash(??); // correct: &text[0..pattern.len()]; possible &text, &pattern, etc.
+            compute_hash(&text[??..??]) // correct: &text[0..pattern.len()]; possible &text, &pattern, etc.
             // Step 1: ??   // correct compute_hash; possible radix_pow, rolling_hash, pattern.len(), update_hash
             // Step 2: compute_hash(??: &string) // correct &text[0..pattern.len()]
 			// Step 3: compute_hash(&text[??..??]: &string) // should suggest: &text, &text[??..??], &pattern, &pattern[??..??]
