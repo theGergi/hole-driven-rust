@@ -1,0 +1,13 @@
+[
+	{
+		"line": 6,
+		"type": { "valType": "Vec", "elementType": "string" },
+		"suggestionNames": ["z"]
+	},
+	{
+		"line": 11,
+		"type": { "valType": "Vec", "elementType": "string" },
+		"suggestionNames": ["z"]
+	}
+	
+]

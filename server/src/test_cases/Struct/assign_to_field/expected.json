@@ -1,0 +1,12 @@
+[
+	{
+		"line": 19,
+		"type": { "valType": "reference" },
+		"suggestionNames": ["&owned", "&target_container", "mutable", "shared"]
+	},
+	{
+		"line": 19,
+		"type": { "valType": "reference" },
+		"suggestionNames": ["&mut owned", "&mut target_container", "mutable"]
+	}
+]

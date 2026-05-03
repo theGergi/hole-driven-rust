@@ -1,5 +1,5 @@
 import { RustParserVisitor } from './parser/RustParserVisitor';
-import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext } from './parser/RustParser';
+import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
 import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion } from './types.js';
@@ -104,15 +104,15 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         }
     }
 
-    borrow(variableName: string, mutable: boolean): Variable {
+    borrow(variableName: string, mutable: boolean, location: SourceLocation): Variable {
         const variable = this.getBoundVariable(variableName);
 
         if (variable.type?.borrows === Borrow.BFree) {
             variable.type.borrows = mutable ? Borrow.BMut : Borrow.BImmut
-        } else if (variable.type?.borrows === Borrow.BMut) {
+        } else if (variable.type?.borrows === Borrow.BMut && !this.checkBorrows(variable.type.owner!, location)) {
             throw Error("Cannot borrow, already mutably borrowed")
         } else {
-            if (mutable) {
+            if (mutable && !this.checkBorrows(variable.type.owner!, location)) {
                 throw Error("Cannot mutably borrow, already immutably borrowed")
             }
         }
@@ -346,18 +346,30 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
     visitAssignmentExpression = (ctx: any): ReturnType | null => {
         console.log("Assignment expression")
+        console.log(ctx.expression(0))
 
-        const variableName = ctx.expression(0).getText();
+        const leftHandExpression = ctx.expression(0);
+
+        let variable;
+        let varType;
+        console.log(this.structs)
+        if (leftHandExpression instanceof FieldExpressionContext) {
+            variable = this.getBoundVariable(leftHandExpression.expression().getText());
+            varType = this.getBoundField(variable.type.structName!, leftHandExpression.identifier().getText()).type
+        } else {
+            const variableName = leftHandExpression.getText();
+            variable = this.getBoundVariable(variableName)
+            varType = variable.type
+        }
         const expression = ctx.expression(1);
 
-        const variable = this.getBoundVariable(variableName)
 
-        if (!variable.type.mutable) {
-            throw Error("Cannot modify immutable variable", variableName)
+        if (!variable.type.mutable && !variable.type.mutableReference) {
+            throw Error("Cannot modify immutable variable", ctx.expression(0).getText())
         }
 
-        if (variable.type) {
-            this.typeStack.push(variable.type);
+        if (varType) {
+            this.typeStack.push(varType);
         }
 
         let inferedType: Type = toType({valType: ValType.UNKNOWN});
@@ -457,19 +469,31 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             //     }
             // }
             if (tokens) {
-                if (!tokens.every((val:any, i:number) => (i % 2 === 1 ? val.getText() === ',' : true))) {
+                if (tokens.every((val:any, i:number) => (i % 2 === 1 ? val.getText() === ',' : true))) { // List vec macro like vec![1, 2, 3]
+                    tokens.forEach((token: any, i: number) => {
+                        if (i % 2 === 0) {
+                            const elType = this.visit(token)!.type!.valType;
+                            console.log("Element type:", elType, "Token: ", token.getText())
+                            if (type.elementType === ValType.UNKNOWN) {
+                                console.log("hey")
+                                type = toType({valType: ValType.VECTOR, elementType: elType});
+                            } else if (type.elementType !== elType) {
+                                throw Error("All elements in vec must be of same type")
+                            }
+                        }
+                    })
+                } else if (tokens.length === 3 && tokens[1].getText() === ";") { // Repeat vec macro like vec![0; 10]
+                    const elType = this.visit(tokens[0])!.type!.valType;
+                    const countType = this.visit(tokens[2])!.type!.valType;
+
+                    if (countType === ValType.INT) {
+                        type = toType({valType: ValType.VECTOR, elementType: elType});
+                    } else if (type.elementType !== elType) {
+                        throw Error("Element type mismatch in vec! macro")
+                    }
+                } else {
                     throw Error("Only simple vec macros with commas are supported")
                 }
-                tokens.forEach((token: any, i: number) => {
-                    if (i % 2 === 0) {
-                        const elType = this.visit(token)!.type!.valType;
-                        if (type.elementType === ValType.UNKNOWN) {
-                            type = toType({valType: ValType.VECTOR, elementType: elType});
-                        } else if (type.elementType !== elType) {
-                            throw Error("All elements in vec must be of same type")
-                        }
-                    }
-                })
             }
 
             if (this.structs.find(s => s.name === "Vec")) {
@@ -554,6 +578,23 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         });
 
         return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
+    }
+
+    visitStructExprStruct = (ctx: any): ReturnType | null => {
+        console.log("Struct expression")
+        const structName = ctx.pathInExpression().pathExprSegment(0).pathIdentSegment().identifier().getText();
+        
+        const struct = this.structs.find(s => s.name === structName);
+        if (!struct) {
+            throw new Error(`Struct '${structName}' not found for struct expression`);
+        }
+
+        // TODO: Needs to also check fields
+
+        return {
+            type: toType({valType: ValType.STRUCT, structName: structName}),
+            location: getLocation(ctx)
+        }
     }
 
     visitIteratorLoopExpression = (ctx: any): ReturnType | null => {
@@ -901,7 +942,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
         // If it is a variable borrow it
         if (ctx.expression(0) instanceof PathExpression_Context) {
-            this.borrow(ctx.expression(0)!.getText(), true) // TODO Unhardcode the mutable borrow
+            this.borrow(ctx.expression(0)!.getText(), true, getLocation(ctx)) // TODO Unhardcode the mutable borrow
         }
 
 
@@ -932,7 +973,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         // If borrowing a variable, mark it as borrowed
         if (exprCtx instanceof PathExpression_Context) {
             const varName = exprCtx.getText();
-            owner = this.borrow(varName, mutable);
+            owner = this.borrow(varName, mutable, getLocation(ctx));
         }
         
         const expr = this.visit(exprCtx) as ReturnType;
@@ -1046,7 +1087,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                         holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType}), location: variable.location}});
                     } else {
                         if (this.checkBorrows(variable, hole.location)) {
-                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, mutableReference: true}), location: variable.location}});
+                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, mutableReference: true}), location: variable.location}});
                         }
                     }
                 }
@@ -1054,6 +1095,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             if (variable.type.valType === ValType.STRUCT || ( variable.type.valType === ValType.REFERENCE && variable.type.elementType === ValType.STRUCT)) {
                 const struct = this.structs.find(s => s.name === variable.type.structName);
                 if (struct) {
+                    console.log("Checking struct:", struct.name)
                     struct.fields.forEach((field: Param) => {
                         if (field.type && this.canBeAssigned(hole, field.type)) {
                             holeSuggestions.push({suggestionType: 'field', suggestion: {...field, name: variable.name + "." + field.name, location: variable.location}});
@@ -1064,7 +1106,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                             holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: variable.name + "." + method.name + "()", location: variable.location}});
                         }
                     });
-                    console.log("Struct:", struct.name, "indexable:", struct.index)
                     if (struct.index && (this.canBeAssigned(hole, variable.type) || this.canBeAssigned(hole, {...variable.type, valType: ValType.REFERENCE, elementType: variable.type.valType, mutableReference: variable.type.mutable}))) {
                         holeSuggestions.push({suggestionType: 'slice', suggestion: {...struct, name: "&" + variable.name + "[??..??]", location: variable.location}});
                     }
