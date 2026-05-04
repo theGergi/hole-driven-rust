@@ -25,7 +25,7 @@ import { RustParser } from './parser/RustParser';
 import MyInterpreter from './MyInterpreter.js';
 import { CharStream, CommonTokenStream, ParseTreeWalker } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
-import { Type } from './types.js';
+import { constructTypeString, Type } from './types.js';
 import { getSourceLocationKey } from './utils.js';
 
 
@@ -96,22 +96,6 @@ connection.onInitialized(() => {
     connection.console.log('Language Server initialized and ready.');
 });
 
-function constructTypeString(type: Type): string {
-    let typeString = "";
-    if (type.valType == 'reference') {
-        typeString += "&";
-        if (type.mutableReference) {
-            typeString += "mut ";
-        }
-        typeString += type.elementType;
-    } else if ((type.valType == 'Vec')) {
-        typeString += "Vec " + type.elementType;
-    } else {
-        typeString += type.valType;
-    }
-    return typeString;
-}
-
 connection.onHover((params: HoverParams): Hover | null => {
     const { textDocument, position } = params;
     const document = documents.get(textDocument.uri);
@@ -148,10 +132,11 @@ connection.onHover((params: HoverParams): Hover | null => {
             const suggestions = hole.suggestions;
             const type = hole.type;
 
-            
+            const typeString = constructTypeString(type);
 
             const holeArgs = [
                 hole,
+                typeString,
                 textDocument.uri
             ];
             const holeCommandUri = `command:myExtension.showHoleInfo?${encodeURIComponent(JSON.stringify(holeArgs))}`;
@@ -171,7 +156,7 @@ connection.onHover((params: HoverParams): Hover | null => {
                     let paramStringWithoutTypes = suggestion.suggestion.params.map(() => `??`).join(', ')
                     let name = suggestion.suggestion.name.slice(0, -2)
                     if (suggestion.suggestion.structName) {
-                        name = `${suggestion.suggestion.structName}::${suggestion.suggestion.name}`
+                        name = `${suggestion.suggestion.structName}::${name}`
                     }
                     replacementWithTypes = `${name}(${paramStringWithTypes})`
                     replacementWithoutTypes = `${name}(${paramStringWithoutTypes})`
@@ -199,11 +184,11 @@ connection.onHover((params: HoverParams): Hover | null => {
             console.log("Hey")
 
             let hoverContent = "";
-            const typeString = "Type: " + constructTypeString(type);
+
             if (validSuggestions.length > 0) {
-                hoverContent = typeString + "\n\n" + validSuggestions.join('\n\n') + `\n\n[Show Full Context](${holeCommandUri})`;
+                hoverContent = "Type: " + typeString + "\n\n" + validSuggestions.join('\n\n') + `\n\n[Show Full Context](${holeCommandUri})`;
             } else {
-                hoverContent = typeString + "\n\nNo suggestions\n\n[Show Full Context](${holeCommandUri})";
+                hoverContent = "Type: " + typeString + "\n\nNo suggestions\n\n[Show Full Context](${holeCommandUri})";
             }
 
             return {

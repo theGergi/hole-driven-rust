@@ -1,0 +1,7 @@
+[
+	{
+		"line": 11,
+		"type": { "valType": "void" },
+		"suggestionNames": ["change()", "some_string.push_str()"]
+	}
+]

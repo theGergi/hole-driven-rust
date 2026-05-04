@@ -1,6 +1,5 @@
 export enum ValType {
 	ROOT = "ROOT",
-	FUNCTION = "FUNCTION",
 	INT = "integer",
 	STRING = "string",
 	HOLE = "HOLE",
@@ -8,7 +7,8 @@ export enum ValType {
 	VECTOR = "Vec",
 	REFERENCE = "reference",
 	STRUCT = "struct",
-	RANGE = "range"
+	RANGE = "range",
+	VOID = "void"
 }
 
 export enum Borrow {
@@ -28,6 +28,31 @@ export interface Type {
 	owner?: Variable;
 	structName?: string; // For struct types
 }
+
+
+	
+export function constructTypeString(type: Type): string {
+	let typeString = "";
+	if (type.valType === 'reference') {
+		typeString += "&";
+		if (type.mutableReference) {
+			typeString += "mut ";
+		}
+		if (type.elementType === 'struct') {
+			typeString += type.structName;
+		} else {
+			typeString += type.elementType;
+		}
+	} else if (type.valType === 'Vec') {
+		typeString += "Vec " + type.elementType;
+	} else if (type.valType === 'struct') {
+		typeString += type.structName;
+	} else {
+		typeString += type.valType;
+	}
+	return typeString;
+}
+	
 
 export interface Suggestion {
 	suggestionType: string;

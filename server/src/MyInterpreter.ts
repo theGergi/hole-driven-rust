@@ -191,11 +191,11 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         return toType({valType: ValType.UNKNOWN});
     }
 
-    checkBorrows(owner: Variable, location: SourceLocation): boolean {
+    checkBorrows(owner: Variable, location: SourceLocation, variableName: string | null = null): boolean {
         if (owner) {
             const borrows = this.variables.filter(v => v.type.owner === owner && v !== owner)
 
-            if (!borrows.every(v => this.usageListener.isVariableFree(v.name, this.getCurrentBlock(), location.line))) {
+            if (!borrows.every(v => v.name === variableName || this.usageListener.isVariableFree(v.name, this.getCurrentBlock(), location.line))) {
                 return false;
             }
         }
@@ -209,9 +209,12 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             return false;
         }
 
+        console.log("HEY 3")
+
         if (assigned.primitive && assignee.type.valType === assigned.valType) {
             return true;
         }
+        console.log("HEY 2")
 
         if (assigned.borrows === Borrow.BMut) {
             if (!this.checkBorrows(owner!, owner!.location)) {
@@ -227,6 +230,8 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             return true;
         }
         
+        console.log("HEY 1")
+
         if (assignee.type.valType === assigned.valType) {
             if (assignee.type.valType === ValType.VECTOR ) {
                 return assignee.type.elementType === assigned.elementType;
@@ -240,6 +245,8 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             }
             return true;
         }
+
+        console.log("HEY 4")
         return false;
     }
 
@@ -523,6 +530,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         }
         console.log("Function call:", functionName, "Struct:", structName)
         const func = this.getBoundFunction(functionName, structName);
+        console.log(func)
 
         ctx.callParams()?.expression().forEach((expr: any, i: number) => {
             const otherType = func.params[i].type;
@@ -719,10 +727,11 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         const funcId = `func_${funcName}`;
         this.pushBlock(funcId);
 
-        let type = this.parseType(ctx.functionReturnType()?.type_());
-        console.log("Function name:", funcName)
-        console.log("Declared return type:", type)
-        console.log(this.structs.map(s => s.name))
+        let type = toType({valType: ValType.VOID})
+        if(ctx.functionReturnType()) {
+            type = this.parseType(ctx.functionReturnType().type_());
+        }
+
         this.typeStack.push(type);
         
         // 1. Get the function name
@@ -754,6 +763,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         
         if (selfParam) {
             console.log("Parsing self param: ", selfParam.getText(), selfParam.shorthandSelf()?.getText())
+            console.log(selfParam.shorthandSelf())
             const type = toType({valType: ValType.STRUCT, structName: this.currentImplType ?? 'unknown'});
             if (selfParam.shorthandSelf().KW_MUT()) {
                 if(selfParam.shorthandSelf().AND()) {
@@ -1064,11 +1074,11 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         
 
         variables.forEach((variable: Variable) => {
-            // console.log("Checking variable:", variable.name, "of type", variable.type)
+            console.log("Checking variable:", variable.name, "of type", variable.type)
             if (variable.type && this.canBeAssigned(hole, variable.type, variable, false) && !variable.type.consumed) {
                 console.log("hey")
 
-                if (this.checkBorrows(variable.type.owner!, hole.location)) {
+                if (this.checkBorrows(variable.type.owner!, hole.location, variable.name)) {
                     holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
                 }
             }

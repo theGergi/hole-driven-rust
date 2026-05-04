@@ -63,8 +63,9 @@ export function activate(context: ExtensionContext) {
 	);
 
 	context.subscriptions.push(
-		commands.registerCommand('myExtension.showHoleInfo', async (hole: any, uri: string) => {
+		commands.registerCommand('myExtension.showHoleInfo', async (hole: any, typeString: String, uri: string) => {
 			const result = {
+				typeString: typeString,
 				type: hole.type,
 				variables: hole.context.variables,
 				functions: hole.context.functions,
@@ -89,20 +90,6 @@ export function activate(context: ExtensionContext) {
 					await workspace.applyEdit(edit);
 				}
 			});
-
-			let typeString = "Type: ";
-			const type = result.type;
-			if (type.valType == 'reference') {
-				typeString += "&";
-				if (type.mutableReference) {
-					typeString += "mut ";
-				}
-				typeString += type.elementType;
-			} else if (type.valType == 'Vec') {
-				typeString += "Vec<" + type.elementType + ">";
-			} else {
-				typeString += type.valType;
-			}
 
 			const possibleValues = result.possibleValues.map((v: any) => v.name || v).join(', ');
 
@@ -137,7 +124,7 @@ export function activate(context: ExtensionContext) {
 					</style>
 				</head>
 				<body>
-					<h2>${typeString}</h2>
+					<h2>${result.typeString}</h2>
 					<h3>Current Full Context:</h3>
 					<h4>Variables:</h4>
 					<div class="context">${formattedVariables}</div>

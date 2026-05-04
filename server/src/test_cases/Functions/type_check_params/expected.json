@@ -46,12 +46,12 @@
 	{
 		"line": 31,
 		"type": { "valType": "reference" },
-		"suggestionNames": []
+		"suggestionNames": ["a"]
 	},
 	{
 		"line": 32,
 		"type": { "valType": "reference" },
-		"suggestionNames": []
+		"suggestionNames": ["a"]
 	},
 	{
 		"line": 33,
@@ -67,7 +67,7 @@
 	{
 		"line": 41,
 		"type": { "valType": "reference" },
-		"suggestionNames": ["&z"]
+		"suggestionNames": ["a", "&z"]
 	},
 	{
 		"line": 42,
