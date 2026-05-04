@@ -1,21 +1,22 @@
 {
-	"compilerOptions": {
-		"target": "ES2024",
-		"lib": [
-			"ES2024"
-		],
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"sourceMap": true,
-		"strict": true,
-		"outDir": "out",
-		"rootDir": "src",
-		"allowJs": true,
-		"composite": true,
-	},
-	"include": ["src/**/*"],
-	"exclude": [
-		"node_modules",
-		".vscode-test"
-	]
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "module": "NodeNext",          // Better for modern Node projects
+    "moduleResolution": "NodeNext",
+    "sourceMap": true,
+    "strict": true,
+    "outDir": "out",
+    "rootDir": "src",              // Keeps your output clean
+    "allowJs": true,
+    "composite": true,             // Required for project references
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    }
+  },
+  "references": [
+    { "path": "../shared" }        // This is the "right" way to link projects
+  ],
+  "include": ["src/**/*"],         // Don't include ../shared here
+  "exclude": ["node_modules", ".vscode-test"]
 }

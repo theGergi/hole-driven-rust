@@ -2,7 +2,7 @@ import { CharStream, CommonTokenStream } from 'antlr4ng';
 import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
 import MyInterpreter from './MyInterpreter.js';
-import { Hole, SourceLocation, Variable, Function as Func, Type } from './types.js';
+import { Hole, SourceLocation, Variable, Function as Func, Type } from '../../shared/types.js';
 import { toType, printHoleSuggestionContext } from './utils.js';
 import { RustParserListener } from './parser/RustParserListener';
 import { ParseTreeWalker } from 'antlr4ng';

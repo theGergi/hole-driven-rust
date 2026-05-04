@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    /* 1. Project Reference Essentials */
+    "composite": true,               // Must be true for references to work
+    "declaration": true,             // Generates .d.ts files for client/server
+    "declarationMap": true,          // Allows "Go to Definition" to work across projects
+    "rootDir": ".",
+    "outDir": "dist",                // Compiled types go here
+
+    /* 2. Modern Standards */
+    "target": "ES2024",
+    "module": "NodeNext",            // Best compatibility for both ESM and CJS
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2024"],               // Pure JS logic only (no 'dom' or 'node')
+
+    /* 3. Strictness & Quality */
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,         // Ensures compatibility with bundlers like Vite/Esbuild
+    "preserveWatchOutput": true
+  },
+  "include": ["**/*.ts"],            // Include all TS files in shared
+  "exclude": ["node_modules", "dist"]
+}

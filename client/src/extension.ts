@@ -5,6 +5,7 @@
 
 import * as path from 'path';
 import { workspace, ExtensionContext, commands, Range, WorkspaceEdit, Uri, window, ViewColumn } from 'vscode';
+import { constructTypeString } from '../../shared/types.js';
 
 import {
 	LanguageClient,
@@ -15,35 +16,18 @@ import {
 
 let client: LanguageClient;
 
-// Helper function to format a type as a string
-function formatType(type: any): string {
-	if (!type) return 'unknown';
-	
-	if (type.valType === 'reference') {
-		let result = '&';
-		if (type.mutableReference) {
-			result += 'mut ';
-		}
-		result += type.elementType || 'unknown';
-		return result;
-	} else if (type.valType === 'Vec') {
-		return `Vec<${type.elementType || 'unknown'}>`;
-	} else {
-		return type.valType || 'unknown';
-	}
-}
 
 // Helper function to format a variable as "name: type"
 function formatVariable(variable: any): string {
-	return `${variable.name}: ${formatType(variable.type)}`;
+	return `${variable.name}: ${constructTypeString(variable.type)}`;
 }
 
 // Helper function to format a function signature as "name(??: paramTypes) -> returnType"
 function formatFunction(func: any): string {
 	const paramString = func.params
-		.map((param: any) => `??: ${formatType(param.type)}`)
+		.map((param: any) => `??: ${constructTypeString(param.type)}`)
 		.join(', ');
-	const returnType = formatType(func.type);
+	const returnType = constructTypeString(func.type);
 	return `${func.name}(${paramString}) -> ${returnType}`;
 }
 

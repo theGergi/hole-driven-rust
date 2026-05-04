@@ -1,5 +1,5 @@
 import { ParserRuleContext } from 'antlr4ng';
-import { Borrow, Hole, SourceLocation, Type, ValType, Variable, Function } from './types';
+import { Borrow, Hole, SourceLocation, Type, ValType, Variable, Function } from '../../shared/types';
 
 
 
@@ -26,13 +26,13 @@ export function toType(overrides: Partial<Type> & { valType: ValType }, variable
 		primitive = true;
 	}
 
-	return {
-		primitive: primitive,
-		mutable: false,
-		consumed: false,
-		borrows: Borrow.BFree,
-		...overrides
-	}
+	const type = new Type();
+	type.primitive = primitive;
+	type.mutable = false;
+	type.consumed = false;
+	type.borrows = Borrow.BFree;
+	Object.assign(type, overrides);
+	return type;
 }
 
 

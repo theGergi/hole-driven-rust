@@ -2,7 +2,7 @@ import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
-import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion } from './types.js';
+import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion } from '../../shared/types.js';
 import { toType, getSourceLocationKey, getLocation } from './utils';
 
 export default class MyInterpreter extends RustParserVisitor<ReturnType | null> {
@@ -209,12 +209,9 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             return false;
         }
 
-        console.log("HEY 3")
-
         if (assigned.primitive && assignee.type.valType === assigned.valType) {
             return true;
         }
-        console.log("HEY 2")
 
         if (assigned.borrows === Borrow.BMut) {
             if (!this.checkBorrows(owner!, owner!.location)) {
@@ -229,8 +226,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         if (assignee.type.valType === ValType.UNKNOWN) {
             return true;
         }
-        
-        console.log("HEY 1")
 
         if (assignee.type.valType === assigned.valType) {
             if (assignee.type.valType === ValType.VECTOR ) {
@@ -246,7 +241,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             return true;
         }
 
-        console.log("HEY 4")
         return false;
     }
 
@@ -988,15 +982,15 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         
         const expr = this.visit(exprCtx) as ReturnType;
         
-        const type: Type = {
-            valType: ValType.REFERENCE,
-            elementType: expr.type!.valType,
-            primitive: false,
-            consumed: false,
-            borrows: Borrow.BFree,
-            mutableReference: mutable,
-            owner: owner
-        };
+        const type = new Type();
+        type.valType = ValType.REFERENCE;
+        type.elementType = expr.type!.valType;
+        type.primitive = false;
+        type.consumed = false;
+        type.borrows = Borrow.BFree;
+        type.mutableReference = mutable;
+        type.owner = owner;
+        type.structName = expr.type!.structName;
 
         return {
             type: type,
@@ -1117,7 +1111,12 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                             holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: variable.name + "." + method.name + "()", location: variable.location}});
                         }
                     });
-                    if (struct.index && (this.canBeAssigned(hole, variable.type) || this.canBeAssigned(hole, {...variable.type, valType: ValType.REFERENCE, elementType: variable.type.valType, mutableReference: variable.type.mutable}))) {
+                    const refType = new Type();
+                    Object.assign(refType, variable.type);
+                    refType.valType = ValType.REFERENCE;
+                    refType.elementType = variable.type.valType;
+                    refType.mutableReference = variable.type.mutable;
+                    if (struct.index && (this.canBeAssigned(hole, variable.type) || this.canBeAssigned(hole, refType))) {
                         holeSuggestions.push({suggestionType: 'slice', suggestion: {...struct, name: "&" + variable.name + "[??..??]", location: variable.location}});
                     }
 
@@ -1160,7 +1159,12 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         
         struct.methods.forEach((method: Function) => {
             console.log("Checking method:", method.name)
-            if (method.type && this.canBeAssigned(hole, method.type, null, false) && (this.canBeAssigned(method.params[0], variable.type, variable) || this.canBeAssigned(method.params[0], {...variable.type, valType: ValType.REFERENCE, elementType: variable.type.valType, mutableReference: variable.type.mutable}, variable))) {
+            const methodRefType = new Type();
+            Object.assign(methodRefType, variable.type);
+            methodRefType.valType = ValType.REFERENCE;
+            methodRefType.elementType = variable.type.valType;
+            methodRefType.mutableReference = variable.type.mutable;
+            if (method.type && this.canBeAssigned(hole, method.type, null, false) && (this.canBeAssigned(method.params[0], variable.type, variable) || this.canBeAssigned(method.params[0], methodRefType, variable))) {
                 holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: method.name + "()"}});
             }
         });

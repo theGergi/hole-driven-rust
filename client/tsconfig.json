@@ -10,7 +10,13 @@
 		"sourceMap": true,
 		"strict": true,
 		"composite": true,
+		"paths": {
+			"@shared/*": ["../shared/*"]
+		}
 	},
+	"references": [
+		{ "path": "../shared" }
+	],
 	"include": [
 		"src"
 	],

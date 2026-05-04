@@ -25,7 +25,7 @@ import { RustParser } from './parser/RustParser';
 import MyInterpreter from './MyInterpreter.js';
 import { CharStream, CommonTokenStream, ParseTreeWalker } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
-import { constructTypeString, Type } from './types.js';
+import { Type } from '../../shared/types.js';
 import { getSourceLocationKey } from './utils.js';
 
 
@@ -132,10 +132,11 @@ connection.onHover((params: HoverParams): Hover | null => {
             const suggestions = hole.suggestions;
             const type = hole.type;
 
-            const typeString = constructTypeString(type);
+            const typeString = type.toTypeString();
 
             const holeArgs = [
                 hole,
+
                 typeString,
                 textDocument.uri
             ];
@@ -152,7 +153,7 @@ connection.onHover((params: HoverParams): Hover | null => {
                     replacementWithTypes = suggestion.suggestion.name
                     replacementWithoutTypes = suggestion.suggestion.name
                 } else if (suggestion.suggestionType === 'function'){
-                    let paramStringWithTypes = suggestion.suggestion.params.map((param: any) => `??: ${constructTypeString(param.type)}`).join(', ')
+                    let paramStringWithTypes = suggestion.suggestion.params.map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
                     let paramStringWithoutTypes = suggestion.suggestion.params.map(() => `??`).join(', ')
                     let name = suggestion.suggestion.name.slice(0, -2)
                     if (suggestion.suggestion.structName) {
@@ -161,7 +162,7 @@ connection.onHover((params: HoverParams): Hover | null => {
                     replacementWithTypes = `${name}(${paramStringWithTypes})`
                     replacementWithoutTypes = `${name}(${paramStringWithoutTypes})`
                 } else if (suggestion.suggestionType === 'method') {
-                    let paramStringWithTypes = suggestion.suggestion.params.slice(1).map((param: any) => `??: ${constructTypeString(param.type)}`).join(', ')
+                    let paramStringWithTypes = suggestion.suggestion.params.slice(1).map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
                     let paramStringWithoutTypes = suggestion.suggestion.params.slice(1).map(() => `??`).join(', ')
                     replacementWithTypes = `${suggestion.suggestion.name.slice(0, -2)}(${paramStringWithTypes})`
                     replacementWithoutTypes = `${suggestion.suggestion.name.slice(0, -2)}(${paramStringWithoutTypes})`

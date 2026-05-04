@@ -17,40 +17,42 @@ export enum Borrow {
 	BImmut
 }
 
-export interface Type {
+export class Type {
 	elementType?: ValType; // For vectors and references
-	valType: ValType;
-	primitive: boolean;
+	valType!: ValType;
+	primitive!: boolean;
 	mutable?: boolean;
 	mutableReference?: boolean; // Only for references, indicates if the reference itself is mutable (e.g., &mut T vs &T)
-	consumed: boolean;
-	borrows: Borrow;
+	consumed!: boolean;
+	borrows!: Borrow;
 	owner?: Variable;
 	structName?: string; // For struct types
+
+	toTypeString(): string {
+		return constructTypeString(this)
+	}
 }
 
-
-	
 export function constructTypeString(type: Type): string {
 	let typeString = "";
-	if (type.valType === 'reference') {
-		typeString += "&";
-		if (type.mutableReference) {
-			typeString += "mut ";
-		}
-		if (type.elementType === 'struct') {
+		if (type.valType === 'reference') {
+			typeString += "&";
+			if (type.mutableReference) {
+				typeString += "mut ";
+			}
+			if (type.elementType === 'struct') {
+				typeString += type.structName;
+			} else {
+				typeString += type.elementType;
+			}
+		} else if (type.valType === 'Vec') {
+			typeString += "Vec " + type.elementType;
+		} else if (type.valType === 'struct') {
 			typeString += type.structName;
 		} else {
-			typeString += type.elementType;
+			typeString += type.valType;
 		}
-	} else if (type.valType === 'Vec') {
-		typeString += "Vec " + type.elementType;
-	} else if (type.valType === 'struct') {
-		typeString += type.structName;
-	} else {
-		typeString += type.valType;
-	}
-	return typeString;
+		return typeString;
 }
 	
 
