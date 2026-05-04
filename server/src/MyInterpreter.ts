@@ -60,7 +60,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
     getBoundVariable(variableName: string): Variable {
         const variable = this.variables.find(variable => (variable.name === variableName))
-        console.log("Looking for variable:", variableName, "Found:", variable)
         if(variable) {
             return variable;
         } else {
@@ -438,8 +437,8 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             
         }
         
+        console.log("Inferred type: ", inferedType, "Declared type: ", declaredType)
         if (recordVar) {
-            
             let valType = inferedType;
             if ( inferedType.valType === ValType.UNKNOWN || (inferedType.elementType === ValType.UNKNOWN && declaredType.elementType && declaredType.elementType !== ValType.UNKNOWN) ) {
                 valType = declaredType;
@@ -685,6 +684,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             console.log("Function call:", func.name)
             return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
         } else {
+            console.log(ctx.getText())
             const variable = this.getBoundVariable(ctx.getText());
             console.log("Variable:", variable.name)
             return { type: variable.type, location: getLocation(ctx) };
@@ -984,6 +984,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             primitive: false,
             consumed: false,
             borrows: Borrow.BFree,
+            mutableReference: mutable,
             owner: owner
         };
 
@@ -1063,7 +1064,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         
 
         variables.forEach((variable: Variable) => {
-            console.log("Checking variable:", variable.name, "of type", variable.type)
+            // console.log("Checking variable:", variable.name, "of type", variable.type)
             if (variable.type && this.canBeAssigned(hole, variable.type, variable, false) && !variable.type.consumed) {
                 console.log("hey")
 

@@ -7,6 +7,6 @@
 	{
 		"line": 19,
 		"type": { "valType": "reference" },
-		"suggestionNames": ["&mut owned", "&mut target_container", "mutable"]
+		"suggestionNames": ["&mut target_container", "mutable"]
 	}
 ]

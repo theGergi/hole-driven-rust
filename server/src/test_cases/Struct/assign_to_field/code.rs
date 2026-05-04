@@ -1,9 +1,9 @@
 struct Container {
-    value: i32,
+    value: integer,
 }
 
 
-fn process(reader: &Container, writer: &mut Container) -> i32 {
+fn process(reader: &Container, writer: &mut Container) -> integer {
     writer.value = reader.value;
     reader.value
 }
@@ -16,6 +16,6 @@ fn main() {
     let mut target_container = Container { value: 99 };
     let mutable: &mut Container = &mut target_container;
 
-    let result = process(shared, mutable);
+    let result = process(??, ??);
     println!("{result}");
 }
