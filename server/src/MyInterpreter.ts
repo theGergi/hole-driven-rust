@@ -1076,7 +1076,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                     holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
                 }
             }
-            if (hole.type.valType === ValType.REFERENCE && variable.type.valType === hole.type.elementType && !variable.type.consumed) {
+            if (hole.type.valType === ValType.REFERENCE && variable.type.valType === hole.type.elementType && !variable.type.consumed && (variable.type.valType === ValType.STRUCT ? variable.type.structName === hole.type.structName : true)) {
                 if (hole.type.mutableReference) {
                     if (variable.type.mutable) {
                         if (variable.type.borrows === Borrow.BFree) {
