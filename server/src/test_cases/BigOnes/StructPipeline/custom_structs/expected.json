@@ -1,0 +1,7 @@
+[
+	{
+		"line": 29,
+		"type": { "valType": "reference", "structName": "CustomStruct_3" },
+		"suggestionNames": ["&obj_3"]
+	}
+]

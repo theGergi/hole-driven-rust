@@ -1,0 +1,7 @@
+[
+	{
+		"line": 57,
+		"type": { "valType": "reference", "structName": "GrayscaleImage" },
+		"suggestionNames": ["&obj_3"]
+	}
+]

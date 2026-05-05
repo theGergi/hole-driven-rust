@@ -583,8 +583,15 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
     visitStructExprStruct = (ctx: any): ReturnType | null => {
         console.log("Struct expression")
-        const structName = ctx.pathInExpression().pathExprSegment(0).pathIdentSegment().identifier().getText();
         
+        let structName = null;
+        
+        if (ctx.pathInExpression().pathExprSegment(0).pathIdentSegment().identifier()) {
+            structName = ctx.pathInExpression().pathExprSegment(0).pathIdentSegment().identifier().getText();
+        } else if (ctx.pathInExpression().pathExprSegment(0).pathIdentSegment().KW_SELFTYPE()) {
+            structName = this.currentImplType;
+        }
+
         const struct = this.structs.find(s => s.name === structName);
         if (!struct) {
             throw new Error(`Struct '${structName}' not found for struct expression`);

@@ -1,6 +1,6 @@
 // The hole should see variables before and in the inner block plus function parameters.
 
-fn main(a: string) -> string {
+fn main() {
 	let x = "x";
 	{
 		let y = "y";

@@ -1,6 +1,6 @@
 [
 	{
-		"line": 46,
+		"line": 32,
 		"type": { "valType": "reference", "structName": "VecIterator" },
 		"suggestionNames": ["&bytes_iter"]
 	}

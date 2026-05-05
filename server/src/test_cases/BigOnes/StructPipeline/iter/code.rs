@@ -5,14 +5,6 @@ impl<T> VecIterator<T> {}
 pub struct Vec<T> {}
 
 impl<T> Vec<T> {
-    pub fn new() -> Self {}
-
-    pub fn push(&mut self, elem: T) {}
-
-	pub fn len(&self) -> integer {}
-
-    pub fn is_empty(&self) -> boolean {}
-
     pub fn iter(&self) -> VecIterator<T> {}
 }
 
@@ -20,12 +12,6 @@ pub struct String {}
 
 impl String {
     pub fn new() -> Self {}
-
-    pub fn push(&mut self, elem: T) {}
-
-	pub fn len(&self) -> integer {}
-
-    pub fn is_empty(&self) -> boolean {}
 
     pub fn as_bytes(&self) -> Vec<integer> {}
 }
