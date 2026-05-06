@@ -5,7 +5,7 @@
 
 import * as path from 'path';
 import { workspace, ExtensionContext, commands, Range, WorkspaceEdit, Uri, window, ViewColumn } from 'vscode';
-import { constructTypeString } from '../../shared/src/types.js';
+import { constructTypeString } from '../../shared/out/types.js';
 
 import {
 	LanguageClient,

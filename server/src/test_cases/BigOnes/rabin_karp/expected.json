@@ -12,7 +12,7 @@
 	{
 		"line": 94,
 		"type": { "valType": "reference" },
-		"suggestionNames": ["text", "&text[??..??]", "&pattern[??..??]"]
+		"suggestionNames": ["text", "pattern", "&text[??..??]", "&pattern[??..??]"]
 	},
 	{
 		"line": 95,

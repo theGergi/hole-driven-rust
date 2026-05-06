@@ -121,7 +121,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
     consume(variableName: string) {
         const variable = this.getBoundVariable(variableName)
-        if (variable.type.primitive) {
+        if (variable.type.primitive || variable.type.valType === ValType.REFERENCE) {
             return
         }
         if (variable.type.consumed) {
