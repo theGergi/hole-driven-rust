@@ -180,14 +180,14 @@ connection.onHover((params: HoverParams): Hover | null => {
                     replacementWithoutTypes
                 ];
                 const commandUri = `command:myExtension.applySuggestion?${encodeURIComponent(JSON.stringify(args))}`;
-                return `**Suggestion:** [Replace](${commandUri}) with\`${replacementWithTypes}\``;
+                return ` - [Replace](${commandUri}) with\`${replacementWithTypes}\``;
             });
             console.log("Hey")
 
             let hoverContent = "";
 
             if (validSuggestions.length > 0) {
-                hoverContent = "Type: " + typeString + "\n\n" + validSuggestions.join('\n\n') + `\n\n[Show Full Context](${holeCommandUri})`;
+                hoverContent = "Type: " + typeString + "\n\n**Valid Fits:**\n\n" + validSuggestions.join('\n\n') + `\n\n[Show Full Context](${holeCommandUri})`;
             } else {
                 hoverContent = "Type: " + typeString + "\n\nNo suggestions\n\n[Show Full Context](${holeCommandUri})";
             }

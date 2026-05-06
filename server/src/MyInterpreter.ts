@@ -157,7 +157,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         if (typeString === 'integer') {
             return toType({valType: ValType.INT});
         }
-        if (typeString === 'string') {
+        if (typeString === 'str') {
             return toType({valType: ValType.STRING});
         }
         console.log(typeString)
@@ -1087,19 +1087,19 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                 if (hole.type.mutableReference) {
                     if (variable.type.mutable) {
                         if (variable.type.borrows === Borrow.BFree) {
-                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, mutableReference: true}), location: variable.location}});
+                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                         } else {
                             if (this.checkBorrows(variable, hole.location)) {
-                                holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, mutableReference: true}), location: variable.location}});
+                                holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                             }
                         }
                     }
                 } else {
                     if (variable.type.borrows === Borrow.BFree || variable.type.borrows === Borrow.BImmut) {
-                        holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType}), location: variable.location}});
+                        holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName}), location: variable.location}});
                     } else {
                         if (this.checkBorrows(variable, hole.location)) {
-                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, mutableReference: true}), location: variable.location}});
+                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                         }
                     }
                 }

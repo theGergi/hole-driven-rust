@@ -28,7 +28,11 @@ function formatFunction(func: any): string {
 		.map((param: any) => `??: ${constructTypeString(param.type)}`)
 		.join(', ');
 	const returnType = constructTypeString(func.type);
-	return `${func.name}(${paramString}) -> ${returnType}`;
+	let name = func.name
+	if (func.structName) {
+		name = `${func.structName}::${name}`
+	}
+	return `${name}(${paramString}) -> ${returnType}`;
 }
 
 export function activate(context: ExtensionContext) {
@@ -75,15 +79,14 @@ export function activate(context: ExtensionContext) {
 				}
 			});
 
-			const possibleValues = result.possibleValues.map((v: any) => v.name || v).join(', ');
+			// const possibleValues = result.possibleValues.map((v: any) => `<li> ${v.name || v} </li>`);
 
 			const suggestionsHtml = result.suggestions.map((s: any) => {
 				let replacement = '';
 				if (s.suggestionType === 'variable') {
-					replacement = s.suggestion.name;
+					replacement = formatVariable(s.suggestion);
 				} else if (s.suggestionType === 'function') {
-					const paramString = s.suggestion.params.map((param: any) => `??: ${param.type}`).join(', ');
-					replacement = `${s.suggestion.name}(${paramString})`;
+					replacement = formatFunction(s.suggestion);
 				}
 				const escapedReplacement = replacement.replace(/'/g, "\\'").replace(/"/g, '\\"');
 				return `<li><a href="#" onclick="apply('${escapedReplacement}')">${replacement}</a></li>`;
@@ -101,22 +104,20 @@ export function activate(context: ExtensionContext) {
 				<html>
 				<head>
 					<style>
-						body { font-family: Arial, sans-serif; padding: 20px; }
+						body { font-family: Arial, sans-serif; zoom: 1.2; }
 						pre { background: #f4f4f4; padding: 10px; border-radius: 4px; }
-						ul { list-style-type: disc; margin-left: 20px; }
 						.context { font-family: 'Courier New', monospace; margin: 0; }
 					</style>
 				</head>
 				<body>
-					<h2>${result.typeString}</h2>
+					<h3>Type:</h3>
+					<div class="context">${result.typeString}</div>
 					<h3>Current Full Context:</h3>
 					<h4>Variables:</h4>
 					<div class="context">${formattedVariables}</div>
 					<h4>Functions:</h4>
 					<div class="context">${formattedFunctions}</div>
-					<h3>Possible Values to Fill:</h3>
-					<p>${possibleValues}</p>
-					<h3>Suggestions:</h3>
+					<h3>Valid Fits:</h3>
 					<ul>${suggestionsHtml}</ul>
 					<script>
 						const vscode = acquireVsCodeApi();
