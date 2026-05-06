@@ -24,7 +24,7 @@ pub struct FilePath {
 }
 
 impl FilePath {
-    pub fn new(path: &string) -> Self {
+    pub fn new(path: &str) -> Self {
         Self {
             path: path.to_string(),
         }

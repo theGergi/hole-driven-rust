@@ -1,7 +1,7 @@
 [
 	{
 		"line": 7,
-		"type": { "valType": "string" },
+		"type": { "valType": "str" },
 		"suggestionNames": ["r", "z", "main()", "a"]
 	}
 ]

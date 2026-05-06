@@ -11,12 +11,12 @@
 	},
 	{
 		"line": 16,
-		"type": { "valType": "string" },
+		"type": { "valType": "str" },
 		"suggestionNames": ["z"]
 	},
 	{
 		"line": 17,
-		"type": { "valType": "string" },
+		"type": { "valType": "str" },
 		"suggestionNames": ["z"]
 	},
 
@@ -33,12 +33,12 @@
 	},
 	{
 		"line": 24,
-		"type": { "valType": "string" },
+		"type": { "valType": "str" },
 		"suggestionNames": ["z"]
 	},
 	{
 		"line": 25,
-		"type": { "valType": "string" },
+		"type": { "valType": "str" },
 		"suggestionNames": ["z"]
 	},
 
@@ -55,12 +55,12 @@
 	},
 	{
 		"line": 33,
-		"type": { "valType": "string" },
+		"type": { "valType": "str" },
 		"suggestionNames": []
 	},
 	{
 		"line": 34,
-		"type": { "valType": "string" },
+		"type": { "valType": "str" },
 		"suggestionNames": []
 	},
 
@@ -76,12 +76,12 @@
 	},
 	{
 		"line": 43,
-		"type": { "valType": "string" },
+		"type": { "valType": "str" },
 		"suggestionNames": []
 	},
 	{
 		"line": 44,
-		"type": { "valType": "string" },
+		"type": { "valType": "str" },
 		"suggestionNames": []
 	}
 ]

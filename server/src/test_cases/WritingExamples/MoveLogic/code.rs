@@ -2,7 +2,7 @@ pub struct String {
 }
 
 impl String {
-	pub fn from(s: string) -> Self {}
+	pub fn from(s: str) -> Self {}
 }
 
 fn main() {

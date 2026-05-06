@@ -1,4 +1,4 @@
-// Original: https://github.com/TheAlgorithms/Rust/blob/master/src/string/rabin_karp.rs
+// Original: https://github.com/TheAlgorithms/Rust/blob/master/src/str/rabin_karp.rs
 
 pub struct VecIterator<T> {
 }
@@ -94,13 +94,13 @@ pub fn rabin_karp(text: &String, pattern: &String) -> Vec<integer> {
             compute_hash(??); // correct: &text[0..pattern.len()]; possible &text, &pattern, etc.
             compute_hash(&text[??..??]) // correct: &text[0..pattern.len()]; possible &text, &pattern, etc.
             // Step 1: ??   // correct compute_hash; possible radix_pow, rolling_hash, pattern.len(), update_hash
-            // Step 2: compute_hash(??: &string) // correct &text[0..pattern.len()]
-			// Step 3: compute_hash(&text[??..??]: &string) // should suggest: &text, &text[??..??], &pattern, &pattern[??..??]
-			// Step 4: compute_hash(&text[0..pattern.len()]: &string) // should suggest integers
+            // Step 2: compute_hash(??: &str) // correct &text[0..pattern.len()]
+			// Step 3: compute_hash(&text[??..??]: &str) // should suggest: &text, &text[??..??], &pattern, &pattern[??..??]
+			// Step 4: compute_hash(&text[0..pattern.len()]: &str) // should suggest integers
         } else {
             update_hash(text, i - 1, i + pattern.len() - 1, rolling_hash, radix_pow)
             // Step 1: ??   // correct update_hash; radix_pow, rolling_hash, pattern.len(), compute_hash
-            // Step 2: update_hash(??: &string, ??: integer, ??: integer, ??: integer, ??: integer)
+            // Step 2: update_hash(??: &str, ??: integer, ??: integer, ??: integer, ??: integer)
 			// Step 3: Similar to compute_hash, should suggest strings and integers
         };
         if rolling_hash == pat_hash && pattern[..] == text[i..i + pattern.len()] {

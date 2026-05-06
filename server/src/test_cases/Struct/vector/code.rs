@@ -12,6 +12,6 @@ impl<T> VecCustom<T> {
 	pub fn len_func(&mut self, a: integer) -> integer {}
 }
 
-pub fn main(text: &string, pattern: &string) {
+pub fn main(text: &str, pattern: &str) {
     let x : VecCustom<integer> = ??;
 }

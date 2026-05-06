@@ -1,5 +1,5 @@
 import { ParserRuleContext } from 'antlr4ng';
-import { Borrow, Hole, SourceLocation, Type, ValType, Variable, Function } from '../../shared/types';
+import { Borrow, Hole, SourceLocation, Type, ValType, Variable, Function } from '../../shared/out/types';
 
 
 

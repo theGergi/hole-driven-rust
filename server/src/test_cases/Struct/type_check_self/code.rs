@@ -13,7 +13,7 @@ impl<T> CustomStruct<T> {
     pub fn consume_mutable(mut self) -> integer {}
 }
 
-pub fn main(text: &string, pattern: &string) -> CustomStruct<integer> {
+pub fn main(text: &str, pattern: &str) -> CustomStruct<integer> {
     {
         let mut z = CustomStruct::new(); // z is mutable and has no borrows so can be used to call any method
         let y: integer = z.??; // accepts all methods since z is mutable and has no borrows

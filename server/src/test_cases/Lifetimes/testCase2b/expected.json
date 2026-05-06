@@ -1,7 +1,7 @@
 [
 	{
 		"line": 8,
-		"type": { "valType": "string" },
+		"type": { "valType": "str" },
 		"suggestionNames": ["y"]
 	}
 ]

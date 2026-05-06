@@ -1,12 +1,12 @@
 [
 	{
 		"line": 6,
-		"type": { "valType": "Vec", "elementType": "string" },
+		"type": { "valType": "Vec", "elementType": "str" },
 		"suggestionNames": ["z"]
 	},
 	{
 		"line": 11,
-		"type": { "valType": "Vec", "elementType": "string" },
+		"type": { "valType": "Vec", "elementType": "str" },
 		"suggestionNames": ["z"]
 	}
 	

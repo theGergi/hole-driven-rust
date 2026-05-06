@@ -1,7 +1,7 @@
 export enum ValType {
 	ROOT = "ROOT",
 	INT = "integer",
-	STRING = "string",
+	STRING = "str",
 	HOLE = "HOLE",
 	UNKNOWN = "UNKNOWN",
 	VECTOR = "Vec",

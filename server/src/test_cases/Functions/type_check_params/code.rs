@@ -1,11 +1,11 @@
 
-pub fn immutable(a: &string) -> integer {}
+pub fn immutable(a: &str) -> integer {}
 
-pub fn mutable(a: &mut string) -> integer {}
+pub fn mutable(a: &mut str) -> integer {}
 
-pub fn consume_immutable(a: string) -> integer {}
+pub fn consume_immutable(a: str) -> integer {}
 
-pub fn consume_mutable(mut a: string) -> integer {}
+pub fn consume_mutable(mut a: str) -> integer {}
 
 
 pub fn main() {

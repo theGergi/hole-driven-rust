@@ -2,7 +2,7 @@ import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageGraphListener';
-import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion } from '../../shared/types.js';
+import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion } from '../../shared/out/types.js';
 import { toType, getSourceLocationKey, getLocation } from './utils';
 
 export default class MyInterpreter extends RustParserVisitor<ReturnType | null> {
@@ -127,7 +127,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         if (variable.type.consumed) {
             throw Error("Cannot consume already consumed variable")
         }
-        console.log("Consumed", variableName)
         variable.type.consumed = true
     }
 
@@ -141,7 +140,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         let typeString = type?.typeNoBounds?.().traitObjectTypeOneBound()?.traitBound().typePath().typePathSegment(0).pathIdentSegment().identifier()?.getText();
         
         if (!typeString) {
-            console.log(type)
             typeString = type?.getText(); // pretty ugly does not use typing well
         }
 
@@ -149,7 +147,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
     }    
 
     parseStringType = (typeString: string, genericArgs?: string): Type => {
-        console.log(typeString)
         if (!typeString) {
             return toType({valType: ValType.UNKNOWN});
         }
@@ -160,7 +157,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         if (typeString === 'str') {
             return toType({valType: ValType.STRING});
         }
-        console.log(typeString)
 
         if (typeString === 'Vec' && genericArgs) {
             const elementType = this.parseStringType(genericArgs); 
@@ -293,8 +289,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             methods: []
         };
 
-        console.log("Defined struct:", struct);
-
         this.structs.push(struct);
 
         return null;
@@ -346,13 +340,12 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
     visitAssignmentExpression = (ctx: any): ReturnType | null => {
         console.log("Assignment expression")
-        console.log(ctx.expression(0))
 
         const leftHandExpression = ctx.expression(0);
 
         let variable;
         let varType;
-        console.log(this.structs)
+
         if (leftHandExpression instanceof FieldExpressionContext) {
             variable = this.getBoundVariable(leftHandExpression.expression().getText());
             varType = this.getBoundField(variable.type.structName!, leftHandExpression.identifier().getText()).type
@@ -438,7 +431,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             
         }
         
-        console.log("Inferred type: ", inferedType, "Declared type: ", declaredType)
+        // console.log("Inferred type: ", inferedType, "Declared type: ", declaredType)
         if (recordVar) {
             let valType = inferedType;
             if ( inferedType.valType === ValType.UNKNOWN || (inferedType.elementType === ValType.UNKNOWN && declaredType.elementType && declaredType.elementType !== ValType.UNKNOWN) ) {
@@ -458,7 +451,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
     // Parse an array like vec![1, 2, 3] and infer its type as Vec<integer>
     visitMacroInvocation = (ctx: any): ReturnType | null => {
         console.log("Macro invocation")
-        console.log(ctx.getText())
         if (ctx.simplePath().getText() === "vec") {
             let type : Type = toType({valType: ValType.VECTOR, elementType: ValType.UNKNOWN});
             const tokens = ctx.delimTokenTree().tokenTree(0)?.tokenTreeToken();
@@ -473,9 +465,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                     tokens.forEach((token: any, i: number) => {
                         if (i % 2 === 0) {
                             const elType = this.visit(token)!.type!.valType;
-                            console.log("Element type:", elType, "Token: ", token.getText())
                             if (type.elementType === ValType.UNKNOWN) {
-                                console.log("hey")
                                 type = toType({valType: ValType.VECTOR, elementType: elType});
                             } else if (type.elementType !== elType) {
                                 throw Error("All elements in vec must be of same type")
@@ -524,7 +514,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         }
         console.log("Function call:", functionName, "Struct:", structName)
         const func = this.getBoundFunction(functionName, structName);
-        console.log(func)
 
         ctx.callParams()?.expression().forEach((expr: any, i: number) => {
             const otherType = func.params[i].type;
@@ -693,7 +682,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
             console.log("Function call:", func.name)
             return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
         } else {
-            console.log(ctx.getText())
             const variable = this.getBoundVariable(ctx.getText());
             console.log("Variable:", variable.name)
             return { type: variable.type, location: getLocation(ctx) };
@@ -702,7 +690,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
     visitIfExpression = (ctx: any): ReturnType => {
         console.log("If expression")
-        console.log(this.currentParentType)
 
         const currentState = this.saveState();
 
@@ -763,8 +750,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         const selfParam = ctx.functionParameters()?.selfParam();
         
         if (selfParam) {
-            console.log("Parsing self param: ", selfParam.getText(), selfParam.shorthandSelf()?.getText())
-            console.log(selfParam.shorthandSelf())
             const type = toType({valType: ValType.STRUCT, structName: this.currentImplType ?? 'unknown'});
             if (selfParam.shorthandSelf().KW_MUT()) {
                 if(selfParam.shorthandSelf().AND()) {
@@ -885,8 +870,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
         let left = null;
         let right = null;
-        console.log("Left child:", leftChild)
-        console.log("Right child:", rightChild)
 
         if (leftChild.getText() === '??') {
             right = this.visit(rightChild) as ReturnType;
@@ -902,9 +885,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         
 
         let type: Type;
-
-        console.log("Left type:", left.type)
-        console.log("Right type:", right.type)
 
         if (left.type?.valType === ValType.HOLE || right.type?.valType === ValType.HOLE) {
             type = toType({valType: ValType.HOLE});
@@ -934,7 +914,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
     visitIndexExpression = (ctx: any): ReturnType => {
         console.log("Index Expression")
 
-        console.log(ctx.expression(1))
         const array = this.visit(ctx.expression(0)!);
 
         this.typeStack.push(toType({valType: ValType.INT}));
@@ -943,13 +922,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
 
         this.typeStack.pop();
 
-        console.log("Index stuff")
-        console.log(array)
-        console.log(index)
-
-
         const type = toType({valType: array!.type?.elementType || ValType.UNKNOWN});
-        console.log(ctx.expression(0))
 
         // If it is a variable borrow it
         if (ctx.expression(0) instanceof PathExpression_Context) {
@@ -1077,8 +1050,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         variables.forEach((variable: Variable) => {
             console.log("Checking variable:", variable.name, "of type", variable.type)
             if (variable.type && this.canBeAssigned(hole, variable.type, variable, false) && !variable.type.consumed) {
-                console.log("hey")
-
                 if (this.checkBorrows(variable.type.owner!, hole.location, variable.name)) {
                     holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
                 }
@@ -1134,7 +1105,6 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         functions.forEach((func: Function) => {
             console.log("Checking function:", func.name, "of type", func.type)
             if (func.type && this.canBeAssigned(hole, func.type, null, false)) {
-                console.log("hey function")
                 holeSuggestions.push({suggestionType: 'function', suggestion: {...func, name: func.name + "()", location: func.location}});
             }
         })
@@ -1156,8 +1126,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
         const struct = this.structs.find(s => s.name === structName);
         if (!struct) return;
         let holeSuggestions = [] as Suggestion[];
-        // console.log("Struct fields:", struct.fields)
-        console.log("Hole type:", hole.type)
+
         struct.fields.forEach((field: Param) => {
             if (field.type && this.canBeAssigned(hole, field.type)) {
                 holeSuggestions.push({suggestionType: 'field', suggestion: field});

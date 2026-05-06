@@ -11,7 +11,7 @@
     "allowJs": true,
     "composite": true,             // Required for project references
     "paths": {
-      "@shared/*": ["../shared/*"]
+      "@shared": ["../shared"] 
     }
   },
   "references": [

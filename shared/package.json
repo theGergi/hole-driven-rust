@@ -1,1 +1,12 @@
-{ "name": "@my-project/shared", "version": "1.0.0" }
+{
+  "name": "@toy-lang/shared",
+  "version": "1.0.0",
+  "main": "./out/types.js",
+  "types": "./out/types.d.ts",
+  "exports": {
+    ".": {
+      "types": "./out/types.d.ts",
+      "default": "./out/types.js"
+    }
+  }
+}

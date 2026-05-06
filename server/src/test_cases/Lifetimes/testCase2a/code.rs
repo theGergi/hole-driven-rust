@@ -4,6 +4,6 @@ fn main() {
 	let x = "x";
 	{
 		let y = "y";
-		let z: string = ??;
+		let z: str = ??;
 	}
 }

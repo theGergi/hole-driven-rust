@@ -4,7 +4,7 @@ pub struct String {
 impl String {
     pub fn new() -> Self {}
 
-    pub fn from(s: string) -> Self {}
+    pub fn from(s: str) -> Self {}
 
     pub fn push_str(&mut self, s: &String) {}
 }
