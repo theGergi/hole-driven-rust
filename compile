@@ -1,2 +1,2 @@
 cd thesis
-pandoc thesis.md --citeproc --pdf-engine=xelatex -o thesis.pdf --toc --number-sections -csl=apa.csl
+pandoc thesis.md --citeproc --pdf-engine=xelatex -o thesis.pdf --toc --number-sections --csl=apa.csl --metadata date="$(LC_TIME=en_US.UTF-8 date +'%B %d, %Y')"

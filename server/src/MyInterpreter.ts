@@ -188,6 +188,9 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
     }
 
     checkBorrows(owner: Variable, location: SourceLocation, variableName: string | null = null): boolean {
+        console.log("hey")
+        console.log(owner)
+        console.log(variableName)
         if (owner) {
             const borrows = this.variables.filter(v => v.type.owner === owner && v !== owner)
 
@@ -1060,7 +1063,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                         if (variable.type.borrows === Borrow.BFree) {
                             holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                         } else {
-                            if (this.checkBorrows(variable, hole.location)) {
+                            if (this.checkBorrows(variable, hole.location, variable.name)) {
                                 holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                             }
                         }
@@ -1069,7 +1072,7 @@ export default class MyInterpreter extends RustParserVisitor<ReturnType | null> 
                     if (variable.type.borrows === Borrow.BFree || variable.type.borrows === Borrow.BImmut) {
                         holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName}), location: variable.location}});
                     } else {
-                        if (this.checkBorrows(variable, hole.location)) {
+                        if (this.checkBorrows(variable, hole.location, variable.name)) {
                             holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                         }
                     }
