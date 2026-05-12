@@ -1,12 +1,12 @@
 import { CharStream, CommonTokenStream } from 'antlr4ng';
 import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
-import MyInterpreter from './MyInterpreter.js';
+import TypeChecker from './TypeChecker';
 import { Hole, SourceLocation, Variable, Function as Func, Type } from '../../shared/out/types.js';
 import { toType, printHoleSuggestionContext } from './utils.js';
 import { RustParserListener } from './parser/RustParserListener';
 import { ParseTreeWalker } from 'antlr4ng';
-import { UsageGraphListener } from './UsageGraphListener';
+import { UsageGraphListener } from './UsageListener';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -29,7 +29,7 @@ function parseDocument(code: string): Hole[] {
 	ParseTreeWalker.DEFAULT.walk(listener, tree);
 	console.log(listener.getUsages());
 
-	const interpreter = new MyInterpreter(listener) as any;
+	const interpreter = new TypeChecker(listener) as any;
 	interpreter.visit(tree)
 
 	const result = interpreter.holes;

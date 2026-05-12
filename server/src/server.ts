@@ -22,9 +22,9 @@ import {
 
 import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
-import MyInterpreter from './MyInterpreter.js';
+import TypeChecker from './TypeChecker';
 import { CharStream, CommonTokenStream, ParseTreeWalker } from 'antlr4ng';
-import { UsageGraphListener } from './UsageGraphListener';
+import { UsageGraphListener } from './UsageListener';
 import { getSourceLocationKey } from './utils.js';
 
 
@@ -45,7 +45,7 @@ function parseDocument(code: string) {
     ParseTreeWalker.DEFAULT.walk(listener, tree);
     
 
-    const interpreter = new MyInterpreter(listener) as any;
+    const interpreter = new TypeChecker(listener) as any;
     interpreter.visit(tree)
     return interpreter.getFinalResult();
 }

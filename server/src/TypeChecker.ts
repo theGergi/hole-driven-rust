@@ -1,11 +1,11 @@
 import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
-import { UsageGraphListener } from './UsageGraphListener';
+import { UsageGraphListener } from './UsageListener';
 import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion } from '../../shared/out/types.js';
 import { toType, getSourceLocationKey, getLocation } from './utils';
 
-export default class MyInterpreter extends RustParserVisitor<ReturnType | null> {
+export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     private typeStack: Type[] = [toType({valType: ValType.ROOT})];
     private variables: Variable[] = [];
     private functions: Function[] = [];
