@@ -114,3 +114,22 @@ export interface SourceLocation {
 	column: number;
 	length: number;
 }
+
+
+// Helper function to format a variable as "name: type"
+export function formatVariable(variable: any): string {
+	return `${variable.name}: ${constructTypeString(variable.type)}`;
+}
+
+// Helper function to format a function signature as "name(??: paramTypes) -> returnType"
+export function formatFunction(func: any): string {
+	const paramString = func.params
+		.map((param: any) => `??: ${constructTypeString(param.type)}`)
+		.join(', ');
+	const returnType = constructTypeString(func.type);
+	let name = func.name
+	if (func.structName) {
+		name = `${func.structName}::${name}`
+	}
+	return `${name}(${paramString}) -> ${returnType}`;
+}

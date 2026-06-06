@@ -5,7 +5,7 @@
 
 import * as path from 'path';
 import { workspace, ExtensionContext, commands, Range, WorkspaceEdit, Uri, window, ViewColumn } from 'vscode';
-import { constructTypeString } from '../../shared/out/types.js';
+import { constructTypeString, formatFunction, formatVariable } from '../../shared/out/types.js';
 
 import {
 	LanguageClient,
@@ -15,25 +15,6 @@ import {
 } from 'vscode-languageclient/node';
 
 let client: LanguageClient;
-
-
-// Helper function to format a variable as "name: type"
-function formatVariable(variable: any): string {
-	return `${variable.name}: ${constructTypeString(variable.type)}`;
-}
-
-// Helper function to format a function signature as "name(??: paramTypes) -> returnType"
-function formatFunction(func: any): string {
-	const paramString = func.params
-		.map((param: any) => `??: ${constructTypeString(param.type)}`)
-		.join(', ');
-	const returnType = constructTypeString(func.type);
-	let name = func.name
-	if (func.structName) {
-		name = `${func.structName}::${name}`
-	}
-	return `${name}(${paramString}) -> ${returnType}`;
-}
 
 export function activate(context: ExtensionContext) {
 	// The server is implemented in node

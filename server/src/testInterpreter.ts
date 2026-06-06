@@ -3,13 +3,15 @@ import { RustLexer } from './parser/RustLexer';
 import { RustParser } from './parser/RustParser';
 import TypeChecker from './TypeChecker';
 import { Hole, SourceLocation, Variable, Function as Func, Type } from '../../shared/out/types.js';
-import { toType, printHoleSuggestionContext } from './utils.js';
+import { toType, printHoleSuggestionContext, formatType } from './utils.js';
 import { RustParserListener } from './parser/RustParserListener';
 import { ParseTreeWalker } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
+import { parseStdJsonFile } from './stdParser';
+import { constructTypeString, formatFunction, formatVariable } from '../../shared/out/types.js';
 
 
 
@@ -144,9 +146,26 @@ if (casesToRun.length === 0) {
 }
 
 // Run the tests
-for (const testCaseDef of casesToRun) {
-    const rustCode = fs.readFileSync(testCaseDef.rustFile, 'utf8');
-    const expectedHoles = JSON.parse(fs.readFileSync(testCaseDef.expectedFile, 'utf8')) as any;
-    console.log(`Running test for ${testCaseDef.name}`);
-    runTest({ rustCode, expectedHoles });
+// for (const testCaseDef of casesToRun) {
+//     const rustCode = fs.readFileSync(testCaseDef.rustFile, 'utf8');
+//     const expectedHoles = JSON.parse(fs.readFileSync(testCaseDef.expectedFile, 'utf8')) as any;
+//     console.log(`Running test for ${testCaseDef.name}`);
+//     runTest({ rustCode, expectedHoles });
+// }
+
+async function main() {
+    const result = await parseStdJsonFile();
+    // console.log(result);
+	const functionLines = result.functions.map(func => {
+		// console.log(func)
+		return formatFunction(func);
+	}) ?? [];
+	// console.log(functionLines.join('\n'));
 }
+
+main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+});
+
+console.log()

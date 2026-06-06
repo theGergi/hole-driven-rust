@@ -36,21 +36,21 @@ export function toType(overrides: Partial<Type> & { valType: ValType }, variable
 }
 
 
+export function formatType (type?: Type): string {
+	if (!type) {
+		return 'unknown';
+	}
+	const base = type.valType === ValType.VECTOR
+		? `Vec<${type.elementType ?? 'unknown'}>`
+		: type.valType === ValType.REFERENCE
+			? `&${type.mutableReference ? 'mut ' : ''}${type.elementType ?? 'unknown'}`
+			: type.valType;
+	const mut = type.mutable === true ? 'mut ' : '';
+	return `${mut}${base}`;
+};
 
 export function printHoleSuggestionContext(hole: Hole): void {
-	const formatType = (type?: Type): string => {
-		if (!type) {
-			return 'unknown';
-		}
-		const base = type.valType === ValType.VECTOR
-			? `Vec<${type.elementType ?? 'unknown'}>`
-			: type.valType === ValType.REFERENCE
-				? `&${type.mutableReference ? 'mut ' : ''}${type.elementType ?? 'unknown'}`
-				: type.valType;
-		const mut = type.mutable === true ? 'mut ' : '';
-		return `${mut}${base}`;
-	};
-
+	
 	const formatLocation = (loc: SourceLocation): string =>
 		`line ${loc.line}, col ${loc.column}, len ${loc.length}`;
 
