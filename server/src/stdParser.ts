@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 import {
 	Borrow,
@@ -21,7 +21,7 @@ export interface SharedStruct {
 }
 
 
-const stdJsonPath = path.resolve(process.cwd(), 'server', 'src', 'assets', 'std.json');
+const stdJsonPath = path.resolve(__dirname, '..', 'src', 'assets', 'std.json');
 
 export interface StdParseResult {
 	functions: SharedFunction[];
@@ -242,8 +242,8 @@ function parseFunctionEntry(entry: any, struct: SharedStruct | null, functions: 
 	if (!fn) {
 		return null;
 	}
-	console.log(fn)
-	console.log(entry)
+	// console.log(fn)
+	// console.log(entry)
 
 	const parsed: SharedFunction = {
 		name: typeof entry.name === 'string' ? entry.name : 'unknown',
@@ -255,7 +255,7 @@ function parseFunctionEntry(entry: any, struct: SharedStruct | null, functions: 
 	if (struct) {
 		if (parsed.params.length > 0 && parsed.params[0].type.valType === ValType.STRUCT && parsed.params[0].type.structName === 'Self') {
 			struct.methods.push(parsed);
-			console.log(`Function ${parsed.name} is a method of struct ${struct.name}`);
+			// console.log(`Function ${parsed.name} is a method of struct ${struct.name}`);
 			parsed.structName = struct.name;
 			return
 		}
@@ -304,7 +304,6 @@ function buildMethodOwnerMap(index: Record<string, any>, paths: Record<string, a
 	const map: Record<string, string> = {};
 
 	for (const [id, entry] of Object.entries(index)) {
-		console.log
 		const impl = entry?.inner?.impl;
 		if (!impl || !Array.isArray(impl.items)) {
 			continue;
@@ -355,10 +354,6 @@ function parseImplEntry(entry: any, index: Record<string, any>, structs: SharedS
 	if (parsePathName(implEntry.for) !== 'HashSet') {
 		return
 	}
-	console.log("hey hey")
-	console.log(implEntry)
-
-	console.log(parsePathName(implEntry.for))
 	
 	structs.filter(s => s.name === parsePathName(implEntry.for)).forEach(s => {
 		if (s.impls) {
@@ -405,8 +400,8 @@ export function parseStdJson(stdJson: any): StdParseResult {
 	};
 }
 
-export async function parseStdJsonFile(): Promise<StdParseResult> {
-	const raw = await fs.readFile(stdJsonPath, 'utf8');
+export function parseStdJsonFile(): StdParseResult {
+	const raw = fs.readFileSync(stdJsonPath, 'utf8');
 	const json = JSON.parse(raw);
 	return parseStdJson(json);
 }

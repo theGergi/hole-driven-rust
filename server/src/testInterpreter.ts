@@ -146,26 +146,26 @@ if (casesToRun.length === 0) {
 }
 
 // Run the tests
-// for (const testCaseDef of casesToRun) {
-//     const rustCode = fs.readFileSync(testCaseDef.rustFile, 'utf8');
-//     const expectedHoles = JSON.parse(fs.readFileSync(testCaseDef.expectedFile, 'utf8')) as any;
-//     console.log(`Running test for ${testCaseDef.name}`);
-//     runTest({ rustCode, expectedHoles });
-// }
-
-async function main() {
-    const result = await parseStdJsonFile();
-    // console.log(result);
-	const functionLines = result.functions.map(func => {
-		// console.log(func)
-		return formatFunction(func);
-	}) ?? [];
-	// console.log(functionLines.join('\n'));
+for (const testCaseDef of casesToRun) {
+    const rustCode = fs.readFileSync(testCaseDef.rustFile, 'utf8');
+    const expectedHoles = JSON.parse(fs.readFileSync(testCaseDef.expectedFile, 'utf8')) as any;
+    console.log(`Running test for ${testCaseDef.name}`);
+    runTest({ rustCode, expectedHoles });
 }
 
-main().catch((err) => {
-    console.error(err);
-    process.exit(1);
-});
+// async function main() {
+//     const result = await parseStdJsonFile();
+//     // console.log(result);
+// 	const functionLines = result.functions.map(func => {
+// 		// console.log(func)
+// 		return formatFunction(func);
+// 	}) ?? [];
+// 	// console.log(functionLines.join('\n'));
+// }
 
-console.log()
+// main().catch((err) => {
+//     console.error(err);
+//     process.exit(1);
+// });
+
+// console.log()

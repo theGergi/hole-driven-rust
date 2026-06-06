@@ -4,12 +4,16 @@ import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
 import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion } from '../../shared/out/types.js';
 import { toType, getSourceLocationKey, getLocation } from './utils';
+import { parseStdJsonFile } from './stdParser';
+
 
 export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     private typeStack: Type[] = [toType({valType: ValType.ROOT})];
     private variables: Variable[] = [];
     private functions: Function[] = [];
     private structs: Struct[] = [];
+    private stdFunctions: Function[] = [];
+    private stdStructs: Struct[] = [];
     private holes: Hole[] = [];
     
     private blockStack: string[] = ['global']; // Stack to track nested blocks
@@ -22,6 +26,17 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     constructor(usageListener: UsageGraphListener) {
         super();
         this.usageListener = usageListener;
+
+        this.loadStdLibrary();
+    }
+
+    private loadStdLibrary() {
+        const { functions, structs } = parseStdJsonFile();
+        this.stdFunctions = functions;
+        this.stdStructs = structs;
+        console.log(this.stdFunctions);
+        console.log(this.stdStructs);
+        console.log("Finished loading std library")
     }
 
     // ============================================= UTIL METHODS =============================================
@@ -203,7 +218,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     canBeAssigned(assignee: Hole | Param, assigned: Type, owner: Variable | null = null, checkMutability: boolean = true): boolean {
         
-        console.log("Checking assignability. Assignee type:", assignee.type, "Assigned type:", assigned)
+        // console.log("Checking assignability. Assignee type:", assignee.type, "Assigned type:", assigned)
         if (checkMutability && assignee.type.mutable && !assigned.mutable) {
             return false;
         }
@@ -515,6 +530,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         } else {
             functionName = ctx.expression().pathExpression().pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier().getText()
         }
+
+        console.log(this.functions)
+        console.log(this.structs)
+
         console.log("Function call:", functionName, "Struct:", structName)
         const func = this.getBoundFunction(functionName, structName);
 
@@ -1051,7 +1070,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         
 
         variables.forEach((variable: Variable) => {
-            console.log("Checking variable:", variable.name, "of type", variable.type)
+            // console.log("Checking variable:", variable.name, "of type", variable.type)
             if (variable.type && this.canBeAssigned(hole, variable.type, variable, false) && !variable.type.consumed) {
                 if (this.checkBorrows(variable.type.owner!, hole.location, variable.name)) {
                     holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
@@ -1081,7 +1100,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             if (variable.type.valType === ValType.STRUCT || ( variable.type.valType === ValType.REFERENCE && variable.type.elementType === ValType.STRUCT)) {
                 const struct = this.structs.find(s => s.name === variable.type.structName);
                 if (struct) {
-                    console.log("Checking struct:", struct.name)
+                    // console.log("Checking struct:", struct.name)
                     struct.fields.forEach((field: Param) => {
                         if (field.type && this.canBeAssigned(hole, field.type)) {
                             holeSuggestions.push({suggestionType: 'field', suggestion: {...field, name: variable.name + "." + field.name, location: variable.location}});
@@ -1106,7 +1125,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         });
         
         functions.forEach((func: Function) => {
-            console.log("Checking function:", func.name, "of type", func.type)
+            // console.log("Checking function:", func.name, "of type", func.type)
             if (func.type && this.canBeAssigned(hole, func.type, null, false)) {
                 holeSuggestions.push({suggestionType: 'function', suggestion: {...func, name: func.name + "()", location: func.location}});
             }
@@ -1137,7 +1156,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         });
         
         struct.methods.forEach((method: Function) => {
-            console.log("Checking method:", method.name)
+            // console.log("Checking method:", method.name)
             const methodRefType = new Type();
             Object.assign(methodRefType, variable.type);
             methodRefType.valType = ValType.REFERENCE;
