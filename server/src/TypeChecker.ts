@@ -41,6 +41,47 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     // ============================================= UTIL METHODS =============================================
 
+    findStructFromUserImport(userImportPathString: string): Struct | undefined {
+        // 1. Split the user's string: "std::collections::HashSet" -> ["std", "collections", "HashSet"]
+        const userSegments = userImportPathString.split('::');
+        const importedTypeName = userSegments[userSegments.length - 1]; // "HashSet"
+
+        for (const structObj of this.stdStructs) {
+            // 2. Filter instantly by the base type name
+            const registryTypeName = structObj.path[structObj.path.length - 1];
+            if (registryTypeName !== importedTypeName) continue;
+
+            // 3. Perform a Suffix Match / Permissive check
+            // User paths look like: 'std::collections::HashSet'
+            // Index paths look like: 'hashbrown::set::HashSet' or 'alloc::collections::hash::set::HashSet'
+            
+            // Check if the structures line up logically at the end or share common modules
+            if (this.isPathMatch(userSegments, structObj.path)) {
+                return structObj; // Found the matching internal metadata entry!
+            }
+        }
+        return undefined;
+    }
+
+    isPathMatch(userPath: string[], registryPath: string[]): boolean {
+        // A secure base validation rule: if item name matches, check context
+        const userTypeName = userPath[userPath.length - 1];
+        const registryTypeName = registryPath[registryPath.length - 1];
+        
+        if (userTypeName !== registryTypeName) return false;
+
+        // Standard collections mapping helper for facade items
+        // Since std facades things like collections, we ensure common structural groups match
+        if (userPath.includes("collections") && (registryPath.includes("collections") || registryPath.includes("hashbrown"))) {
+            return true;
+        }
+
+        // Default strict fallback: check if trailing module scopes overlap
+        // e.g. "ffi::c_str::CString" matches "std::ffi::CString" via 'ffi'
+        const commonModule = userPath[userPath.length - 2];
+        return registryPath.includes(commonModule);
+    }
+
     saveState() {
         return { variables: structuredClone(this.variables) }
     }
@@ -302,6 +343,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         const struct: Struct = {
             name: structName,
+            path: [structName],
             location: getLocation(ctx),
             fields: fields,
             methods: []

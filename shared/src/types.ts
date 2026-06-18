@@ -80,6 +80,7 @@ export interface Struct {
 	location: SourceLocation;
 	fields: Param[];
 	methods: Function[];
+	path: string[]; // Full path for matching against user imports, e.g., ["std", "collections", "HashSet"]
 	iterable?: boolean; // Indicates if the type can be iterated over
 	index?: boolean; // Indicates if the type can be indexed/sliced (e.g., Vec, arrays)
 }
