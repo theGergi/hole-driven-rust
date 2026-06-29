@@ -1,0 +1,3037 @@
+[
+  {
+    "task": "task_0",
+    "hole": "hole1",
+    "category": "found_type"
+  },
+  {
+    "task": "task_0",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_0",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_0",
+    "hole": "hole4",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_1",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_1",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_1",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_1",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_1",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_1",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_1",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_10",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_10",
+    "hole": "hole10",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_10",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_10",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_10",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_10",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_10",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_10",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_10",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_10",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_12",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_12",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_12",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_12",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_12",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_13",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_13",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_13",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_14",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_14",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_14",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_14",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_15",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_15",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_15",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_16",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_16",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_16",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_17",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_17",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_18",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 13. Found holes at lines: "
+  },
+  {
+    "task": "task_18",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_18",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_18",
+    "hole": "hole4",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_18",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No hole found at line 13. Found holes at lines: "
+  },
+  {
+    "task": "task_19",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_19",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_19",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_19",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_19",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_19",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_19",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_19",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_19",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_2",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole10",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole11",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole12",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_20",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "Cannot read properties of undefined (reading 'valType')"
+  },
+  {
+    "task": "task_21",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_21",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_21",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_21",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_21",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_21",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_21",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_21",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_22",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_22",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_22",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_23",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_24",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_24",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_24",
+    "hole": "hole3",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_25",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Cannot modify immutable variable"
+  },
+  {
+    "task": "task_25",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Cannot modify immutable variable"
+  },
+  {
+    "task": "task_25",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Cannot modify immutable variable"
+  },
+  {
+    "task": "task_25",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Cannot modify immutable variable"
+  },
+  {
+    "task": "task_25",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Cannot modify immutable variable"
+  },
+  {
+    "task": "task_25",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_27",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_27",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_27",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_27",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_27",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_27",
+    "hole": "hole6",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_28",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_28",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_28",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_29",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_29",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_29",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_3",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_3",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_30",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_30",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_31",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_31",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_32",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_32",
+    "hole": "hole10",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_32",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_32",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_32",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_32",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_32",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_32",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_32",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_32",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_33",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_33",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_33",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_33",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_33",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_33",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_33",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_33",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_33",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_34",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_34",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_34",
+    "hole": "hole3",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_35",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_36",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_36",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_36",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_36",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_36",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_36",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_37",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_37",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_37",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_37",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_37",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_37",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_37",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_37",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole10",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole11",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole12",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole13",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole14",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole15",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole16",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole17",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole18",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole19",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole20",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole21",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_38",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_39",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 20. Found holes at lines: "
+  },
+  {
+    "task": "task_39",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_39",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_39",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_39",
+    "hole": "hole5",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_39",
+    "hole": "hole6",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_4",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_4",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No hole found at line 10. Found holes at lines: "
+  },
+  {
+    "task": "task_4",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_4",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No hole found at line 10. Found holes at lines: "
+  },
+  {
+    "task": "task_4",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_40",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_40",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_40",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 14. Found holes at lines: "
+  },
+  {
+    "task": "task_40",
+    "hole": "hole4",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_40",
+    "hole": "hole5",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_40",
+    "hole": "hole6",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_41",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_42",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_42",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_43",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_43",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_43",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_44",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_44",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_44",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_44",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_45",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_46",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 19. Found holes at lines: "
+  },
+  {
+    "task": "task_46",
+    "hole": "hole10",
+    "category": "failed_with_error",
+    "error": "No hole found at line 18. Found holes at lines: "
+  },
+  {
+    "task": "task_46",
+    "hole": "hole11",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_46",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No hole found at line 19. Found holes at lines: "
+  },
+  {
+    "task": "task_46",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 18. Found holes at lines: "
+  },
+  {
+    "task": "task_46",
+    "hole": "hole4",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_46",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No hole found at line 17. Found holes at lines: "
+  },
+  {
+    "task": "task_46",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No hole found at line 23. Found holes at lines: "
+  },
+  {
+    "task": "task_46",
+    "hole": "hole7",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_46",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No hole found at line 14. Found holes at lines: "
+  },
+  {
+    "task": "task_46",
+    "hole": "hole9",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_47",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 16. Found holes at lines: "
+  },
+  {
+    "task": "task_47",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No hole found at line 16. Found holes at lines: "
+  },
+  {
+    "task": "task_47",
+    "hole": "hole3",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_47",
+    "hole": "hole4",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_47",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No hole found at line 14. Found holes at lines: "
+  },
+  {
+    "task": "task_47",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No hole found at line 16. Found holes at lines: "
+  },
+  {
+    "task": "task_47",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "No hole found at line 16. Found holes at lines: "
+  },
+  {
+    "task": "task_48",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_48",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_49",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_49",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_5",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_5",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_5",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_5",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_50",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole10",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole11",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole12",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole13",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole14",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole15",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole16",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole17",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole18",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole19",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole20",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole21",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole22",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole23",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole24",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole25",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_50",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_51",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_51",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_51",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_52",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_53",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_54",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_54",
+    "hole": "hole2",
+    "category": "found_type"
+  },
+  {
+    "task": "task_54",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_54",
+    "hole": "hole4",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_54",
+    "hole": "hole5",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_54",
+    "hole": "hole6",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_55",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_55",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_56",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_56",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No hole found at line 17. Found holes at lines: "
+  },
+  {
+    "task": "task_56",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_56",
+    "hole": "hole4",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_56",
+    "hole": "hole5",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_57",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_57",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_57",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_57",
+    "hole": "hole4",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_57",
+    "hole": "hole5",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_58",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_58",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_58",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_59",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_59",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_59",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_59",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_6",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_6",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_6",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_6",
+    "hole": "hole4",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_6",
+    "hole": "hole5",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_6",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No hole found at line 18. Found holes at lines: "
+  },
+  {
+    "task": "task_60",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_61",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_61",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_61",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_61",
+    "hole": "hole4",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_61",
+    "hole": "hole5",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_62",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 13. Found holes at lines: "
+  },
+  {
+    "task": "task_62",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No hole found at line 13. Found holes at lines: "
+  },
+  {
+    "task": "task_62",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_63",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_63",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_63",
+    "hole": "hole3",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_64",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_64",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_64",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_64",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_64",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_64",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_64",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_64",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_65",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_65",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_65",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_65",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_65",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_65",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_65",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_65",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_66",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_66",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_66",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_67",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_67",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_67",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_68",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_68",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_68",
+    "hole": "hole3",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_68",
+    "hole": "hole4",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_69",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_69",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_69",
+    "hole": "hole3",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_69",
+    "hole": "hole4",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_69",
+    "hole": "hole5",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_69",
+    "hole": "hole6",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_69",
+    "hole": "hole7",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_69",
+    "hole": "hole8",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_69",
+    "hole": "hole9",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_7",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 10. Found holes at lines: "
+  },
+  {
+    "task": "task_7",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No hole found at line 10. Found holes at lines: "
+  },
+  {
+    "task": "task_7",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 10. Found holes at lines: "
+  },
+  {
+    "task": "task_70",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole10",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole11",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole12",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_70",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_71",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_71",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_71",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_71",
+    "hole": "hole4",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_71",
+    "hole": "hole5",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_71",
+    "hole": "hole6",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_71",
+    "hole": "hole7",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_72",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_72",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_72",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_72",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_72",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_73",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_73",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_73",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_74",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "ctx.expression(...).pathExpression is not a function"
+  },
+  {
+    "task": "task_74",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "ctx.expression(...).pathExpression is not a function"
+  },
+  {
+    "task": "task_74",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "ctx.expression(...).pathExpression is not a function"
+  },
+  {
+    "task": "task_74",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "ctx.expression(...).pathExpression is not a function"
+  },
+  {
+    "task": "task_74",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "ctx.expression(...).pathExpression is not a function"
+  },
+  {
+    "task": "task_74",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "ctx.expression(...).pathExpression is not a function"
+  },
+  {
+    "task": "task_74",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "ctx.expression(...).pathExpression is not a function"
+  },
+  {
+    "task": "task_74",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "ctx.expression(...).pathExpression is not a function"
+  },
+  {
+    "task": "task_74",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "ctx.expression(...).pathExpression is not a function"
+  },
+  {
+    "task": "task_75",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_75",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_75",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_76",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_76",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_76",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_77",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_77",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_77",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_78",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_78",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_78",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_78",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Declared subtype is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_79",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_79",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_79",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_79",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_79",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_79",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_8",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_8",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_8",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_8",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_8",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_8",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_80",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_80",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_80",
+    "hole": "hole3",
+    "category": "found_type"
+  },
+  {
+    "task": "task_80",
+    "hole": "hole4",
+    "category": "found_type"
+  },
+  {
+    "task": "task_80",
+    "hole": "hole5",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole10",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole11",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole12",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole13",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole14",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole15",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole16",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole17",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole18",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole19",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole20",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole21",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_81",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_82",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_82",
+    "hole": "hole2",
+    "category": "found_type"
+  },
+  {
+    "task": "task_82",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_83",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_84",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_84",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No hole found at line 15. Found holes at lines: "
+  },
+  {
+    "task": "task_84",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No hole found at line 15. Found holes at lines: "
+  },
+  {
+    "task": "task_85",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_85",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_85",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+  },
+  {
+    "task": "task_86",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_86",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_86",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_86",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_86",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_86",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_86",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_86",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_86",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_87",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_87",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_87",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_87",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_87",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_88",
+    "hole": "hole1",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_88",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_88",
+    "hole": "hole3",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_88",
+    "hole": "hole4",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_88",
+    "hole": "hole5",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_88",
+    "hole": "hole6",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_89",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_89",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_89",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_89",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_89",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_89",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_89",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_89",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_89",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_9",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_9",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_9",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_9",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_9",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole10",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole11",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole12",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_90",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_91",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_91",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_91",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_91",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_92",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_92",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_92",
+    "hole": "hole3",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_92",
+    "hole": "hole4",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_92",
+    "hole": "hole5",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole10",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole11",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole12",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole13",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole14",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_93",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_94",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_94",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_94",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_94",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_94",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_94",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_94",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_94",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_94",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_95",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_95",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_95",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_95",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_95",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_95",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_95",
+    "hole": "hole7",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_95",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_95",
+    "hole": "hole9",
+    "category": "failed_with_error",
+    "error": "Variable not bound"
+  },
+  {
+    "task": "task_96",
+    "hole": "hole1",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_96",
+    "hole": "hole2",
+    "category": "exact_match"
+  },
+  {
+    "task": "task_96",
+    "hole": "hole3",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_97",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  },
+  {
+    "task": "task_97",
+    "hole": "hole2",
+    "category": "found_suggestions"
+  },
+  {
+    "task": "task_98",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_98",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_98",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "Declared type is different from infered type: reference vs str"
+  },
+  {
+    "task": "task_99",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
+  }
+]
