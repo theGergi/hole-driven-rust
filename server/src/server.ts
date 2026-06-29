@@ -171,6 +171,9 @@ connection.onHover((params: HoverParams): Hover | null => {
                 } else if (suggestion.suggestionType === 'slice') {
                     replacementWithTypes = suggestion.suggestion.name
                     replacementWithoutTypes = suggestion.suggestion.name
+                } else if (suggestion.suggestionType === 'index') {
+                    replacementWithTypes = suggestion.suggestion.name
+                    replacementWithoutTypes = suggestion.suggestion.name
                 }
 
                 const args = [

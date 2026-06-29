@@ -1,0 +1,7 @@
+[
+	{
+		"line": 10,
+		"type": { "valType": "f32" },
+		"suggestionNames": ["numbers[??]", "threshold"]
+	}
+]

@@ -1,6 +1,7 @@
 export enum ValType {
 	ROOT = "ROOT",
 	INT = "i32",
+	FLOAT = "f32",
 	STRING = "str",
 	HOLE = "HOLE",
 	UNKNOWN = "UNKNOWN",

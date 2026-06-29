@@ -1,0 +1,7 @@
+[
+	{
+		"line": 5,
+		"type": { "valType": "i32" },
+		"suggestionNames": ["capacity()", "is_empty()", "len()", "x[??]"]
+	}
+]

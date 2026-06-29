@@ -227,6 +227,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (typeString === 'i32') {
             return toType({valType: ValType.INT});
         }
+        if (typeString === 'f32' || typeString === 'f64') {
+            return toType({valType: ValType.FLOAT});
+        }
         if (typeString === 'str') {
             return toType({valType: ValType.STRING});
         }
@@ -642,7 +645,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         if (!structName) {
-            throw new Error(`Cannot call method '${methodName}' on non-struct type '${receiverType.valType}'`);
+            return { type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
         }
 
         const func = this.getBoundMethod(structName, methodName);
@@ -1204,8 +1207,17 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
                 }
             }
+
+            if (!variable.type.consumed) {
+                const isIndexable =
+                    variable.type.valType === ValType.VECTOR ||
+                    (variable.type.valType === ValType.STRUCT && variable.type.structName === 'Vec');
+                if (isIndexable && variable.type.elementType === hole.type.valType) {
+                    holeSuggestions.push({suggestionType: 'index', suggestion: {...variable, name: variable.name + "[??]"}});
+                }
+            }
         });
-        
+
         functions.forEach((func: Function) => {
             if (func.type && this.canBeAssigned(hole, func.type, null, false)) {
                 holeSuggestions.push({suggestionType: 'function', suggestion: {...func, name: func.name + "()", location: func.location}});

@@ -22,7 +22,7 @@ export function toType(overrides: Partial<Type> & { valType: ValType }, variable
 	let primitive = false;
 	console.log(overrides)
 	
-	if (overrides.valType === ValType.INT) {
+	if (overrides.valType === ValType.INT || overrides.valType === ValType.FLOAT) {
 		primitive = true;
 	}
 

@@ -82,13 +82,15 @@ function parsePrimitiveType(name: string): Type {
 		return createType({ valType: ValType.STRING, primitive: false });
 	}
 
+	if (name === 'f32' || name === 'f64') {
+		return createType({ valType: ValType.FLOAT, primitive: true });
+	}
+
 	if (
 		name === 'bool' ||
 		/^u?\d+$/.test(name) ||
 		name === 'usize' ||
 		name === 'isize' ||
-		name === 'f32' ||
-		name === 'f64' ||
 		name === 'char'
 	) {
 		return createType({ valType: ValType.INT, primitive: true });

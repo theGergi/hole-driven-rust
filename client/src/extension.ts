@@ -68,7 +68,10 @@ export function activate(context: ExtensionContext) {
 					replacement = formatVariable(s.suggestion);
 				} else if (s.suggestionType === 'function') {
 					replacement = formatFunction(s.suggestion);
+				} else if (s.suggestionType === 'method' || s.suggestionType === 'field' || s.suggestionType === 'slice' || s.suggestionType === 'index') {
+					replacement = s.suggestion.name;
 				}
+				if (!replacement) return '';
 				const escapedReplacement = replacement.replace(/'/g, "\\'").replace(/"/g, '\\"');
 				return `<li><a href="#" onclick="apply('${escapedReplacement}')">${replacement}</a></li>`;
 			}).join('');
