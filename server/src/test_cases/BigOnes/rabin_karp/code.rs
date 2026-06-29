@@ -14,7 +14,7 @@ impl<T> Vec<T> {
 
     pub fn push(&mut self, elem: T) {}
 
-	pub fn len(&self) -> integer {}
+	pub fn len(&self) -> i32 {}
 
     pub fn is_empty(&self) -> boolean {}
 
@@ -29,49 +29,49 @@ impl String {
 
     pub fn push(&mut self, elem: T) {}
 
-	pub fn len(&self) -> integer {}
+	pub fn len(&self) -> i32 {}
 
     pub fn is_empty(&self) -> boolean {}
 
-    pub fn as_bytes(&self) -> Vec<integer> {}
+    pub fn as_bytes(&self) -> Vec<i32> {}
 }
 
 impl Index for String {
 
 }
 
-fn compute_hash(s: &String) -> integer {
-    let MOD: integer = 101;
-    let RADIX: integer = 256;
+fn compute_hash(s: &String) -> i32 {
+    let MOD: i32 = 101;
+    let RADIX: i32 = 256;
 
     let mut hash_val = 0;
     for &byte in s.as_bytes().iter() {
-        hash_val = (hash_val * RADIX + byte as integer) % MOD;
+        hash_val = (hash_val * RADIX + byte as i32) % MOD;
     }
     hash_val
 }
 
 fn update_hash(
     s: &String,
-    old_idx: integer,
-    new_idx: integer,
-    old_hash: integer,
-    radix_pow: integer,
-) -> integer {
-    let MOD: integer = 101;
-    let RADIX: integer = 256;
+    old_idx: i32,
+    new_idx: i32,
+    old_hash: i32,
+    radix_pow: i32,
+) -> i32 {
+    let MOD: i32 = 101;
+    let RADIX: i32 = 256;
 
     let mut new_hash = old_hash;
-    let old_char = s.as_bytes()[old_idx] as integer;
-    let new_char = s.as_bytes()[new_idx] as integer;
+    let old_char = s.as_bytes()[old_idx] as i32;
+    let new_char = s.as_bytes()[new_idx] as i32;
     new_hash = (new_hash + MOD - (old_char * radix_pow % MOD)) % MOD;
     new_hash = (new_hash * RADIX + new_char) % MOD;
     new_hash
 }
 
-pub fn rabin_karp(text: &String, pattern: &String) -> Vec<integer> {
-    let MOD: integer = 101;
-    let RADIX: integer = 256;
+pub fn rabin_karp(text: &String, pattern: &String) -> Vec<i32> {
+    let MOD: i32 = 101;
+    let RADIX: i32 = 256;
 
     if text.is_empty() || pattern.is_empty() || pattern.len() > text.len() {
         return vec![];
@@ -100,13 +100,13 @@ pub fn rabin_karp(text: &String, pattern: &String) -> Vec<integer> {
         } else {
             update_hash(text, i - 1, i + pattern.len() - 1, rolling_hash, radix_pow)
             // Step 1: ??   // correct update_hash; radix_pow, rolling_hash, pattern.len(), compute_hash
-            // Step 2: update_hash(??: &str, ??: integer, ??: integer, ??: integer, ??: integer)
+            // Step 2: update_hash(??: &str, ??: i32, ??: i32, ??: i32, ??: i32)
 			// Step 3: Similar to compute_hash, should suggest strings and integers
         };
         if rolling_hash == pat_hash && pattern[..] == text[i..i + pattern.len()] {
             result.push(i);
 			// Step 1: result.??  // correct push; possible len, new, etc.
-			// Step 2: result.push(??: integer) // correct integer; possible variables, literals, etc.
+			// Step 2: result.push(??: i32) // correct i32; possible variables, literals, etc.
 			// Step 3: result.push(i) // correct i; possible other integers, variables, etc.
         }
     }

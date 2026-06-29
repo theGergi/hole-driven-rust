@@ -1,7 +1,7 @@
 [
 	{
 		"line": 17,
-		"type": { "valType": "integer" },
+		"type": { "valType": "i32" },
 		"suggestionNames": ["z.cap", "z.len", "z.len_func()"]
 	}
 ]

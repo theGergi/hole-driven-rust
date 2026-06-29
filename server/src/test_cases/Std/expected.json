@@ -5,7 +5,7 @@
 		"suggestionNames": ["new()", "s"]
 	},{
 		"line": 5,
-		"type": { "valType": "integer" },
+		"type": { "valType": "i32" },
 		"suggestionNames": ["capacity()", "contains()", "insert()", "is_disjoint()", "is_empty()", "is_subset()", "is_superset()", "len()", "remove()"]
 	}
 ]

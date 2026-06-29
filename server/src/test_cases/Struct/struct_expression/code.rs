@@ -1,6 +1,6 @@
 pub struct CustomStruct {
-    a: integer,
-    b: integer
+    a: i32,
+    b: i32
 }
 
 impl CustomStruct {

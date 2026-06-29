@@ -235,7 +235,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return toType({valType: ValType.UNKNOWN});
         }
 
-        if (typeString === 'integer') {
+        if (typeString === 'i32') {
             return toType({valType: ValType.INT});
         }
         if (typeString === 'str') {
@@ -536,7 +536,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         return null;
     }
 
-    // Parse an array like vec![1, 2, 3] and infer its type as Vec<integer>
+    // Parse an array like vec![1, 2, 3] and infer its type as Vec<i32>
     visitMacroInvocation = (ctx: any): ReturnType | null => {
         console.log("Macro invocation")
         if (ctx.simplePath().getText() === "vec") {

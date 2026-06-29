@@ -13,7 +13,7 @@ pub struct String {}
 impl String {
     pub fn new() -> Self {}
 
-    pub fn as_bytes(&self) -> Vec<integer> {}
+    pub fn as_bytes(&self) -> Vec<i32> {}
 }
 
 

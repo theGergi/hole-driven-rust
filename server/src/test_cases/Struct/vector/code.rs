@@ -1,7 +1,7 @@
 pub struct VecCustom<T> {
     ptr: *mut T,
-    cap: integer,
-    len: integer,
+    cap: i32,
+    len: i32,
 }
 
 impl<T> VecCustom<T> {
@@ -9,9 +9,9 @@ impl<T> VecCustom<T> {
 
     pub fn push(&mut self, elem: T) {}
 
-	pub fn len_func(&mut self, a: integer) -> integer {}
+	pub fn len_func(&mut self, a: i32) -> i32 {}
 }
 
 pub fn main(text: &str, pattern: &str) {
-    let x : VecCustom<integer> = ??;
+    let x : VecCustom<i32> = ??;
 }
