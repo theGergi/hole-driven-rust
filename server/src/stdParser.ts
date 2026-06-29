@@ -4,21 +4,11 @@ import {
 	Borrow,
 	Param,
 	SourceLocation,
-	// Struct as SharedStruct,
+	SharedStruct,
 	Type,
 	ValType,
 	Function as SharedFunction
 } from '../../shared/out/types.js';
-
-export interface SharedStruct {
-	name: string;
-	location: SourceLocation;
-	fields: Param[];
-	methods: SharedFunction[];
-	iterable?: boolean; // Indicates if the type can be iterated over
-	index?: boolean; // Indicates if the type can be indexed/sliced (e.g., Vec, arrays)
-	impls?: any[]; // Store raw impl data for later processing
-}
 
 
 const stdJsonPath = path.resolve(__dirname, '..', 'src', 'assets', 'std.json');
@@ -85,33 +75,6 @@ function parsePathName(value: any): string | null {
 	return null;
 }
 
-function parseFullPathName(value: any, paths: Record<string, any>): string | null {
-	if (!value || typeof value !== 'object') {
-		return null;
-	}
-
-	if (typeof value.path === 'string' && typeof value.id === 'number') {
-		const pathEntry = paths[String(value.id)];
-		if (pathEntry?.path && Array.isArray(pathEntry.path)) {
-			return pathEntry.path.join('::');
-		}
-		return value.path;
-	}
-
-	if (value.resolved_path) {
-		return parseFullPathName(value.resolved_path, paths);
-	}
-
-	if (value.type) {
-		return parseFullPathName(value.type, paths);
-	}
-
-	if (typeof value.generic === 'string') {
-		return value.generic;
-	}
-
-	return null;
-}
 
 function parsePrimitiveType(name: string): Type {
 	if (name === 'str') {
@@ -300,40 +263,23 @@ function parseStructFields(structEntry: any, index: Record<string, any>): Param[
 	return [];
 }
 
-function buildMethodOwnerMap(index: Record<string, any>, paths: Record<string, any>): Record<string, string> {
-	const map: Record<string, string> = {};
 
-	for (const [id, entry] of Object.entries(index)) {
-		const impl = entry?.inner?.impl;
-		if (!impl || !Array.isArray(impl.items)) {
-			continue;
-		}
-
-		const ownerName = parseFullPathName(impl.for, paths) || parsePathName(impl.for) || 'unknown';
-		for (const item of impl.items) {
-			map[String(item)] = ownerName;
-		}
-	}
-
-	return map;
-}
-
-function parseStructEntry(entry: any, index: Record<string, any>): SharedStruct | null {
+function parseStructEntry(entry: any, index: Record<string, any>, id: string, paths: Record<string, any>): SharedStruct | null {
 	const structEntry = entry?.inner?.struct;
 	if (!structEntry) {
 		return null;
 	}
 
 	const name = typeof entry.name === 'string' ? entry.name : 'unknown';
-
-	const methods: SharedFunction[] = [];
-
+	const pathEntry = paths[id];
+	const path: string[] | undefined = Array.isArray(pathEntry?.path) ? pathEntry.path : undefined;
 
 	return {
 		name,
 		location: parseSourceLocation(entry.span),
 		fields: parseStructFields(structEntry.kind, index),
-		methods,
+		methods: [],
+		path,
 		iterable: undefined,
 		index: undefined,
 		impls: structEntry.impls
@@ -342,60 +288,49 @@ function parseStructEntry(entry: any, index: Record<string, any>): SharedStruct 
 
 function parseImplEntry(entry: any, index: Record<string, any>, structs: SharedStruct[], functions: SharedFunction[]) {
 	const implEntry = entry?.inner?.impl;
-	if (!implEntry) {
-		return null;
+	if (!implEntry || !Array.isArray(implEntry.items)) {
+		return;
 	}
-
 
 	if (!implEntry.for?.resolved_path?.path) {
-		return
+		return;
 	}
-	
-	if (parsePathName(implEntry.for) !== 'HashSet') {
-		return
+
+	const ownerName = parsePathName(implEntry.for);
+	if (!ownerName) {
+		return;
 	}
-	
-	structs.filter(s => s.name === parsePathName(implEntry.for)).forEach(s => {
-		if (s.impls) {
-			implEntry.items.forEach((itemId: any) => {
-				const itemEntry = index[String(itemId)];
-				parseFunctionEntry(itemEntry, s, functions)
-			});
-	
-		}
+
+	const matchingStructs = structs.filter(s => s.name === ownerName && s.impls);
+	matchingStructs.forEach(s => {
+		implEntry.items.forEach((itemId: any) => {
+			const itemEntry = index[String(itemId)];
+			parseFunctionEntry(itemEntry, s, functions);
+		});
 	});
-	
 }
 
 export function parseStdJson(stdJson: any): StdParseResult {
 	const index = stdJson?.index ?? {};
 	const paths = stdJson?.paths ?? {};
-	const methodOwnerByItem = buildMethodOwnerMap(index, paths);
-	const allFunctions: Record<string, SharedFunction> = {};
-
-	// for (const [id, entry] of Object.entries(index)) {
-	// 	const func = parseFunctionEntry(entry, methodOwnerByItem, id);
-	// 	if (func) {
-	// 		allFunctions[id] = func;
-	// 	}
-	// }
 
 	const structs: SharedStruct[] = [];
 	const functions: SharedFunction[] = [];
+
 	for (const [id, entry] of Object.entries(index)) {
-		const parsedStruct = parseStructEntry(entry, index);
+		const parsedStruct = parseStructEntry(entry, index, id, paths);
 		if (parsedStruct) {
 			structs.push(parsedStruct);
 		}
 	}
 
 	for (const [id, entry] of Object.entries(index)) {
-		const parsedImpl = parseImplEntry(entry, index, structs, functions);
-
+		parseFunctionEntry(entry as any, null, functions);
+		parseImplEntry(entry, index, structs, functions);
 	}
 
 	return {
-		functions: Object.values(allFunctions),
+		functions,
 		structs
 	};
 }
@@ -405,3 +340,7 @@ export function parseStdJsonFile(): StdParseResult {
 	const json = JSON.parse(raw);
 	return parseStdJson(json);
 }
+
+
+
+/// "name": "HashMap",

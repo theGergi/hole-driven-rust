@@ -2,7 +2,7 @@ import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
-import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion } from '../../shared/out/types.js';
+import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct } from '../../shared/out/types.js';
 import { toType, getSourceLocationKey, getLocation } from './utils';
 import { parseStdJsonFile } from './stdParser';
 
@@ -13,7 +13,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     private functions: Function[] = [];
     private structs: Struct[] = [];
     private stdFunctions: Function[] = [];
-    private stdStructs: Struct[] = [];
+    private stdStructs: SharedStruct[] = [];
     private holes: Hole[] = [];
     
     private blockStack: string[] = ['global']; // Stack to track nested blocks
@@ -41,23 +41,19 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     // ============================================= UTIL METHODS =============================================
 
-    findStructFromUserImport(userImportPathString: string): Struct | undefined {
-        // 1. Split the user's string: "std::collections::HashSet" -> ["std", "collections", "HashSet"]
+    findStructFromUserImport(userImportPathString: string): SharedStruct | undefined {
+        // Split "std::collections::HashSet" -> ["std", "collections", "HashSet"]
         const userSegments = userImportPathString.split('::');
-        const importedTypeName = userSegments[userSegments.length - 1]; // "HashSet"
+        const importedTypeName = userSegments[userSegments.length - 1];
 
         for (const structObj of this.stdStructs) {
-            // 2. Filter instantly by the base type name
+            if (!structObj.path || structObj.path.length === 0) continue;
+
             const registryTypeName = structObj.path[structObj.path.length - 1];
             if (registryTypeName !== importedTypeName) continue;
 
-            // 3. Perform a Suffix Match / Permissive check
-            // User paths look like: 'std::collections::HashSet'
-            // Index paths look like: 'hashbrown::set::HashSet' or 'alloc::collections::hash::set::HashSet'
-            
-            // Check if the structures line up logically at the end or share common modules
             if (this.isPathMatch(userSegments, structObj.path)) {
-                return structObj; // Found the matching internal metadata entry!
+                return structObj;
             }
         }
         return undefined;
@@ -80,6 +76,26 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         // e.g. "ffi::c_str::CString" matches "std::ffi::CString" via 'ffi'
         const commonModule = userPath[userPath.length - 2];
         return registryPath.includes(commonModule);
+    }
+
+    visitUseDeclaration = (ctx: any): ReturnType | null => {
+        const pathText: string | undefined = ctx.useTree()?.simplePath()?.getText();
+        if (!pathText) return null;
+
+        const normalizedPath = pathText.startsWith('::') ? pathText.slice(2) : pathText;
+        const found = this.findStructFromUserImport(normalizedPath);
+        if (found && !this.structs.some(s => s.name === found.name)) {
+            this.structs.push({
+                name: found.name,
+                location: found.location,
+                fields: found.fields,
+                methods: found.methods,
+                path: found.path ?? [],
+                iterable: found.iterable,
+                index: found.index,
+            });
+        }
+        return null;
     }
 
     saveState() {

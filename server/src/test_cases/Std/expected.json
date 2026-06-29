@@ -1,7 +1,11 @@
 [
 	{
-		"line": 7,
-		"type": { "valType": "str" },
-		"suggestionNames": ["r", "z", "main()", "a"]
+		"line": 4,
+		"type": { "valType": "struct", "structName": "HashSet" },
+		"suggestionNames": ["s", "new()"]
+	},{
+		"line": 5,
+		"type": { "valType": "integer" },
+		"suggestionNames": ["len()"]
 	}
 ]

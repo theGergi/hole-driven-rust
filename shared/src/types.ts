@@ -134,3 +134,15 @@ export function formatFunction(func: any): string {
 	}
 	return `${name}(${paramString}) -> ${returnType}`;
 }
+
+
+export interface SharedStruct {
+	name: string;
+	location: SourceLocation;
+	fields: Param[];
+	methods: Function[];
+	path?: string[]; // Full path e.g. ["std", "collections", "HashSet"]
+	iterable?: boolean; // Indicates if the type can be iterated over
+	index?: boolean; // Indicates if the type can be indexed/sliced (e.g., Vec, arrays)
+	impls?: any[]; // Store raw impl data for later processing
+}

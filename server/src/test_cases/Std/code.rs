@@ -1,6 +1,6 @@
-// The hole should suggest only variables that have not been moved
+use std::collections::HashSet;
 
-fn main(a: str) -> str {
-	let z: str = "3";
-	let m: str = ??;
+fn process(s: HashSet) {
+    let x: HashSet = ??;
+    let y: integer = ??;
 }
