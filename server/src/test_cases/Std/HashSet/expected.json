@@ -2,10 +2,18 @@
 	{
 		"line": 4,
 		"type": { "valType": "struct", "structName": "HashSet" },
-		"suggestionNames": ["new()", "s"]
+		"suggestionNames": ["new()", "new_in()", "s", "with_capacity()", "with_capacity_and_hasher()", "with_capacity_and_hasher_in()", "with_capacity_in()", "with_hasher()", "with_hasher_in()"]
 	},{
 		"line": 5,
 		"type": { "valType": "i32" },
-		"suggestionNames": ["capacity()", "contains()", "insert()", "is_disjoint()", "is_empty()", "is_subset()", "is_superset()", "len()", "remove()"]
+		"suggestionNames": ["s.capacity()",    "s.contains()",
+    "s.insert()",      "s.is_disjoint()",
+    "s.is_empty()",    "s.is_subset()",
+    "s.is_superset()", "s.len()",
+    "s.remove()",      "x.capacity()",
+    "x.contains()",    "x.insert()",
+    "x.is_disjoint()", "x.is_empty()",
+    "x.is_subset()",   "x.is_superset()",
+    "x.len()",         "x.remove()"]
 	}
 ]

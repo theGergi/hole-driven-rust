@@ -7,9 +7,9 @@ fn has_close_elements(numbers:Vec<f32>, threshold: f32) -> bool{
         for j in 1..numbers.len() {
 
             if i != j {
-                let distance:f32 = numbers[i] - ??;
+                let distance: f32 = numbers[i] - ??;
 
-                if distance.abs() < threshold{
+                if distance < threshold {
                     return true;
                 }
 

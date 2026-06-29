@@ -21,23 +21,28 @@ fn main() {
 
 	immutable_borrow(??); // expects 's_imm_borrow', '&s' - can create another imm borrow or use existing
 		
-	let s_imm_borrow_2: &str = ??; // expects 's_imm_borrow', '&s' - still can borrow imm
+	{
+		let s_imm_borrow_2: &str = ??; // expects 's_imm_borrow', '&s' - still can borrow imm
+	}
 
 	immutable_borrow(??); // expects 's_imm_borrow', '&s' - multiple imm borrows ok
-		
-	let s_mut_borrow: &mut str = ??; // expects '&mut s' - can create mut borrow since no other borrows active
+	{
+		let s_mut_borrow: &mut str = ??; // expects '&mut s' - can create mut borrow since no other borrows active
+	}
 
 	mutable_borrow(??);   // expects '&mut s' - mut borrow still active
 
 	{
-		let s_mut_borrow_2: &mut str = ??; // expects [] - s_imm_borrow used later, can't create mut borrow
+		{
+			let s_mut_borrow_2: &mut str = ??; // expects [] - s_imm_borrow used later, can't create mut borrow
+		}
 
 		mutable_borrow(??);   // expects [] - same reason, conflict with future imm borrow
 
 		immutable_borrow(s_imm_borrow); // Uses the imm borrow
 	}
-
-	let s_mut_borrow_3: &mut str = ??; // expects '&mut s' - imm borrow scope ended, can borrow mut
-
+	{
+		let s_mut_borrow_3: &mut str = ??; // expects '&mut s' - imm borrow scope ended, can borrow mut
+	}
 	mutable_borrow(??);   // expects '&mut s' - mut borrow active
 }

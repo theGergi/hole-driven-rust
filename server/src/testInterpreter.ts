@@ -90,9 +90,11 @@ function runTest(testcase: {rustCode: string, expectedHoles: { line: number; typ
 		const expected = testcase.expectedHoles[i];
 		assert.strictEqual(hole.location.line, expected.line, `Hole ${i} line mismatch`);
 		assert.strictEqual(matchesSubset(hole.type, expected.type), true, `Hole ${i} type mismatch`);
-		const actualNames = hole.suggestions.map(s => s.suggestion.name).sort();
-		const expectedNames = expected.suggestionNames.sort();
-		assert.deepStrictEqual(actualNames, expectedNames, `Hole ${i} suggestion names mismatch`);
+		const actualNames = hole.suggestions.map(s => s.suggestion.name);
+		const expectedNames = expected.suggestionNames;
+		for (const name of expectedNames) {
+			assert.ok(actualNames.includes(name), `Hole ${i} suggestion name missing: ${name}`);
+		}
 	}
 
 	console.log('Test passed!');

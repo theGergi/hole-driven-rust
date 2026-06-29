@@ -98,9 +98,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             });
         }
 
-        // Add static functions (no self param, 0 params) for this struct as callable functions
+        // Add static/associated functions (no self param) for this struct as callable functions
         this.stdFunctions
-            .filter(f => f.structName === found.name && f.params.length === 0)
+            .filter(f => f.structName === found.name)
             .forEach(f => {
                 if (!this.functions.some(existing => existing.name === f.name && existing.structName === f.structName)) {
                     this.functions.push(f);
@@ -224,7 +224,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return toType({valType: ValType.UNKNOWN});
         }
 
-        if (typeString === 'i32') {
+        if (["i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64", "u128", "usize"].includes(typeString as any)) {
             return toType({valType: ValType.INT});
         }
         if (typeString === 'f32' || typeString === 'f64') {
@@ -436,6 +436,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (leftHandExpression instanceof FieldExpressionContext) {
             variable = this.getBoundVariable(leftHandExpression.expression().getText());
             varType = this.getBoundField(variable.type.structName!, leftHandExpression.identifier().getText()).type
+        } else if (leftHandExpression instanceof IndexExpressionContext) {
+            const baseName = leftHandExpression.expression(0)!.getText();
+            variable = this.getBoundVariable(baseName);
+            const elType = (variable.type.elementType ?? ValType.UNKNOWN) as ValType;
+            varType = toType({valType: elType});
         } else {
             const variableName = leftHandExpression.getText();
             variable = this.getBoundVariable(variableName)
@@ -485,7 +490,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (expression) {
             inferedType = toType(this.visit(expression)?.type as Type);
         }
-        if (inferedType.valType === ValType.HOLE) {
+        if (inferedType.valType === ValType.HOLE && declaredType.valType == ValType.UNKNOWN) {
             recordVar = false;
         }
         
@@ -519,6 +524,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
         
         // console.log("Inferred type: ", inferedType, "Declared type: ", declaredType)
+        // console.log("Record var", recordVar)
         if (recordVar) {
             let valType = inferedType;
             if ( inferedType.valType === ValType.UNKNOWN || (inferedType.elementType === ValType.UNKNOWN && declaredType.elementType && declaredType.elementType !== ValType.UNKNOWN) ) {
@@ -561,13 +567,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                     })
                 } else if (tokens.length === 3 && tokens[1].getText() === ";") { // Repeat vec macro like vec![0; 10]
                     const elType = this.visit(tokens[0])!.type!.valType;
-                    const countType = this.visit(tokens[2])!.type!.valType;
-
-                    if (countType === ValType.INT) {
-                        type = toType({valType: ValType.VECTOR, elementType: elType});
-                    } else if (type.elementType !== elType) {
-                        throw Error("Element type mismatch in vec! macro")
-                    }
+                    this.visit(tokens[2]); // visit count for side effects, type is irrelevant
+                    type = toType({valType: ValType.VECTOR, elementType: elType});
                 } else {
                     throw Error("Only simple vec macros with commas are supported")
                 }
@@ -775,6 +776,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     visitPathExpression = (ctx: any): ReturnType | null => {
         console.log("Path expression")
+        console.log(ctx.getText())
         if(ctx.parent.parent instanceof CallExpressionContext) { // Kinda useless now
             const func = this.getBoundFunction(ctx.getText());
             console.log("Function call:", func?.name)
@@ -790,6 +792,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         console.log("If expression")
 
         const currentState = this.saveState();
+        console.log(currentState)
+        console.log(ctx.expression().getText())
+        if (ctx.expression()) {
+            this.visit(ctx.expression());
+        }
+
+        this.loadState(currentState);
 
         this.visit(ctx.blockExpression(0));
 
@@ -803,6 +812,32 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             type: this.currentParentType,
             location: getLocation(ctx)
         }
+    }
+
+    visitComparisonExpression = (ctx: any): ReturnType => {
+        const leftChild = ctx.expression(0);
+        const rightChild = ctx.expression(1);
+
+        if (!leftChild || !rightChild) {
+            return { type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
+        }
+
+        let left: ReturnType;
+        let right: ReturnType;
+
+        if (leftChild.getText() === '??') {
+            right = this.visit(rightChild) as ReturnType;
+            this.typeStack.push(right.type || toType({valType: ValType.UNKNOWN}));
+            left = this.visit(leftChild) as ReturnType;
+        } else {
+            left = this.visit(leftChild) as ReturnType;
+            this.typeStack.push(left.type || toType({valType: ValType.UNKNOWN}));
+            right = this.visit(rightChild) as ReturnType;
+        }
+
+        this.typeStack.pop();
+
+        return { type: toType({valType: ValType.INT}), location: getLocation(ctx) };
     }
 
 
@@ -1080,7 +1115,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         console.log("Range Expression")
 
         const type = toType({valType: ValType.UNKNOWN});
-        const start = this.visit(ctx.expression(0));
+        const start = ctx.expression(0) ? this.visit(ctx.expression(0)) : null;
         const end = ctx.expression(1) ? this.visit(ctx.expression(1)) : null;
 
         if (start?.type?.valType === ValType.INT && (!end || end.type?.valType === ValType.INT)) {
@@ -1137,6 +1172,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         const variables = this.variables;
         const functions = this.functions;
 
+        console.log("Hole hey")
+        this.functions.forEach((f) =>
+        {console.log(f.name)})
+        this.variables.forEach((f) =>
+        {console.log(f.name)})
         // console.log("Variables:")
         // console.log(variables)
 
@@ -1190,9 +1230,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                         if (method.type && this.canBeAssigned(hole, method.type, null, false)) {
                             // Std structs have a multi-segment path; format just the method name
                             const isStd = (struct as any).path && (struct as any).path.length > 1;
-                            const methodName = isStd
-                                ? method.name + "()"
-                                : variable.name + "." + method.name + "()";
+                            const methodName = variable.name + "." + method.name + "()";
                             holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: methodName, location: variable.location}});
                         }
                     });

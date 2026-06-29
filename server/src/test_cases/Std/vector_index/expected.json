@@ -2,6 +2,6 @@
 	{
 		"line": 5,
 		"type": { "valType": "i32" },
-		"suggestionNames": ["capacity()", "is_empty()", "len()", "x[??]"]
+		"suggestionNames": ["x.capacity()", "x.is_empty()", "x.len()", "x[??]"]
 	}
 ]
