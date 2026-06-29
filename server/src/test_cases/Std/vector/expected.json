@@ -1,0 +1,7 @@
+[
+	{
+		"line": 4,
+		"type": { "valType": "struct" },
+		"suggestionNames": ["new()"]
+	}
+]

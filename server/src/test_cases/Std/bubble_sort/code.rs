@@ -5,8 +5,10 @@ fn bubble_sort<T: Ord>(arr: &mut Vec<i32>) {
     let mut len = arr.len();
     let mut swapped = true;
 
+    let x: Vec<i32> = ??;
+
     while swapped {
-        swapped = ??;
+        swapped = false;
         for i in 1..len {
             if arr[i - 1] > arr[i] {
                 arr.swap(i - 1, i);

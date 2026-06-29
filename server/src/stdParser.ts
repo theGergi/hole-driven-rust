@@ -11,7 +11,8 @@ import {
 } from '../../shared/out/types.js';
 
 
-const stdJsonPath = path.resolve(__dirname, '..', 'src', 'assets', 'std.json');
+const stdJsonPath   = path.resolve(__dirname, '..', 'src', 'assets', 'std.json');
+const allocJsonPath = path.resolve(__dirname, '..', 'src', 'assets', 'alloc.json');
 
 export interface StdParseResult {
 	functions: SharedFunction[];
@@ -156,9 +157,9 @@ function parseTypeDesc(typeDesc: any): Type {
 		if (pathName === 'Vec') {
 			const inner = angleArgs.length > 0 ? parseTypeDesc(angleArgs[0].type ?? angleArgs[0]) : createType({ valType: ValType.UNKNOWN });
 			return createType({
-				valType: ValType.VECTOR,
+				valType: ValType.STRUCT,
+				structName: 'Vec',
 				elementType: inner.valType,
-				structName: inner.structName
 			});
 		}
 
@@ -229,6 +230,9 @@ function parseFunctionEntry(entry: any, struct: SharedStruct | null, functions: 
 		}
 
 		parsed.structName = struct.name;
+		if (parsed.type?.valType === ValType.STRUCT && parsed.type.structName === 'Self') {
+			parsed.type.structName = struct.name;
+		}
 	}
 
 	functions.push(parsed);
@@ -358,9 +362,13 @@ export function parseStdJson(stdJson: any): StdParseResult {
 }
 
 export function parseStdJsonFile(): StdParseResult {
-	const raw = fs.readFileSync(stdJsonPath, 'utf8');
-	const json = JSON.parse(raw);
-	return parseStdJson(json);
+	const std   = parseStdJson(JSON.parse(fs.readFileSync(stdJsonPath,   'utf8')));
+	const alloc = parseStdJson(JSON.parse(fs.readFileSync(allocJsonPath, 'utf8')));
+
+	return {
+		functions: [...std.functions, ...alloc.functions],
+		structs:   [...std.structs,   ...alloc.structs],
+	};
 }
 
 

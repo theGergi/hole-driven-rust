@@ -34,9 +34,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         const { functions, structs } = parseStdJsonFile();
         this.stdFunctions = functions;
         this.stdStructs = structs;
-        console.log(this.stdFunctions);
-        console.log(this.stdStructs);
-        console.log("Finished loading std library")
     }
 
     // ============================================= UTIL METHODS =============================================
@@ -84,6 +81,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         const normalizedPath = pathText.startsWith('::') ? pathText.slice(2) : pathText;
         const found = this.findStructFromUserImport(normalizedPath);
+
+        console.log(`User import: ${normalizedPath} -> Found struct: ${found ? found.name : 'None'}`);
+
         if (!found) return null;
 
         if (!this.structs.some(s => s.name === found.name)) {
@@ -151,14 +151,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
     }
 
-    getBoundFunction(functionName: string, structName: string | null = null): Function {
+    getBoundFunction(functionName: string, structName: string | null = null): Function | undefined {
         const function_ = this.functions.find(function_ => (function_.name === functionName && (structName ? function_.structName === structName : true)))
         console.log(functionName)
-        if(function_) {
-            return function_;
-        } else {
-            throw Error("Function not bound")
-        }
+        return function_;
     }
 
     getBoundField(structName: string, identifier: string): Param {
@@ -174,17 +170,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
     }
 
-    getBoundMethod(structName: string, identifier: string): Function {
+    getBoundMethod(structName: string, identifier: string): Function | null {
         const struct = this.structs.find(s => s.name === structName);
-        if (!struct) {
-            throw Error(`Struct '${structName}' not found`);
-        }
-        const method = struct.methods.find(m => m.name === identifier);
-        if (method) {
-            return method;
-        } else {
-            throw Error(`Method '${identifier}' not found in struct '${structName}'`);
-        }
+        if (!struct) return null;
+        return struct.methods.find(m => m.name === identifier) ?? null;
     }
 
     borrow(variableName: string, mutable: boolean, location: SourceLocation): Variable {
@@ -250,11 +239,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 return toType({valType: ValType.VECTOR, elementType: elementType.valType});
             }
         }
-        const refMatch = typeString.match(/^(&)?\s*(mut)?\s*([a-zA-Z_][a-zA-Z0-9_]*)$/);
-        
+        const refMatch = typeString.match(/^(&)?\s*(mut)?\s*([a-zA-Z_][a-zA-Z0-9_]*)(?:<([^>]+)>)?$/);
+
         if (refMatch && refMatch[1] === '&') {
             const mutableReference = refMatch[2] === 'mut' ? true : false;
-            const elementType = this.parseStringType(refMatch[3]);
+            const elementType = this.parseStringType(refMatch[3], refMatch[4]);
 
             return toType({valType: ValType.REFERENCE, elementType: elementType.valType, mutableReference: mutableReference, structName: elementType.structName});
         }
@@ -342,6 +331,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (ctx.STRING_LITERAL() || ctx.RAW_STRING_LITERAL()) {
             return {
                 type: toType({valType: ValType.STRING}),
+                location: getLocation(ctx)
+            };
+        }
+
+        if (ctx.KW_TRUE() || ctx.KW_FALSE()) {
+            return {
+                type: toType({valType: ValType.INT}),
                 location: getLocation(ctx)
             };
         }
@@ -607,10 +603,14 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         console.log("Function call:", functionName, "Struct:", structName)
         const func = this.getBoundFunction(functionName, structName);
 
-        ctx.callParams()?.expression().forEach((expr: any, i: number) => {
-            const otherType = func.params[i].type;
+        if (!func) {
+            return { type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
+        }
 
-            this.typeStack.push(otherType!)
+        ctx.callParams()?.expression().forEach((expr: any, i: number) => {
+            const otherType = func.params[i]?.type ?? toType({valType: ValType.UNKNOWN});
+
+            this.typeStack.push(otherType)
             const type = this.visit(expr)?.type;
             if (expr instanceof PathExpression_Context) {
                 this.consume(expr.getText())
@@ -646,6 +646,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         const func = this.getBoundMethod(structName, methodName);
+        if (!func) {
+            return { type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
+        }
         console.log("Method call:", func.name, "on struct", structName);
 
         ctx.callParams()?.expression().forEach((expr: any, i: number) => {
@@ -771,8 +774,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         console.log("Path expression")
         if(ctx.parent.parent instanceof CallExpressionContext) { // Kinda useless now
             const func = this.getBoundFunction(ctx.getText());
-            console.log("Function call:", func.name)
-            return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
+            console.log("Function call:", func?.name)
+            return { type: func?.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
         } else {
             const variable = this.getBoundVariable(ctx.getText());
             console.log("Variable:", variable.name)
@@ -1177,6 +1180,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                         }
                     });
                     struct.methods.forEach((method: Function) => {
+                        // For reference variables, skip methods that require an owned receiver (self by value)
+                        if (variable.type.valType === ValType.REFERENCE && method.params.length > 0) {
+                            if (method.params[0].type.valType !== ValType.REFERENCE) return;
+                        }
                         if (method.type && this.canBeAssigned(hole, method.type, null, false)) {
                             // Std structs have a multi-segment path; format just the method name
                             const isStd = (struct as any).path && (struct as any).path.length > 1;
@@ -1200,7 +1207,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         });
         
         functions.forEach((func: Function) => {
-            // console.log("Checking function:", func.name, "of type", func.type)
             if (func.type && this.canBeAssigned(hole, func.type, null, false)) {
                 holeSuggestions.push({suggestionType: 'function', suggestion: {...func, name: func.name + "()", location: func.location}});
             }
