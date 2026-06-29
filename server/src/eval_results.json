@@ -7,17 +7,79 @@
   {
     "task": "task_0",
     "hole": "hole2",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "numbers",
+        "compiles": true
+      },
+      {
+        "name": "threshold",
+        "compiles": false
+      },
+      {
+        "name": "has_close_elements()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_0",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "numbers",
+        "compiles": false
+      },
+      {
+        "name": "threshold",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": false
+      },
+      {
+        "name": "j",
+        "compiles": false
+      },
+      {
+        "name": "distance",
+        "compiles": true
+      },
+      {
+        "name": "has_close_elements()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_0",
     "hole": "hole4",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "numbers",
+        "compiles": false
+      },
+      {
+        "name": "threshold",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": true
+      },
+      {
+        "name": "j",
+        "compiles": true
+      },
+      {
+        "name": "has_close_elements()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_1",
@@ -77,13 +139,13 @@
     "task": "task_10",
     "hole": "hole2",
     "category": "failed_with_error",
-    "error": "No type"
+    "error": "Variable not bound"
   },
   {
     "task": "task_10",
     "hole": "hole3",
     "category": "failed_with_error",
-    "error": "Variable not bound"
+    "error": "No type"
   },
   {
     "task": "task_10",
@@ -244,29 +306,75 @@
   {
     "task": "task_18",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "No hole found at line 13. Found holes at lines: "
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "string",
+        "compiles": true
+      },
+      {
+        "name": "substring",
+        "compiles": true
+      },
+      {
+        "name": "times",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": false
+      },
+      {
+        "name": "how_many_times()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_18",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "failed_with_error",
+    "error": "No hole found at line 14. Found holes at lines: "
   },
   {
     "task": "task_18",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "times",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": false
+      },
+      {
+        "name": "how_many_times()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_18",
     "hole": "hole4",
-    "category": "found_suggestions"
+    "category": "failed_with_error",
+    "error": "No hole found at line 13. Found holes at lines: "
   },
   {
     "task": "task_18",
     "hole": "hole5",
-    "category": "failed_with_error",
-    "error": "No hole found at line 13. Found holes at lines: "
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "times",
+        "compiles": true
+      },
+      {
+        "name": "how_many_times()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_19",
@@ -325,7 +433,17 @@
   {
     "task": "task_2",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "number",
+        "compiles": true
+      },
+      {
+        "name": "truncate_number()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_20",
@@ -450,17 +568,43 @@
   {
     "task": "task_22",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "filter_integers()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_22",
     "hole": "hole2",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "filter_integers()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_22",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "filter_integers()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_23",
@@ -471,17 +615,46 @@
   {
     "task": "task_24",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "failed_with_error",
+    "error": "Variable not bound"
   },
   {
     "task": "task_24",
     "hole": "hole2",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": false
+      },
+      {
+        "name": "largest_divisor()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_24",
     "hole": "hole3",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "largest_divisor()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_25",
@@ -505,7 +678,7 @@
     "task": "task_25",
     "hole": "hole4",
     "category": "failed_with_error",
-    "error": "Cannot modify immutable variable"
+    "error": "Variable not bound"
   },
   {
     "task": "task_25",
@@ -515,51 +688,60 @@
   },
   {
     "task": "task_25",
+    "hole": "hole6",
+    "category": "failed_with_error",
+    "error": "Cannot modify immutable variable"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole1",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole2",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole3",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole4",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_26",
+    "hole": "hole5",
+    "category": "failed_with_error",
+    "error": "No type"
+  },
+  {
+    "task": "task_26",
     "hole": "hole6",
     "category": "failed_with_error",
     "error": "Variable not bound"
   },
   {
-    "task": "task_26",
-    "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "No type"
-  },
-  {
-    "task": "task_26",
-    "hole": "hole2",
-    "category": "failed_with_error",
-    "error": "No type"
-  },
-  {
-    "task": "task_26",
-    "hole": "hole3",
-    "category": "failed_with_error",
-    "error": "No type"
-  },
-  {
-    "task": "task_26",
-    "hole": "hole4",
-    "category": "failed_with_error",
-    "error": "No type"
-  },
-  {
-    "task": "task_26",
-    "hole": "hole5",
-    "category": "failed_with_error",
-    "error": "No type"
-  },
-  {
-    "task": "task_26",
-    "hole": "hole6",
-    "category": "failed_with_error",
-    "error": "No type"
-  },
-  {
     "task": "task_27",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "No hole found at line 11. Found holes at lines: "
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "string",
+        "compiles": false
+      },
+      {
+        "name": "flip_case()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_27",
@@ -588,7 +770,8 @@
   {
     "task": "task_27",
     "hole": "hole6",
-    "category": "found_suggestions"
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
   },
   {
     "task": "task_28",
@@ -599,7 +782,8 @@
   {
     "task": "task_28",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
   },
   {
     "task": "task_28",
@@ -616,29 +800,76 @@
   {
     "task": "task_29",
     "hole": "hole2",
-    "category": "exact_match"
-  },
-  {
-    "task": "task_29",
-    "hole": "hole3",
     "category": "failed_with_error",
     "error": "No hole found at line 11. Found holes at lines: "
   },
   {
+    "task": "task_29",
+    "hole": "hole3",
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "strings",
+        "compiles": true
+      },
+      {
+        "name": "filter_by_prefix()",
+        "compiles": false
+      }
+    ]
+  },
+  {
     "task": "task_3",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "operations[??]",
+        "compiles": false
+      },
+      {
+        "name": "balance",
+        "compiles": true
+      },
+      {
+        "name": "op",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_3",
     "hole": "hole2",
-    "category": "failed_with_error",
-    "error": "Variable not bound"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "operations[??]",
+        "compiles": false
+      },
+      {
+        "name": "balance",
+        "compiles": true
+      },
+      {
+        "name": "op",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_30",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "numbers",
+        "compiles": true
+      },
+      {
+        "name": "get_positive()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_30",
@@ -649,12 +880,28 @@
   {
     "task": "task_31",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_31",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "k",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_32",
@@ -773,22 +1020,70 @@
   {
     "task": "task_34",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": true
+      },
+      {
+        "name": "unique()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_34",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "unique()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_34",
     "hole": "hole3",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": true
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "unique()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_35",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs[??]",
+        "compiles": false
+      },
+      {
+        "name": "maximum()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_36",
@@ -1003,18 +1298,41 @@
   {
     "task": "task_39",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "No hole found at line 20. Found holes at lines: "
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "f1",
+        "compiles": true
+      },
+      {
+        "name": "f2",
+        "compiles": true
+      },
+      {
+        "name": "count",
+        "compiles": true
+      },
+      {
+        "name": "prime_fib()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_39",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "failed_with_error",
+    "error": "Variable not bound"
   },
   {
     "task": "task_39",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "failed_with_error",
+    "error": "No hole found at line 20. Found holes at lines: "
   },
   {
     "task": "task_39",
@@ -1025,29 +1343,104 @@
   {
     "task": "task_39",
     "hole": "hole5",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "f1",
+        "compiles": true
+      },
+      {
+        "name": "f2",
+        "compiles": true
+      },
+      {
+        "name": "count",
+        "compiles": true
+      },
+      {
+        "name": "prime_fib()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_39",
     "hole": "hole6",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "f1",
+        "compiles": true
+      },
+      {
+        "name": "f2",
+        "compiles": true
+      },
+      {
+        "name": "count",
+        "compiles": true
+      },
+      {
+        "name": "m",
+        "compiles": true
+      },
+      {
+        "name": "isprime",
+        "compiles": false
+      },
+      {
+        "name": "prime_fib()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_4",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "numbers[??]",
+        "compiles": false
+      },
+      {
+        "name": "mean",
+        "compiles": false
+      },
+      {
+        "name": "mean_absolute_deviation()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_4",
     "hole": "hole2",
     "category": "failed_with_error",
-    "error": "No hole found at line 10. Found holes at lines: "
+    "error": "No hole found at line 11. Found holes at lines: "
   },
   {
     "task": "task_4",
     "hole": "hole3",
-    "category": "failed_with_error",
-    "error": "No hole found at line 11. Found holes at lines: "
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "numbers[??]",
+        "compiles": false
+      },
+      {
+        "name": "mean_absolute_deviation()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_4",
@@ -1059,43 +1452,127 @@
     "task": "task_4",
     "hole": "hole5",
     "category": "failed_with_error",
-    "error": "No hole found at line 11. Found holes at lines: "
+    "error": "No hole found at line 10. Found holes at lines: "
   },
   {
     "task": "task_40",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": false
+      },
+      {
+        "name": "j",
+        "compiles": false
+      },
+      {
+        "name": "k",
+        "compiles": false
+      },
+      {
+        "name": "triples_sum_to_zero()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_40",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": false
+      },
+      {
+        "name": "j",
+        "compiles": false
+      },
+      {
+        "name": "k",
+        "compiles": false
+      },
+      {
+        "name": "triples_sum_to_zero()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_40",
     "hole": "hole3",
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs[??]",
+        "compiles": false
+      }
+    ]
+  },
+  {
+    "task": "task_40",
+    "hole": "hole4",
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": true
+      },
+      {
+        "name": "triples_sum_to_zero()",
+        "compiles": false
+      }
+    ]
+  },
+  {
+    "task": "task_40",
+    "hole": "hole5",
     "category": "failed_with_error",
     "error": "No hole found at line 14. Found holes at lines: "
   },
   {
     "task": "task_40",
-    "hole": "hole4",
-    "category": "exact_match"
-  },
-  {
-    "task": "task_40",
-    "hole": "hole5",
-    "category": "exact_match"
-  },
-  {
-    "task": "task_40",
     "hole": "hole6",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": true
+      },
+      {
+        "name": "triples_sum_to_zero()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_41",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "car_race_collision()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_42",
@@ -1106,7 +1583,17 @@
   {
     "task": "task_42",
     "hole": "hole2",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": true
+      },
+      {
+        "name": "incr_list()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_43",
@@ -1130,7 +1617,7 @@
     "task": "task_44",
     "hole": "hole1",
     "category": "failed_with_error",
-    "error": "No type"
+    "error": "Variable not bound"
   },
   {
     "task": "task_44",
@@ -1160,18 +1647,32 @@
     "task": "task_46",
     "hole": "hole1",
     "category": "failed_with_error",
-    "error": "No hole found at line 19. Found holes at lines: "
-  },
-  {
-    "task": "task_46",
-    "hole": "hole10",
-    "category": "failed_with_error",
     "error": "No hole found at line 18. Found holes at lines: "
   },
   {
     "task": "task_46",
+    "hole": "hole10",
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": false
+      },
+      {
+        "name": "results[??]",
+        "compiles": false
+      },
+      {
+        "name": "fib4()",
+        "compiles": false
+      }
+    ]
+  },
+  {
+    "task": "task_46",
     "hole": "hole11",
-    "category": "found_suggestions"
+    "category": "failed_with_error",
+    "error": "No hole found at line 18. Found holes at lines: "
   },
   {
     "task": "task_46",
@@ -1183,12 +1684,26 @@
     "task": "task_46",
     "hole": "hole3",
     "category": "failed_with_error",
-    "error": "No hole found at line 18. Found holes at lines: "
+    "error": "No hole found at line 23. Found holes at lines: "
   },
   {
     "task": "task_46",
     "hole": "hole4",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": false
+      },
+      {
+        "name": "results[??]",
+        "compiles": false
+      },
+      {
+        "name": "fib4()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_46",
@@ -1200,29 +1715,49 @@
     "task": "task_46",
     "hole": "hole6",
     "category": "failed_with_error",
-    "error": "No hole found at line 23. Found holes at lines: "
+    "error": "No hole found at line 19. Found holes at lines: "
   },
   {
     "task": "task_46",
     "hole": "hole7",
-    "category": "found_suggestions"
-  },
-  {
-    "task": "task_46",
-    "hole": "hole8",
     "category": "failed_with_error",
     "error": "No hole found at line 14. Found holes at lines: "
   },
   {
     "task": "task_46",
+    "hole": "hole8",
+    "category": "failed_with_error",
+    "error": "No hole found at line 18. Found holes at lines: "
+  },
+  {
+    "task": "task_46",
     "hole": "hole9",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "results[??]",
+        "compiles": false
+      },
+      {
+        "name": "fib4()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_47",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "No hole found at line 16. Found holes at lines: "
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "median()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_47",
@@ -1233,12 +1768,23 @@
   {
     "task": "task_47",
     "hole": "hole3",
-    "category": "found_suggestions"
+    "category": "failed_with_error",
+    "error": "No hole found at line 14. Found holes at lines: "
   },
   {
     "task": "task_47",
     "hole": "hole4",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l[??]",
+        "compiles": false
+      },
+      {
+        "name": "res[??]",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_47",
@@ -1255,14 +1801,19 @@
   {
     "task": "task_47",
     "hole": "hole7",
-    "category": "failed_with_error",
-    "error": "No hole found at line 16. Found holes at lines: "
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_48",
     "hole": "hole1",
     "category": "failed_with_error",
-    "error": "No type"
+    "error": "Variable not bound"
   },
   {
     "task": "task_48",
@@ -1273,28 +1824,97 @@
   {
     "task": "task_49",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "p",
+        "compiles": true
+      },
+      {
+        "name": "modp()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_49",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "p",
+        "compiles": true
+      },
+      {
+        "name": "modp()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_5",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "numbers",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "intersperse()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_5",
     "hole": "hole2",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "numbers",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": false
+      },
+      {
+        "name": "intersperse()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_5",
     "hole": "hole3",
-    "category": "failed_with_error",
-    "error": "No hole found at line 11. Found holes at lines: "
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "numbers",
+        "compiles": true
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "intersperse()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_5",
@@ -1473,119 +2093,437 @@
   {
     "task": "task_52",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l[??]",
+        "compiles": false
+      },
+      {
+        "name": "t",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_53",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "x",
+        "compiles": true
+      },
+      {
+        "name": "y",
+        "compiles": true
+      },
+      {
+        "name": "add()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_54",
     "hole": "hole1",
-    "category": "exact_match"
-  },
-  {
-    "task": "task_54",
-    "hole": "hole2",
     "category": "found_type"
   },
   {
     "task": "task_54",
+    "hole": "hole2",
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "str1",
+        "compiles": true
+      },
+      {
+        "name": "str2",
+        "compiles": true
+      },
+      {
+        "name": "v1",
+        "compiles": false
+      },
+      {
+        "name": "v1[??]",
+        "compiles": false
+      },
+      {
+        "name": "same_chars()",
+        "compiles": false
+      }
+    ]
+  },
+  {
+    "task": "task_54",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "str1",
+        "compiles": true
+      },
+      {
+        "name": "str2",
+        "compiles": true
+      },
+      {
+        "name": "v1",
+        "compiles": false
+      },
+      {
+        "name": "v1[??]",
+        "compiles": false
+      },
+      {
+        "name": "v2",
+        "compiles": false
+      },
+      {
+        "name": "v2[??]",
+        "compiles": false
+      },
+      {
+        "name": "same_chars()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_54",
     "hole": "hole4",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "v1",
+        "compiles": true
+      },
+      {
+        "name": "v2",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_54",
     "hole": "hole5",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "str1",
+        "compiles": true
+      },
+      {
+        "name": "str2",
+        "compiles": true
+      },
+      {
+        "name": "v1",
+        "compiles": false
+      },
+      {
+        "name": "v1[??]",
+        "compiles": false
+      },
+      {
+        "name": "same_chars()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_54",
     "hole": "hole6",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "v1",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_55",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "fib()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_55",
     "hole": "hole2",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "fib()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_56",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "level",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_56",
     "hole": "hole2",
-    "category": "failed_with_error",
-    "error": "No hole found at line 17. Found holes at lines: "
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "bkts",
+        "compiles": false
+      },
+      {
+        "name": "level",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": false
+      },
+      {
+        "name": "correct_bracketing()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_56",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "bkts",
+        "compiles": true
+      },
+      {
+        "name": "level",
+        "compiles": false
+      },
+      {
+        "name": "correct_bracketing()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_56",
     "hole": "hole4",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "bkts",
+        "compiles": true
+      },
+      {
+        "name": "level",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": false
+      },
+      {
+        "name": "correct_bracketing()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_56",
     "hole": "hole5",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "level",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_57",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_57",
     "hole": "hole2",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": false
+      },
+      {
+        "name": "l1",
+        "compiles": false
+      },
+      {
+        "name": "l2",
+        "compiles": false
+      },
+      {
+        "name": "monotonic()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_57",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": false
+      },
+      {
+        "name": "l1",
+        "compiles": false
+      },
+      {
+        "name": "l2",
+        "compiles": false
+      },
+      {
+        "name": "monotonic()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_57",
     "hole": "hole4",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": true
+      },
+      {
+        "name": "l1",
+        "compiles": true
+      },
+      {
+        "name": "l2",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_57",
     "hole": "hole5",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": true
+      },
+      {
+        "name": "l1",
+        "compiles": true
+      },
+      {
+        "name": "l2",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_58",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l1",
+        "compiles": false
+      },
+      {
+        "name": "l2",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "common()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_58",
     "hole": "hole2",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l1",
+        "compiles": false
+      },
+      {
+        "name": "l2",
+        "compiles": true
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "common()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_58",
     "hole": "hole3",
-    "category": "failed_with_error",
-    "error": "No hole found at line 11. Found holes at lines: "
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l1",
+        "compiles": false
+      },
+      {
+        "name": "l2",
+        "compiles": false
+      },
+      {
+        "name": "common()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_59",
@@ -1614,65 +2552,229 @@
   {
     "task": "task_6",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "result",
+        "compiles": true
+      },
+      {
+        "name": "parse_nested_parens()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_6",
     "hole": "hole2",
-    "category": "failed_with_error",
-    "error": "Variable not bound"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "result[??]",
+        "compiles": false
+      },
+      {
+        "name": "depth",
+        "compiles": true
+      },
+      {
+        "name": "max_depth",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_6",
     "hole": "hole3",
-    "category": "failed_with_error",
-    "error": "Variable not bound"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "paren_string",
+        "compiles": false
+      },
+      {
+        "name": "result",
+        "compiles": false
+      },
+      {
+        "name": "depth",
+        "compiles": false
+      },
+      {
+        "name": "max_depth",
+        "compiles": false
+      },
+      {
+        "name": "splits",
+        "compiles": false
+      },
+      {
+        "name": "c",
+        "compiles": true
+      },
+      {
+        "name": "parse_nested_parens()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_6",
     "hole": "hole4",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "result",
+        "compiles": true
+      },
+      {
+        "name": "parse_nested_parens()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_6",
     "hole": "hole5",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "result[??]",
+        "compiles": false
+      },
+      {
+        "name": "depth",
+        "compiles": true
+      },
+      {
+        "name": "max_depth",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_6",
     "hole": "hole6",
-    "category": "failed_with_error",
-    "error": "No hole found at line 18. Found holes at lines: "
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "result",
+        "compiles": false
+      },
+      {
+        "name": "parse_nested_parens()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_60",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "sum_to_n()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_61",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "bkts",
+        "compiles": false
+      },
+      {
+        "name": "level",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": false
+      },
+      {
+        "name": "correct_bracketing_parenthesis()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_61",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "bkts",
+        "compiles": false
+      },
+      {
+        "name": "level",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": false
+      },
+      {
+        "name": "correct_bracketing_parenthesis()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_61",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "bkts",
+        "compiles": false
+      },
+      {
+        "name": "level",
+        "compiles": false
+      },
+      {
+        "name": "correct_bracketing_parenthesis()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_61",
     "hole": "hole4",
-    "category": "found_suggestions"
+    "category": "failed_with_error",
+    "error": "No hole found at line 17. Found holes at lines: "
   },
   {
     "task": "task_61",
     "hole": "hole5",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "bkts",
+        "compiles": false
+      },
+      {
+        "name": "level",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": false
+      },
+      {
+        "name": "correct_bracketing_parenthesis()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_62",
@@ -1683,28 +2785,85 @@
   {
     "task": "task_62",
     "hole": "hole2",
-    "category": "failed_with_error",
-    "error": "No hole found at line 13. Found holes at lines: "
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "xs",
+        "compiles": true
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "derivative()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_62",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "xs",
+        "compiles": true
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "derivative()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_63",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "fibfib()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_63",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "fibfib()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_63",
     "hole": "hole3",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "fibfib()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_64",
@@ -1805,105 +2964,343 @@
   {
     "task": "task_66",
     "hole": "hole1",
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "digitSum()",
+        "compiles": false
+      }
+    ]
+  },
+  {
+    "task": "task_66",
+    "hole": "hole2",
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "digitSum()",
+        "compiles": false
+      }
+    ]
+  },
+  {
+    "task": "task_66",
+    "hole": "hole3",
     "category": "failed_with_error",
     "error": "No hole found at line 11. Found holes at lines: "
   },
   {
-    "task": "task_66",
-    "hole": "hole2",
-    "category": "found_suggestions"
+    "task": "task_67",
+    "hole": "hole1",
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "fruit_distribution()",
+        "compiles": false
+      }
+    ]
   },
   {
-    "task": "task_66",
+    "task": "task_67",
+    "hole": "hole2",
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "sub",
+        "compiles": true
+      },
+      {
+        "name": "fruit_distribution()",
+        "compiles": false
+      }
+    ]
+  },
+  {
+    "task": "task_67",
     "hole": "hole3",
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "sub",
+        "compiles": true
+      },
+      {
+        "name": "fruit_distribution()",
+        "compiles": false
+      }
+    ]
+  },
+  {
+    "task": "task_68",
+    "hole": "hole1",
     "category": "failed_with_error",
-    "error": "No hole found at line 11. Found holes at lines: "
-  },
-  {
-    "task": "task_67",
-    "hole": "hole1",
-    "category": "found_suggestions"
-  },
-  {
-    "task": "task_67",
-    "hole": "hole2",
-    "category": "exact_match"
-  },
-  {
-    "task": "task_67",
-    "hole": "hole3",
-    "category": "exact_match"
-  },
-  {
-    "task": "task_68",
-    "hole": "hole1",
-    "category": "found_suggestions"
+    "error": "Variable not bound"
   },
   {
     "task": "task_68",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "arr",
+        "compiles": false
+      },
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "pluck()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_68",
     "hole": "hole3",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "arr[??]",
+        "compiles": false
+      },
+      {
+        "name": "out[??]",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_68",
     "hole": "hole4",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "arr",
+        "compiles": true
+      },
+      {
+        "name": "out",
+        "compiles": true
+      },
+      {
+        "name": "pluck()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_69",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "max",
+        "compiles": false
+      },
+      {
+        "name": "has",
+        "compiles": false
+      },
+      {
+        "name": "search()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_69",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "failed_with_error",
+    "error": "Variable not bound"
   },
   {
     "task": "task_69",
     "hole": "hole3",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "max",
+        "compiles": false
+      },
+      {
+        "name": "has",
+        "compiles": false
+      },
+      {
+        "name": "search()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_69",
     "hole": "hole4",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "max",
+        "compiles": true
+      },
+      {
+        "name": "search()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_69",
     "hole": "hole5",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "max",
+        "compiles": false
+      },
+      {
+        "name": "has",
+        "compiles": true
+      },
+      {
+        "name": "search()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_69",
     "hole": "hole6",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "max",
+        "compiles": false
+      },
+      {
+        "name": "has",
+        "compiles": false
+      },
+      {
+        "name": "search()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_69",
     "hole": "hole7",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "max",
+        "compiles": true
+      },
+      {
+        "name": "has",
+        "compiles": false
+      },
+      {
+        "name": "search()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_69",
     "hole": "hole8",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "max",
+        "compiles": false
+      },
+      {
+        "name": "has",
+        "compiles": false
+      },
+      {
+        "name": "search()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_69",
     "hole": "hole9",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "max",
+        "compiles": false
+      },
+      {
+        "name": "has",
+        "compiles": false
+      },
+      {
+        "name": "search()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_7",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "No hole found at line 10. Found holes at lines: "
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "strings",
+        "compiles": true
+      },
+      {
+        "name": "filter_by_substring()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_7",
@@ -1992,37 +3389,112 @@
   {
     "task": "task_71",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "failed_with_error",
+    "error": "No hole found at line 14. Found holes at lines: "
   },
   {
     "task": "task_71",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "failed_with_error",
+    "error": "No hole found at line 14. Found holes at lines: "
   },
   {
     "task": "task_71",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "b",
+        "compiles": true
+      },
+      {
+        "name": "c",
+        "compiles": true
+      },
+      {
+        "name": "triangle_area_f64()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_71",
     "hole": "hole4",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "b",
+        "compiles": true
+      },
+      {
+        "name": "c",
+        "compiles": true
+      },
+      {
+        "name": "triangle_area_f64()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_71",
     "hole": "hole5",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "b",
+        "compiles": true
+      },
+      {
+        "name": "c",
+        "compiles": true
+      },
+      {
+        "name": "triangle_area_f64()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_71",
     "hole": "hole6",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "b",
+        "compiles": true
+      },
+      {
+        "name": "c",
+        "compiles": true
+      },
+      {
+        "name": "triangle_area_f64()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_71",
     "hole": "hole7",
-    "category": "exact_match"
+    "category": "failed_with_error",
+    "error": "No hole found at line 14. Found holes at lines: "
   },
   {
     "task": "task_72",
@@ -2040,7 +3512,7 @@
     "task": "task_72",
     "hole": "hole3",
     "category": "failed_with_error",
-    "error": "No type"
+    "error": "Variable not bound"
   },
   {
     "task": "task_72",
@@ -2057,17 +3529,67 @@
   {
     "task": "task_73",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "arr",
+        "compiles": false
+      },
+      {
+        "name": "ans",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": true
+      },
+      {
+        "name": "smallest_change()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_73",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "arr",
+        "compiles": false
+      },
+      {
+        "name": "ans",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": true
+      },
+      {
+        "name": "smallest_change()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_73",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "arr[??]",
+        "compiles": false
+      },
+      {
+        "name": "ans",
+        "compiles": true
+      },
+      {
+        "name": "smallest_change()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_74",
@@ -2126,32 +3648,123 @@
   {
     "task": "task_75",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "a1",
+        "compiles": true
+      },
+      {
+        "name": "num",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_75",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "a1",
+        "compiles": true
+      },
+      {
+        "name": "num",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_75",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "a1",
+        "compiles": true
+      },
+      {
+        "name": "num",
+        "compiles": true
+      },
+      {
+        "name": "is_multiply_prime()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_76",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "failed_with_error",
+    "error": "Variable not bound"
   },
   {
     "task": "task_76",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "x",
+        "compiles": true
+      },
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "p",
+        "compiles": true
+      },
+      {
+        "name": "count",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_76",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "x",
+        "compiles": true
+      },
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "p",
+        "compiles": true
+      },
+      {
+        "name": "count",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_77",
@@ -2229,13 +3842,13 @@
     "task": "task_79",
     "hole": "hole6",
     "category": "failed_with_error",
-    "error": "No type"
+    "error": "Variable not bound"
   },
   {
     "task": "task_8",
     "hole": "hole1",
     "category": "failed_with_error",
-    "error": "Variable not bound"
+    "error": "No type"
   },
   {
     "task": "task_8",
@@ -2270,17 +3883,53 @@
   {
     "task": "task_80",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "s",
+        "compiles": false
+      },
+      {
+        "name": "str",
+        "compiles": false
+      },
+      {
+        "name": "str[??]",
+        "compiles": false
+      },
+      {
+        "name": "is_happy()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_80",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "found_type"
   },
   {
     "task": "task_80",
     "hole": "hole3",
-    "category": "found_type"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "s",
+        "compiles": true
+      },
+      {
+        "name": "str",
+        "compiles": true
+      },
+      {
+        "name": "str[??]",
+        "compiles": false
+      },
+      {
+        "name": "is_happy()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_80",
@@ -2290,7 +3939,25 @@
   {
     "task": "task_80",
     "hole": "hole5",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "s",
+        "compiles": true
+      },
+      {
+        "name": "str",
+        "compiles": true
+      },
+      {
+        "name": "str[??]",
+        "compiles": false
+      },
+      {
+        "name": "is_happy()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_81",
@@ -2421,27 +4088,58 @@
   {
     "task": "task_82",
     "hole": "hole1",
-    "category": "exact_match"
-  },
-  {
-    "task": "task_82",
-    "hole": "hole2",
     "category": "found_type"
   },
   {
     "task": "task_82",
+    "hole": "hole2",
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": true
+      }
+    ]
+  },
+  {
+    "task": "task_82",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "str",
+        "compiles": false
+      },
+      {
+        "name": "l",
+        "compiles": true
+      },
+      {
+        "name": "prime_length()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_83",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "failed_with_error",
+    "error": "No hole found at line 14. Found holes at lines: "
   },
   {
     "task": "task_84",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_84",
@@ -2560,32 +4258,104 @@
   {
     "task": "task_88",
     "hole": "hole1",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "array[??]",
+        "compiles": false
+      },
+      {
+        "name": "res[??]",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_88",
     "hole": "hole2",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "array",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": false
+      },
+      {
+        "name": "sort_array()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_88",
     "hole": "hole3",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "array",
+        "compiles": false
+      },
+      {
+        "name": "sort_array()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_88",
     "hole": "hole4",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "array",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "sort_array()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_88",
     "hole": "hole5",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "array",
+        "compiles": true
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "sort_array()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_88",
     "hole": "hole6",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "array",
+        "compiles": false
+      },
+      {
+        "name": "sort_array()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_89",
@@ -2627,7 +4397,7 @@
     "task": "task_89",
     "hole": "hole7",
     "category": "failed_with_error",
-    "error": "Variable not bound"
+    "error": "No type"
   },
   {
     "task": "task_89",
@@ -2747,7 +4517,7 @@
     "task": "task_91",
     "hole": "hole1",
     "category": "failed_with_error",
-    "error": "Variable not bound"
+    "error": "No type"
   },
   {
     "task": "task_91",
@@ -2770,27 +4540,101 @@
   {
     "task": "task_92",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "b",
+        "compiles": true
+      },
+      {
+        "name": "c",
+        "compiles": true
+      },
+      {
+        "name": "any_int()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_92",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "b",
+        "compiles": true
+      },
+      {
+        "name": "c",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_92",
     "hole": "hole3",
-    "category": "found_suggestions"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "b",
+        "compiles": true
+      },
+      {
+        "name": "c",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_92",
     "hole": "hole4",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "b",
+        "compiles": true
+      },
+      {
+        "name": "c",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_92",
     "hole": "hole5",
-    "category": "exact_match"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "a",
+        "compiles": true
+      },
+      {
+        "name": "b",
+        "compiles": true
+      },
+      {
+        "name": "c",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_93",
@@ -2820,7 +4664,7 @@
     "task": "task_93",
     "hole": "hole13",
     "category": "failed_with_error",
-    "error": "No type"
+    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
   },
   {
     "task": "task_93",
@@ -2904,7 +4748,7 @@
     "task": "task_94",
     "hole": "hole5",
     "category": "failed_with_error",
-    "error": "Variable not bound"
+    "error": "No type"
   },
   {
     "task": "task_94",
@@ -2946,7 +4790,7 @@
     "task": "task_95",
     "hole": "hole3",
     "category": "failed_with_error",
-    "error": "No type"
+    "error": "Variable not bound"
   },
   {
     "task": "task_95",
@@ -2964,7 +4808,7 @@
     "task": "task_95",
     "hole": "hole6",
     "category": "failed_with_error",
-    "error": "Variable not bound"
+    "error": "No type"
   },
   {
     "task": "task_95",
@@ -2987,17 +4831,38 @@
   {
     "task": "task_96",
     "hole": "hole1",
-    "category": "exact_match"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "primes",
+        "compiles": false
+      },
+      {
+        "name": "count_up_to()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_96",
     "hole": "hole2",
-    "category": "exact_match"
+    "category": "failed_with_error",
+    "error": "Variable not bound"
   },
   {
     "task": "task_96",
     "hole": "hole3",
-    "category": "found_suggestions"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "primes",
+        "compiles": false
+      },
+      {
+        "name": "count_up_to()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_97",
@@ -3008,7 +4873,8 @@
   {
     "task": "task_97",
     "hole": "hole2",
-    "category": "found_suggestions"
+    "category": "failed_with_error",
+    "error": "No hole found at line 11. Found holes at lines: "
   },
   {
     "task": "task_98",

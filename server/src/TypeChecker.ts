@@ -1172,11 +1172,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         const variables = this.variables;
         const functions = this.functions;
 
-        console.log("Hole hey")
-        this.functions.forEach((f) =>
-        {console.log(f.name)})
-        this.variables.forEach((f) =>
-        {console.log(f.name)})
+        // console.log("Hole hey")
+        // this.functions.forEach((f) =>
+        // {console.log(f.name)})
+        // this.variables.forEach((f) =>
+        // {console.log(f.name)})
         // console.log("Variables:")
         // console.log(variables)
 
@@ -1262,6 +1262,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         })
 
+
+        if(hole.type.valType === ValType.HOLE) {
+            holeSuggestions = [];
+        }
 
         hole.suggestions = holeSuggestions;
         hole.context = {
