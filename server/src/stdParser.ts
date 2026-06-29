@@ -200,13 +200,19 @@ function parseParam([name, typeDesc]: [string, any]): Param {
 	};
 }
 
+function isSelfParam(param: Param): boolean {
+	if (param.name === 'self') return true;
+	const t = param.type;
+	if (t.valType === ValType.STRUCT && t.structName === 'Self') return true;
+	if (t.valType === ValType.REFERENCE && t.structName === 'Self') return true;
+	return false;
+}
+
 function parseFunctionEntry(entry: any, struct: SharedStruct | null, functions: SharedFunction[]) {
 	const fn = entry?.inner?.function;
 	if (!fn) {
 		return null;
 	}
-	// console.log(fn)
-	// console.log(entry)
 
 	const parsed: SharedFunction = {
 		name: typeof entry.name === 'string' ? entry.name : 'unknown',
@@ -216,11 +222,10 @@ function parseFunctionEntry(entry: any, struct: SharedStruct | null, functions: 
 	};
 
 	if (struct) {
-		if (parsed.params.length > 0 && parsed.params[0].type.valType === ValType.STRUCT && parsed.params[0].type.structName === 'Self') {
-			struct.methods.push(parsed);
-			// console.log(`Function ${parsed.name} is a method of struct ${struct.name}`);
+		if (parsed.params.length > 0 && isSelfParam(parsed.params[0])) {
 			parsed.structName = struct.name;
-			return
+			struct.methods.push(parsed);
+			return;
 		}
 
 		parsed.structName = struct.name;
@@ -292,6 +297,11 @@ function parseImplEntry(entry: any, index: Record<string, any>, structs: SharedS
 		return;
 	}
 
+	// Skip trait impls (e.g. `impl Default for HashSet`) — only process direct impls
+	if (implEntry.trait != null) {
+		return;
+	}
+
 	if (!implEntry.for?.resolved_path?.path) {
 		return;
 	}
@@ -324,8 +334,20 @@ export function parseStdJson(stdJson: any): StdParseResult {
 		}
 	}
 
+	// Build the set of IDs that belong to impl blocks so we don't process them twice
+	const implItemIds = new Set<string>();
+	for (const [, entry] of Object.entries(index)) {
+		const impl = (entry as any)?.inner?.impl;
+		if (impl && Array.isArray(impl.items)) {
+			impl.items.forEach((itemId: any) => implItemIds.add(String(itemId)));
+		}
+	}
+
 	for (const [id, entry] of Object.entries(index)) {
-		parseFunctionEntry(entry as any, null, functions);
+		// Only scan free functions (those not owned by an impl block)
+		if (!implItemIds.has(id)) {
+			parseFunctionEntry(entry as any, null, functions);
+		}
 		parseImplEntry(entry, index, structs, functions);
 	}
 

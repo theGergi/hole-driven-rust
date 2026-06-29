@@ -84,7 +84,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         const normalizedPath = pathText.startsWith('::') ? pathText.slice(2) : pathText;
         const found = this.findStructFromUserImport(normalizedPath);
-        if (found && !this.structs.some(s => s.name === found.name)) {
+        if (!found) return null;
+
+        if (!this.structs.some(s => s.name === found.name)) {
             this.structs.push({
                 name: found.name,
                 location: found.location,
@@ -95,6 +97,16 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 index: found.index,
             });
         }
+
+        // Add static functions (no self param, 0 params) for this struct as callable functions
+        this.stdFunctions
+            .filter(f => f.structName === found.name && f.params.length === 0)
+            .forEach(f => {
+                if (!this.functions.some(existing => existing.name === f.name && existing.structName === f.structName)) {
+                    this.functions.push(f);
+                }
+            });
+
         return null;
     }
 
@@ -1166,7 +1178,12 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                     });
                     struct.methods.forEach((method: Function) => {
                         if (method.type && this.canBeAssigned(hole, method.type, null, false)) {
-                            holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: variable.name + "." + method.name + "()", location: variable.location}});
+                            // Std structs have a multi-segment path; format just the method name
+                            const isStd = (struct as any).path && (struct as any).path.length > 1;
+                            const methodName = isStd
+                                ? method.name + "()"
+                                : variable.name + "." + method.name + "()";
+                            holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: methodName, location: variable.location}});
                         }
                     });
                     const refType = new Type();

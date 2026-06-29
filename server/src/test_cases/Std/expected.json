@@ -2,10 +2,10 @@
 	{
 		"line": 4,
 		"type": { "valType": "struct", "structName": "HashSet" },
-		"suggestionNames": ["s", "new()"]
+		"suggestionNames": ["new()", "s"]
 	},{
 		"line": 5,
 		"type": { "valType": "integer" },
-		"suggestionNames": ["len()"]
+		"suggestionNames": ["capacity()", "contains()", "insert()", "is_disjoint()", "is_empty()", "is_subset()", "is_superset()", "len()", "remove()"]
 	}
 ]
