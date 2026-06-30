@@ -1,5 +1,5 @@
 fn main() {
-    let mut s = "a";
+    let mut s = String::from("a");
 
     let r1: &String     = &s;        // shared borrow
     let r2: &String     = &s;        // second shared borrow (allowed)

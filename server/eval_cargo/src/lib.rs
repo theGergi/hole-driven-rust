@@ -6,23 +6,18 @@ use regex::Regex;
 use md5;
 use std::any::{Any, TypeId};
 
-fn count_up_to(n:i32) -> Vec<i32> {
+fn count_upper(s:&str) -> i32 {
 
 
-    let mut primes: Vec<i32> = vec![];
+    let uvowel: &str = "AEIOU";
+    let mut count: i32 = 0;
 
-    for i in 2..n {
-        let mut is_prime: bool = true;
-
-        for j in 2..i {
-            if i % j == 0 {
-                is_prime = false;
-                break;
+    for (indx, elem) in s.chars().into_iter().enumerate() {
+        if indx % 2 == 0 {
+            if uvowel.contains(count_upper()) {
+                count += 1;
             }
         }
-        if count_up_to() {
-            primes.push(i);
-        }
     }
-    return primes;
+    return count;
 }

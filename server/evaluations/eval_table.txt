@@ -1,0 +1,13 @@
+
+=== Results by Hole Category ===
+category          exact  suggestions  type  failed  total
+----------------  -----  -----------  ----  ------  -----
+(none)            32     12           0     55      99   
+function_call     0      14           0     16      30   
+function_param    40     14           1     32      87   
+immutable_borrow  0      2            0     14      16   
+method_call       12     71           3     69      155  
+method_receiver   27     31           2     53      113  
+primitive         46     2            0     34      82   
+string_type       12     14           2     16      44   
+struct            32     14           0     30      76   

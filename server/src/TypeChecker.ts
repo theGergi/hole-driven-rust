@@ -7,6 +7,14 @@ import { toType, getSourceLocationKey, getLocation } from './utils';
 import { parseStdJsonFile } from './stdParser';
 
 
+function typesEqual(a: Type | undefined, b: Type | undefined): boolean {
+    if (a === b) return true;
+    if (!a || !b) return false;
+    if (a.valType !== b.valType) return false;
+    if (a.structName !== b.structName) return false;
+    return typesEqual(a.elementType, b.elementType);
+}
+
 export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     private typeStack: Type[] = [toType({valType: ValType.ROOT})];
     private variables: Variable[] = [];
@@ -257,6 +265,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return toType({valType: ValType.UNKNOWN});
         }
 
+        if (!genericArgs) {
+            const genericMatch = typeString.match(/^([a-zA-Z_][a-zA-Z0-9_]*)<(.+)>$/);
+            if (genericMatch) {
+                return this.parseStringType(genericMatch[1], genericMatch[2]);
+            }
+        }
+
         if (["i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64", "u128", "usize"].includes(typeString as any)) {
             return toType({valType: ValType.INT});
         }
@@ -271,11 +286,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         if (typeString === 'Vec' && genericArgs) {
-            const elementType = this.parseStringType(genericArgs); 
+            const elementType = this.parseStringType(genericArgs);
             if (this.structs.find(s => s.name === "Vec")) {
-                return toType({valType: ValType.STRUCT, structName: "Vec", elementType: elementType.valType});
+                return toType({valType: ValType.STRUCT, structName: "Vec", elementType: elementType});
             } else {
-                return toType({valType: ValType.VECTOR, elementType: elementType.valType});
+                return toType({valType: ValType.VECTOR, elementType: elementType});
             }
         }
         const refMatch = typeString.match(/^(&)?\s*(mut)?\s*([a-zA-Z_][a-zA-Z0-9_]*)(?:<([^>]+)>)?$/);
@@ -284,7 +299,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             const mutableReference = refMatch[2] === 'mut' ? true : false;
             const elementType = this.parseStringType(refMatch[3], refMatch[4]);
 
-            return toType({valType: ValType.REFERENCE, elementType: elementType.valType, mutableReference: mutableReference, structName: elementType.structName});
+            return toType({valType: ValType.REFERENCE, elementType: elementType, mutableReference: mutableReference, structName: elementType.structName});
         }
 
         // Check if it's a struct type
@@ -300,9 +315,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     }
 
     checkBorrows(owner: Variable, location: SourceLocation, variableName: string | null = null): boolean {
-        console.log("hey")
-        console.log(owner)
-        console.log(variableName)
+
         if (owner) {
             const borrows = this.variables.filter(v => v.type.owner === owner && v !== owner)
 
@@ -340,14 +353,15 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         if (assignee.type.valType === assigned.valType) {
             if (assignee.type.valType === ValType.VECTOR ) {
-                return assignee.type.elementType === assigned.elementType;
+                return typesEqual(assignee.type.elementType, assigned.elementType);
             } else if (assignee.type.valType === ValType.REFERENCE) {
                 if (assignee.type.mutableReference && !assigned.mutableReference) {
                     return false;
                 }
-                return assignee.type.elementType === assigned.elementType;
+                return typesEqual(assignee.type.elementType, assigned.elementType);
             } else if (assignee.type.valType === ValType.STRUCT) {
-                return assignee.type.structName === assigned.structName;
+                if (assignee.type.structName !== assigned.structName) return false;
+                return typesEqual(assignee.type.elementType, assigned.elementType);
             }
             return true;
         }
@@ -372,7 +386,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return {
                 type: toType({
                     valType: ValType.REFERENCE,
-                    elementType: strStruct ? ValType.STRUCT : ValType.STRING,
+                    elementType: strStruct ? toType({valType: ValType.STRUCT, structName: "str"}) : toType({valType: ValType.STRING}),
                     structName: strStruct ? "str" : undefined
                 }),
                 location: getLocation(ctx)
@@ -480,8 +494,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         } else if (leftHandExpression instanceof IndexExpressionContext) {
             const baseName = leftHandExpression.expression(0)!.getText();
             variable = this.getBoundVariable(baseName);
-            const elType = (variable.type.elementType ?? ValType.UNKNOWN) as ValType;
-            varType = toType({valType: elType});
+            varType = variable.type.elementType ?? toType({valType: ValType.UNKNOWN});
         } else {
             const variableName = leftHandExpression.getText();
             variable = this.getBoundVariable(variableName)
@@ -540,6 +553,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
         
         this.typeStack.pop();
+        console.log("Inferred type: ", inferedType, "Declared type: ", declaredType)
         
         if (inferedType.valType === ValType.UNKNOWN && declaredType.valType === ValType.UNKNOWN) {
             throw new Error("No type");
@@ -550,13 +564,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 throw new Error("Declared type is different from infered type: " + declaredType.valType + " vs " + inferedType.valType);
             }
             if (declaredType.valType === ValType.VECTOR || declaredType.valType === ValType.REFERENCE) {
-                if (inferedType.elementType === ValType.UNKNOWN && declaredType.elementType === ValType.UNKNOWN) {
+                if (inferedType.elementType?.valType === ValType.UNKNOWN && declaredType.elementType?.valType === ValType.UNKNOWN) {
                     throw new Error("No type");
-                } else if (inferedType.elementType === ValType.HOLE && declaredType.elementType !== ValType.UNKNOWN) {
+                } else if (inferedType.elementType?.valType === ValType.HOLE && declaredType.elementType !== undefined) {
                     inferedType = declaredType;
-                } else if (inferedType.elementType !== ValType.UNKNOWN && declaredType.elementType !== ValType.UNKNOWN) {
-                    if (declaredType.elementType !== inferedType.elementType) {
-                        throw new Error("Declared subtype is different from infered type: " + declaredType.elementType + " vs " + inferedType.elementType);
+                } else if (inferedType.elementType !== undefined && declaredType.elementType !== undefined) {
+                    if (!typesEqual(declaredType.elementType, inferedType.elementType)) {
+                        throw new Error("Declared subtype is different from infered type");
                     }
                 }
             }
@@ -568,7 +582,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         // console.log("Record var", recordVar)
         if (recordVar) {
             let valType = inferedType;
-            if ( inferedType.valType === ValType.UNKNOWN || (inferedType.elementType === ValType.UNKNOWN && declaredType.elementType && declaredType.elementType !== ValType.UNKNOWN) ) {
+            if ( inferedType.valType === ValType.UNKNOWN || (inferedType.elementType?.valType === ValType.UNKNOWN && declaredType.elementType && declaredType.elementType.valType !== ValType.UNKNOWN) ) {
                 valType = declaredType;
             }
             
@@ -586,11 +600,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     visitMacroInvocation = (ctx: any): ReturnType | null => {
         console.log("Macro invocation")
         if (ctx.simplePath().getText() === "vec") {
-            let type : Type = toType({valType: ValType.VECTOR, elementType: ValType.UNKNOWN});
+            let type : Type = toType({valType: ValType.VECTOR, elementType: toType({valType: ValType.UNKNOWN})});
             const tokens = ctx.delimTokenTree().tokenTree(0)?.tokenTreeToken();
             // if (!tokens) {
             //     return {
-            //         type: toType({valType: ValType.VECTOR, elementType: ValType.UNKNOWN}),
+            //         type: toType({valType: ValType.VECTOR, elementType: toType({valType: ValType.UNKNOWN})}),
             //         location: getLocation(ctx)
             //     }
             // }
@@ -598,16 +612,16 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 if (tokens.every((val:any, i:number) => (i % 2 === 1 ? val.getText() === ',' : true))) { // List vec macro like vec![1, 2, 3]
                     tokens.forEach((token: any, i: number) => {
                         if (i % 2 === 0) {
-                            const elType = this.visit(token)!.type!.valType;
-                            if (type.elementType === ValType.UNKNOWN) {
+                            const elType = this.visit(token)!.type!;
+                            if (type.elementType?.valType === ValType.UNKNOWN) {
                                 type = toType({valType: ValType.VECTOR, elementType: elType});
-                            } else if (type.elementType !== elType) {
+                            } else if (!typesEqual(type.elementType, elType)) {
                                 throw Error("All elements in vec must be of same type")
                             }
                         }
                     })
                 } else if (tokens.length === 3 && tokens[1].getText() === ";") { // Repeat vec macro like vec![0; 10]
-                    const elType = this.visit(tokens[0])!.type!.valType;
+                    const elType = this.visit(tokens[0])!.type!;
                     this.visit(tokens[2]); // visit count for side effects, type is irrelevant
                     type = toType({valType: ValType.VECTOR, elementType: elType});
                 } else {
@@ -758,13 +772,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             const iteratorType = this.visit(ctx.expression())?.type || toType({valType: ValType.UNKNOWN});
             let elementType = toType({valType: ValType.UNKNOWN});
 
-            console.log("IMPORTANT", iteratorType)
-            console.log("IMPORTANT", elementType)
-
             if (iteratorType.valType === ValType.VECTOR || (iteratorType.valType === ValType.RANGE)) {
-                elementType = toType({valType: iteratorType.elementType ?? ValType.UNKNOWN});
-            } else if (iteratorType.valType === ValType.REFERENCE && iteratorType.elementType === ValType.VECTOR) {
-                elementType = toType({valType: iteratorType.elementType ?? ValType.UNKNOWN});
+                elementType = iteratorType.elementType ?? toType({valType: ValType.UNKNOWN});
+            } else if (iteratorType.valType === ValType.REFERENCE && iteratorType.elementType?.valType === ValType.VECTOR) {
+                elementType = iteratorType.elementType ?? toType({valType: ValType.UNKNOWN});
             }
 
             const loopVariable: Variable = {
@@ -840,8 +851,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     visitPathExpression = (ctx: any): ReturnType | null => {
         console.log("Path expression")
-        console.log(ctx.getText())
-        console.log(ctx.pathInExpression().pathExprSegment(0).pathIdentSegment())
+
         if(ctx.parent.parent instanceof CallExpressionContext) { // Kinda useless now
             const func = this.getBoundFunction(ctx.getText());
             console.log("Function call:", func?.name)
@@ -956,7 +966,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             if (selfParam.shorthandSelf().KW_MUT()) {
                 if(selfParam.shorthandSelf().AND()) {
                     type.valType = ValType.REFERENCE;
-                    type.elementType = ValType.STRUCT;
+                    type.elementType = toType({valType: ValType.STRUCT, structName: this.currentImplType ?? 'unknown'});
                     type.mutableReference = true;
                 } else {
                     type.mutable = true;
@@ -964,7 +974,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             } else {
                 if(selfParam.shorthandSelf().AND()) {
                     type.valType = ValType.REFERENCE;
-                    type.elementType = ValType.STRUCT;
+                    type.elementType = toType({valType: ValType.STRUCT, structName: this.currentImplType ?? 'unknown'});
                     type.mutableReference = false;
                 }
             }
@@ -1124,7 +1134,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         this.typeStack.pop();
 
-        const type = toType({valType: array!.type?.elementType || ValType.UNKNOWN});
+        const type = array!.type?.elementType ?? toType({valType: ValType.UNKNOWN});
 
         // If it is a variable borrow it
         if (ctx.expression(0) instanceof PathExpression_Context) {
@@ -1166,7 +1176,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         
         const type = new Type();
         type.valType = ValType.REFERENCE;
-        type.elementType = expr.type!.valType;
+        type.elementType = expr.type!;
         type.primitive = false;
         type.consumed = false;
         type.borrows = Borrow.BFree;
@@ -1191,7 +1201,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         const endIsInt = end?.type?.valType === ValType.INT;
         if (startIsInt || endIsInt) {
             type.valType = ValType.RANGE;
-            type.elementType = ValType.INT;
+            type.elementType = toType({valType: ValType.INT});
         }
 
         return {
@@ -1263,28 +1273,28 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                     holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
                 }
             }
-            if (hole.type.valType === ValType.REFERENCE && variable.type.valType === hole.type.elementType && !variable.type.consumed && (variable.type.valType === ValType.STRUCT ? variable.type.structName === hole.type.structName : true)) {
+            if (hole.type.valType === ValType.REFERENCE && hole.type.elementType?.valType === variable.type.valType && !variable.type.consumed && (variable.type.valType === ValType.STRUCT ? variable.type.structName === hole.type.elementType?.structName : true)) {
                 if (hole.type.mutableReference) {
                     if (variable.type.mutable) {
                         if (variable.type.borrows === Borrow.BFree) {
-                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
+                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                         } else {
                             if (this.checkBorrows(variable, hole.location, variable.name)) {
-                                holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
+                                holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                             }
                         }
                     }
                 } else {
                     if (variable.type.borrows === Borrow.BFree || variable.type.borrows === Borrow.BImmut) {
-                        holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName}), location: variable.location}});
+                        holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName}), location: variable.location}});
                     } else {
                         if (this.checkBorrows(variable, hole.location, variable.name)) {
-                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type.valType, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
+                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                         }
                     }
                 }
             }
-            if (variable.type.valType === ValType.STRUCT || ( variable.type.valType === ValType.REFERENCE && variable.type.elementType === ValType.STRUCT)) {
+            if (variable.type.valType === ValType.STRUCT || ( variable.type.valType === ValType.REFERENCE && variable.type.elementType?.valType === ValType.STRUCT)) {
                 const struct = this.structs.find(s => s.name === variable.type.structName);
                 if (struct) {
                     // console.log("Checking struct:", struct.name)
@@ -1308,7 +1318,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                     const refType = new Type();
                     Object.assign(refType, variable.type);
                     refType.valType = ValType.REFERENCE;
-                    refType.elementType = variable.type.valType;
+                    refType.elementType = variable.type;
                     refType.mutableReference = variable.type.mutable;
                     if (struct.index && (this.canBeAssigned(hole, variable.type) || this.canBeAssigned(hole, refType))) {
                         holeSuggestions.push({suggestionType: 'slice', suggestion: {...struct, name: "&" + variable.name + "[??..??]", location: variable.location}});
@@ -1321,7 +1331,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 const isIndexable =
                     variable.type.valType === ValType.VECTOR ||
                     (variable.type.valType === ValType.STRUCT && variable.type.structName === 'Vec');
-                if (isIndexable && variable.type.elementType === hole.type.valType) {
+                if (isIndexable && variable.type.elementType?.valType === hole.type.valType) {
                     holeSuggestions.push({suggestionType: 'index', suggestion: {...variable, name: variable.name + "[??]"}});
                 }
             }
@@ -1366,7 +1376,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             const methodRefType = new Type();
             Object.assign(methodRefType, variable.type);
             methodRefType.valType = ValType.REFERENCE;
-            methodRefType.elementType = variable.type.valType;
+            methodRefType.elementType = variable.type;
             methodRefType.mutableReference = variable.type.mutable;
             if (method.type && this.canBeAssigned(hole, method.type, null, false) && (this.canBeAssigned(method.params[0], variable.type, variable) || this.canBeAssigned(method.params[0], methodRefType, variable))) {
                 holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: method.name + "()"}});

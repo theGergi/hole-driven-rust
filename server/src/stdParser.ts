@@ -128,7 +128,7 @@ function parseTypeDesc(typeDesc: any): Type {
 		return createType({
 			valType: ValType.REFERENCE,
 			mutableReference: Boolean(typeDesc.borrowed_ref.is_mutable),
-			elementType: inner.valType,
+			elementType: inner,
 			structName: inner.structName
 		});
 	}
@@ -137,7 +137,7 @@ function parseTypeDesc(typeDesc: any): Type {
 		const element = parseTypeDesc(typeDesc.slice);
 		return createType({
 			valType: ValType.VECTOR,
-			elementType: element.valType,
+			elementType: element,
 			structName: element.structName
 		});
 	}
@@ -146,7 +146,7 @@ function parseTypeDesc(typeDesc: any): Type {
 		const element = parseTypeDesc(typeDesc.array.type);
 		return createType({
 			valType: ValType.VECTOR,
-			elementType: element.valType,
+			elementType: element,
 			structName: element.structName
 		});
 	}
@@ -161,7 +161,7 @@ function parseTypeDesc(typeDesc: any): Type {
 			return createType({
 				valType: ValType.STRUCT,
 				structName: 'Vec',
-				elementType: inner.valType,
+				elementType: inner,
 			});
 		}
 
@@ -428,6 +428,11 @@ export function parseStdJsonFile(): StdParseResult {
 
 	const std   = parseStdJson(stdRaw,   preludeNames);
 	const alloc = parseStdJson(allocRaw, preludeNames);
+
+	console.log("hey hey")
+	console.log(alloc.structs.map(s => s.name).sort().reverse())
+	console.log(alloc.structs.filter(s => s.name === 'String')[0].methods.map(m => m.name))
+	console.log(alloc.functions.filter(s => s.structName === 'String').map(m => m.name))
 
 	return {
 		functions: [...std.functions, ...alloc.functions],

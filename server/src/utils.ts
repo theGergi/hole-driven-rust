@@ -1,5 +1,5 @@
 import { ParserRuleContext } from 'antlr4ng';
-import { Borrow, Hole, SourceLocation, Type, ValType, Variable, Function } from '../../shared/out/types';
+import { Borrow, Hole, SourceLocation, Type, ValType, Variable, Function, constructTypeString } from '../../shared/out/types';
 
 
 
@@ -41,9 +41,9 @@ export function formatType (type?: Type): string {
 		return 'unknown';
 	}
 	const base = type.valType === ValType.VECTOR
-		? `Vec<${type.elementType ?? 'unknown'}>`
+		? `Vec<${type.elementType ? constructTypeString(type.elementType) : 'unknown'}>`
 		: type.valType === ValType.REFERENCE
-			? `&${type.mutableReference ? 'mut ' : ''}${type.elementType ?? 'unknown'}`
+			? `&${type.mutableReference ? 'mut ' : ''}${type.elementType ? constructTypeString(type.elementType) : 'unknown'}`
 			: type.valType;
 	const mut = type.mutable === true ? 'mut ' : '';
 	return `${mut}${base}`;
@@ -71,7 +71,7 @@ export function printHoleSuggestionContext(hole: Hole): void {
 		const borrowName = type.borrows === Borrow.BFree ? 'free' : type.borrows === Borrow.BMut ? 'mut' : 'immut';
 		return `{
 valType: ${type.valType},
-elementType: ${type.elementType ?? 'none'},
+elementType: ${type.elementType ? constructTypeString(type.elementType) : 'none'},
 primitive: ${type.primitive},
 mutable: ${type.mutable},
 mutableReference: ${type.mutableReference},

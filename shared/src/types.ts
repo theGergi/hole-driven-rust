@@ -19,7 +19,7 @@ export enum Borrow {
 }
 
 export class Type {
-	elementType?: ValType; // For vectors and references
+	elementType?: Type; // For vectors and references
 	valType!: ValType;
 	primitive!: boolean;
 	mutable?: boolean;
@@ -41,15 +41,17 @@ export function constructTypeString(type: Type): string {
 			if (type.mutableReference) {
 				typeString += "mut ";
 			}
-			if (type.elementType === 'struct') {
-				typeString += type.structName;
-			} else {
-				typeString += type.elementType;
+			if (type.elementType) {
+				typeString += constructTypeString(type.elementType);
 			}
 		} else if (type.valType === 'Vec') {
-			typeString += "Vec " + type.elementType;
+			typeString += "Vec<" + (type.elementType ? constructTypeString(type.elementType) : "?") + ">";
 		} else if (type.valType === 'struct') {
-			typeString += type.structName;
+			if (type.structName === 'Vec' && type.elementType) {
+				typeString += "Vec<" + constructTypeString(type.elementType) + ">";
+			} else {
+				typeString += type.structName;
+			}
 		} else {
 			typeString += type.valType;
 		}

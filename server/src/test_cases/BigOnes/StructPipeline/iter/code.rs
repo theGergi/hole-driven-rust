@@ -8,9 +8,9 @@ impl<T> Vec<T> {
     pub fn iter(&self) -> VecIterator<T> {}
 }
 
-pub struct String {}
+pub struct StringCustom {}
 
-impl String {
+impl StringCustom {
     pub fn new() -> Self {}
 
     pub fn as_bytes(&self) -> Vec<i32> {}
@@ -25,7 +25,7 @@ fn iter_sum(iter: &VecIterator) {
 }
 
 fn main() {
-    let s = String::new();
+    let s = StringCustom::new();
     let s_bytes = s.as_bytes();
     let bytes_iter = s_bytes.iter();
 
