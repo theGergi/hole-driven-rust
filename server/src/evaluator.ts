@@ -29,6 +29,7 @@ interface EvalResult {
 	task: string;
 	hole: string;
 	category: EvalCategory;
+	holeCategories: string[];
 	error?: string;
 	suggestion_compile_results?: SuggestionCompileResult[];
 }
@@ -156,7 +157,7 @@ for (const tc of cases) {
 		});
 	}
 
-	results.push({ task: tc.task, hole: tc.hole, category, error, suggestion_compile_results });
+	results.push({ task: tc.task, hole: tc.hole, category, holeCategories: meta.categories, error, suggestion_compile_results });
 	counts[category]++;
 }
 
@@ -191,7 +192,47 @@ if (totalSuggestionsTested > 0) {
 	console.log(`Compile rate:            ${pct}%`);
 }
 
-// Write results to JSON
-const outputPath = path.resolve(process.cwd(), 'server', 'src', 'eval_results.json');
-fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-console.log(`\nResults written to ${outputPath}`);
+// Print per-category table
+const categoryTable: Record<string, Record<EvalCategory, number>> = {};
+for (const r of results) {
+	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
+	for (const cat of cats) {
+		if (!categoryTable[cat]) {
+			categoryTable[cat] = { failed_with_error: 0, found_type: 0, found_suggestions: 0, exact_match: 0 };
+		}
+		categoryTable[cat][r.category]++;
+	}
+}
+
+const evalCats: EvalCategory[] = ['exact_match', 'found_suggestions', 'found_type', 'failed_with_error'];
+const colHeaders = ['category', 'exact', 'suggestions', 'type', 'failed', 'total'];
+const rows: string[][] = Object.entries(categoryTable)
+	.sort(([a], [b]) => a.localeCompare(b))
+	.map(([cat, c]) => {
+		const total = evalCats.reduce((s, k) => s + c[k], 0);
+		return [cat, String(c.exact_match), String(c.found_suggestions), String(c.found_type), String(c.failed_with_error), String(total)];
+	});
+
+const colWidths = colHeaders.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length)));
+const fmt = (row: string[]) => row.map((cell, i) => cell.padEnd(colWidths[i])).join('  ');
+const sep = colWidths.map(w => '-'.repeat(w)).join('  ');
+
+const tableLines = [
+	'\n=== Results by Hole Category ===',
+	fmt(colHeaders),
+	sep,
+	...rows.map(fmt),
+];
+for (const line of tableLines) console.log(line);
+
+// Write results to evaluations folder
+const evaluationsDir = path.resolve(process.cwd(), 'server', 'evaluations');
+fs.mkdirSync(evaluationsDir, { recursive: true });
+
+const jsonPath = path.join(evaluationsDir, 'eval_results.json');
+fs.writeFileSync(jsonPath, JSON.stringify(results, null, 2));
+console.log(`\nResults written to ${jsonPath}`);
+
+const tablePath = path.join(evaluationsDir, 'eval_table.txt');
+fs.writeFileSync(tablePath, tableLines.join('\n') + '\n');
+console.log(`Table written to ${tablePath}`);

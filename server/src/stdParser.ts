@@ -275,7 +275,36 @@ function parseStructFields(structEntry: any, index: Record<string, any>): Param[
 }
 
 
-function parseStructEntry(entry: any, index: Record<string, any>, id: string, paths: Record<string, any>): SharedStruct | null {
+function buildPreludeNames(index: Record<string, any>, paths: Record<string, any>): Set<string> {
+	const names = new Set<string>();
+
+	// Find std::prelude module by its path
+	const preludeId = Object.keys(paths).find(id => {
+		const p = paths[id];
+		return Array.isArray(p?.path) && p.path.join('::') === 'std::prelude';
+	});
+	if (!preludeId) return names;
+
+	const preludeEntry = index[preludeId];
+	const submoduleIds: number[] = preludeEntry?.inner?.module?.items ?? [];
+
+	for (const subId of submoduleIds) {
+		const subEntry = index[String(subId)];
+		const itemIds: number[] = subEntry?.inner?.module?.items ?? [];
+		for (const itemId of itemIds) {
+			const itemEntry = index[String(itemId)];
+			const source: string | undefined = itemEntry?.inner?.use?.source;
+			if (typeof source === 'string') {
+				const leaf = source.split('::').pop();
+				if (leaf) names.add(leaf);
+			}
+		}
+	}
+
+	return names;
+}
+
+function parseStructEntry(entry: any, index: Record<string, any>, id: string, paths: Record<string, any>, preludeNames: Set<string>): SharedStruct | null {
 	const structEntry = entry?.inner?.struct;
 	if (!structEntry) {
 		return null;
@@ -293,7 +322,8 @@ function parseStructEntry(entry: any, index: Record<string, any>, id: string, pa
 		path,
 		iterable: undefined,
 		index: undefined,
-		impls: structEntry.impls
+		impls: structEntry.impls,
+		prelude: preludeNames.has(name) ? true : undefined
 	};
 }
 
@@ -326,15 +356,17 @@ function parseImplEntry(entry: any, index: Record<string, any>, structs: SharedS
 	});
 }
 
-export function parseStdJson(stdJson: any): StdParseResult {
+export function parseStdJson(stdJson: any, externalPreludeNames?: Set<string>): StdParseResult {
 	const index = stdJson?.index ?? {};
 	const paths = stdJson?.paths ?? {};
 
 	const structs: SharedStruct[] = [];
 	const functions: SharedFunction[] = [];
 
+	const preludeNames = externalPreludeNames ?? buildPreludeNames(index, paths);
+
 	for (const [id, entry] of Object.entries(index)) {
-		const parsedStruct = parseStructEntry(entry, index, id, paths);
+		const parsedStruct = parseStructEntry(entry, index, id, paths, preludeNames);
 		if (parsedStruct) {
 			structs.push(parsedStruct);
 		}
@@ -364,8 +396,14 @@ export function parseStdJson(stdJson: any): StdParseResult {
 }
 
 export function parseStdJsonFile(): StdParseResult {
-	const std   = parseStdJson(JSON.parse(fs.readFileSync(stdJsonPath,   'utf8')));
-	const alloc = parseStdJson(JSON.parse(fs.readFileSync(allocJsonPath, 'utf8')));
+	const stdRaw   = JSON.parse(fs.readFileSync(stdJsonPath,   'utf8'));
+	const allocRaw = JSON.parse(fs.readFileSync(allocJsonPath, 'utf8'));
+
+	// Prelude names are defined in std.json; share them with alloc so Vec/String/Box get marked
+	const preludeNames = buildPreludeNames(stdRaw?.index ?? {}, stdRaw?.paths ?? {});
+
+	const std   = parseStdJson(stdRaw,   preludeNames);
+	const alloc = parseStdJson(allocRaw, preludeNames);
 
 	return {
 		functions: [...std.functions, ...alloc.functions],

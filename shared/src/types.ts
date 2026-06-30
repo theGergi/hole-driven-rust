@@ -146,4 +146,5 @@ export interface SharedStruct {
 	iterable?: boolean; // Indicates if the type can be iterated over
 	index?: boolean; // Indicates if the type can be indexed/sliced (e.g., Vec, arrays)
 	impls?: any[]; // Store raw impl data for later processing
+	prelude?: boolean; // True if automatically imported via the Rust prelude
 }

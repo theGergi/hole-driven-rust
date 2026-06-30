@@ -2,7 +2,17 @@
   {
     "task": "task_0",
     "hole": "hole1",
-    "category": "found_type"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "i",
+        "compiles": true
+      },
+      {
+        "name": "j",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_0",
@@ -60,24 +70,12 @@
     "category": "exact_match",
     "suggestion_compile_results": [
       {
-        "name": "numbers",
-        "compiles": false
-      },
-      {
-        "name": "threshold",
-        "compiles": false
-      },
-      {
         "name": "i",
         "compiles": true
       },
       {
         "name": "j",
         "compiles": true
-      },
-      {
-        "name": "has_close_elements()",
-        "compiles": false
       }
     ]
   },
@@ -966,56 +964,177 @@
   {
     "task": "task_33",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": false
+      },
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "sort_third()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_33",
     "hole": "hole2",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l[??]",
+        "compiles": false
+      },
+      {
+        "name": "out[??]",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_33",
     "hole": "hole3",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": false
+      },
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "sort_third()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_33",
     "hole": "hole4",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": false
+      },
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "sort_third()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_33",
     "hole": "hole5",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": false
+      },
+      {
+        "name": "out",
+        "compiles": true
+      },
+      {
+        "name": "sort_third()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_33",
     "hole": "hole6",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": true
+      },
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "sort_third()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_33",
     "hole": "hole7",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l[??]",
+        "compiles": false
+      },
+      {
+        "name": "out[??]",
+        "compiles": false
+      },
+      {
+        "name": "indx_t",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_33",
     "hole": "hole8",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l[??]",
+        "compiles": false
+      },
+      {
+        "name": "out[??]",
+        "compiles": false
+      },
+      {
+        "name": "indx_t",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_33",
     "hole": "hole9",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": false
+      },
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "sort_third()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_34",
@@ -1124,176 +1243,279 @@
   {
     "task": "task_37",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": false
+      },
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "sort_even()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_37",
     "hole": "hole2",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs[??]",
+        "compiles": false
+      },
+      {
+        "name": "out[??]",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_37",
     "hole": "hole3",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No hole found at line 29. Found holes at lines: "
   },
   {
     "task": "task_37",
     "hole": "hole4",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": false
+      },
+      {
+        "name": "out",
+        "compiles": true
+      },
+      {
+        "name": "sort_even()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_37",
     "hole": "hole5",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": false
+      },
+      {
+        "name": "even",
+        "compiles": false
+      },
+      {
+        "name": "even[??]",
+        "compiles": false
+      },
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "indx_t",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": true
+      },
+      {
+        "name": "sort_even()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_37",
     "hole": "hole6",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs",
+        "compiles": false
+      },
+      {
+        "name": "out",
+        "compiles": false
+      },
+      {
+        "name": "sort_even()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_37",
     "hole": "hole7",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs[??]",
+        "compiles": false
+      },
+      {
+        "name": "out[??]",
+        "compiles": false
+      },
+      {
+        "name": "indx_t",
+        "compiles": true
+      },
+      {
+        "name": "i",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_37",
     "hole": "hole8",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "nmbs[??]",
+        "compiles": false
+      },
+      {
+        "name": "out[??]",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_38",
     "hole": "hole1",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole10",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole11",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole12",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole13",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole14",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole15",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole16",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole17",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole18",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole19",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole2",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole20",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole21",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole3",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole4",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole5",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole6",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole7",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole8",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_38",
     "hole": "hole9",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_39",
@@ -1511,11 +1733,19 @@
   {
     "task": "task_40",
     "hole": "hole3",
-    "category": "found_suggestions",
+    "category": "exact_match",
     "suggestion_compile_results": [
       {
         "name": "nmbs[??]",
         "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": true
+      },
+      {
+        "name": "j",
+        "compiles": true
       }
     ]
   },
@@ -1598,20 +1828,51 @@
   {
     "task": "task_43",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": true
+      },
+      {
+        "name": "pairs_sum_to_zero()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_43",
     "hole": "hole2",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l[??]",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_43",
     "hole": "hole3",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "l",
+        "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": true
+      },
+      {
+        "name": "l1",
+        "compiles": false
+      },
+      {
+        "name": "pairs_sum_to_zero()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_44",
@@ -1708,8 +1969,21 @@
   {
     "task": "task_46",
     "hole": "hole5",
-    "category": "failed_with_error",
-    "error": "No hole found at line 17. Found holes at lines: "
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "n",
+        "compiles": true
+      },
+      {
+        "name": "results[??]",
+        "compiles": false
+      },
+      {
+        "name": "fib4()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_46",
@@ -2285,6 +2559,10 @@
     "suggestion_compile_results": [
       {
         "name": "level",
+        "compiles": true
+      },
+      {
+        "name": "i",
         "compiles": true
       }
     ]
@@ -2916,50 +3194,112 @@
   {
     "task": "task_65",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "xcp",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_65",
     "hole": "hole2",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No hole found at line 15. Found holes at lines: "
   },
   {
     "task": "task_65",
     "hole": "hole3",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_type"
   },
   {
     "task": "task_65",
     "hole": "hole4",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "x",
+        "compiles": false
+      },
+      {
+        "name": "shift",
+        "compiles": false
+      },
+      {
+        "name": "xcp",
+        "compiles": true
+      },
+      {
+        "name": "xcp[??]",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "res[??]",
+        "compiles": false
+      },
+      {
+        "name": "circular_shift()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_65",
     "hole": "hole5",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No hole found at line 16. Found holes at lines: "
   },
   {
     "task": "task_65",
     "hole": "hole6",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No hole found at line 15. Found holes at lines: "
   },
   {
     "task": "task_65",
     "hole": "hole7",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "x",
+        "compiles": false
+      },
+      {
+        "name": "shift",
+        "compiles": false
+      },
+      {
+        "name": "xcp",
+        "compiles": false
+      },
+      {
+        "name": "xcp[??]",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": false
+      },
+      {
+        "name": "res[??]",
+        "compiles": false
+      },
+      {
+        "name": "circular_shift()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_65",
     "hole": "hole8",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No hole found at line 16. Found holes at lines: "
   },
   {
     "task": "task_66",
@@ -3070,7 +3410,7 @@
   {
     "task": "task_68",
     "hole": "hole3",
-    "category": "found_suggestions",
+    "category": "exact_match",
     "suggestion_compile_results": [
       {
         "name": "arr[??]",
@@ -3079,6 +3419,10 @@
       {
         "name": "out[??]",
         "compiles": false
+      },
+      {
+        "name": "i",
+        "compiles": true
       }
     ]
   },
@@ -3115,6 +3459,10 @@
         "compiles": false
       },
       {
+        "name": "i",
+        "compiles": false
+      },
+      {
         "name": "has",
         "compiles": false
       },
@@ -3141,6 +3489,10 @@
       },
       {
         "name": "max",
+        "compiles": false
+      },
+      {
+        "name": "i",
         "compiles": false
       },
       {
@@ -3186,6 +3538,10 @@
         "compiles": false
       },
       {
+        "name": "i",
+        "compiles": false
+      },
+      {
         "name": "has",
         "compiles": true
       },
@@ -3198,7 +3554,7 @@
   {
     "task": "task_69",
     "hole": "hole6",
-    "category": "found_suggestions",
+    "category": "exact_match",
     "suggestion_compile_results": [
       {
         "name": "lst[??]",
@@ -3209,8 +3565,16 @@
         "compiles": false
       },
       {
+        "name": "i",
+        "compiles": true
+      },
+      {
         "name": "has",
         "compiles": false
+      },
+      {
+        "name": "j",
+        "compiles": true
       },
       {
         "name": "search()",
@@ -3232,6 +3596,10 @@
         "compiles": true
       },
       {
+        "name": "i",
+        "compiles": false
+      },
+      {
         "name": "has",
         "compiles": false
       },
@@ -3244,7 +3612,7 @@
   {
     "task": "task_69",
     "hole": "hole8",
-    "category": "found_suggestions",
+    "category": "exact_match",
     "suggestion_compile_results": [
       {
         "name": "lst[??]",
@@ -3255,8 +3623,16 @@
         "compiles": false
       },
       {
+        "name": "i",
+        "compiles": true
+      },
+      {
         "name": "has",
         "compiles": false
+      },
+      {
+        "name": "j",
+        "compiles": true
       },
       {
         "name": "search()",
@@ -3278,7 +3654,15 @@
         "compiles": false
       },
       {
+        "name": "i",
+        "compiles": false
+      },
+      {
         "name": "has",
+        "compiles": false
+      },
+      {
+        "name": "j",
         "compiles": false
       },
       {
@@ -3317,74 +3701,228 @@
   {
     "task": "task_70",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst",
+        "compiles": false
+      },
+      {
+        "name": "cp",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": false
+      },
+      {
+        "name": "strange_sort_list()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_70",
     "hole": "hole10",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "lst",
+        "compiles": true
+      },
+      {
+        "name": "cp",
+        "compiles": true
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "strange_sort_list()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_70",
     "hole": "hole11",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "lst",
+        "compiles": false
+      },
+      {
+        "name": "cp",
+        "compiles": true
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "strange_sort_list()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_70",
     "hole": "hole12",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No hole found at line 22. Found holes at lines: "
   },
   {
     "task": "task_70",
     "hole": "hole2",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No hole found at line 18. Found holes at lines: "
   },
   {
     "task": "task_70",
     "hole": "hole3",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst",
+        "compiles": false
+      },
+      {
+        "name": "cp",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": false
+      },
+      {
+        "name": "strange_sort_list()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_70",
     "hole": "hole4",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "cp[??]",
+        "compiles": false
+      },
+      {
+        "name": "res[??]",
+        "compiles": false
+      },
+      {
+        "name": "max",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_70",
     "hole": "hole5",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "cp[??]",
+        "compiles": false
+      },
+      {
+        "name": "res[??]",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_70",
     "hole": "hole6",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "lst",
+        "compiles": false
+      },
+      {
+        "name": "cp",
+        "compiles": true
+      },
+      {
+        "name": "res",
+        "compiles": true
+      },
+      {
+        "name": "strange_sort_list()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_70",
     "hole": "hole7",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "cp[??]",
+        "compiles": false
+      },
+      {
+        "name": "res[??]",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_70",
     "hole": "hole8",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst",
+        "compiles": false
+      },
+      {
+        "name": "strange_sort_list()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_70",
     "hole": "hole9",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst",
+        "compiles": false
+      },
+      {
+        "name": "cp",
+        "compiles": false
+      },
+      {
+        "name": "res",
+        "compiles": false
+      },
+      {
+        "name": "strange_sort_list()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_71",
@@ -3555,7 +4093,7 @@
     "category": "found_suggestions",
     "suggestion_compile_results": [
       {
-        "name": "arr",
+        "name": "arr[??]",
         "compiles": false
       },
       {
@@ -3934,7 +4472,13 @@
   {
     "task": "task_80",
     "hole": "hole4",
-    "category": "found_type"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "i",
+        "compiles": true
+      }
+    ]
   },
   {
     "task": "task_80",
@@ -4156,20 +4700,59 @@
   {
     "task": "task_85",
     "hole": "hole1",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "sum",
+        "compiles": true
+      },
+      {
+        "name": "add_even_odd()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_85",
     "hole": "hole2",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "found_suggestions",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "sum",
+        "compiles": true
+      },
+      {
+        "name": "add_even_odd()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_85",
     "hole": "hole3",
-    "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "category": "exact_match",
+    "suggestion_compile_results": [
+      {
+        "name": "lst[??]",
+        "compiles": false
+      },
+      {
+        "name": "sum",
+        "compiles": true
+      },
+      {
+        "name": "add_even_odd()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_86",
@@ -4664,7 +5247,7 @@
     "task": "task_93",
     "hole": "hole13",
     "category": "failed_with_error",
-    "error": "Only simple identifier patterns or wildcard patterns are supported in for loops"
+    "error": "No type"
   },
   {
     "task": "task_93",
