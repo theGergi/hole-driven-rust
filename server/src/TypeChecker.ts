@@ -264,6 +264,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return toType({valType: ValType.FLOAT});
         }
         if (typeString === 'str') {
+            if (this.structs.find(s => s.name === "str")) {
+                return toType({valType: ValType.STRUCT, structName: "str"});
+            }
             return toType({valType: ValType.STRING});
         }
 
@@ -365,8 +368,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         if (ctx.STRING_LITERAL() || ctx.RAW_STRING_LITERAL()) {
+            const strStruct = this.structs.find(s => s.name === "str");
             return {
-                type: toType({valType: ValType.REFERENCE, elementType: ValType.STRING}),
+                type: toType({
+                    valType: ValType.REFERENCE,
+                    elementType: strStruct ? ValType.STRUCT : ValType.STRING,
+                    structName: strStruct ? "str" : undefined
+                }),
                 location: getLocation(ctx)
             };
         }

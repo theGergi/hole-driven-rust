@@ -79,7 +79,7 @@ function parsePathName(value: any): string | null {
 
 function parsePrimitiveType(name: string): Type {
 	if (name === 'str') {
-		return createType({ valType: ValType.STRING, primitive: false });
+		return createType({ valType: ValType.STRUCT, structName: 'str', primitive: false });
 	}
 
 	if (name === 'f32' || name === 'f64') {
@@ -166,7 +166,7 @@ function parseTypeDesc(typeDesc: any): Type {
 		}
 
 		if (pathName === 'str') {
-			return createType({ valType: ValType.STRING, primitive: false });
+			return createType({ valType: ValType.STRUCT, structName: 'str', primitive: false });
 		}
 
 		if (pathName === 'Option' || pathName === 'Result' || pathName === 'Box' || pathName === 'VecDeque' || pathName === 'HashMap' || pathName === 'HashSet') {
@@ -338,6 +338,18 @@ function parseImplEntry(entry: any, index: Record<string, any>, structs: SharedS
 		return;
 	}
 
+	const primitiveFor = implEntry.for?.primitive;
+	if (primitiveFor === 'str') {
+		const strStructs = structs.filter(s => s.name === 'str');
+		strStructs.forEach(s => {
+			implEntry.items.forEach((itemId: any) => {
+				const itemEntry = index[String(itemId)];
+				parseFunctionEntry(itemEntry, s, functions);
+			});
+		});
+		return;
+	}
+
 	if (!implEntry.for?.resolved_path?.path) {
 		return;
 	}
@@ -371,6 +383,18 @@ export function parseStdJson(stdJson: any, externalPreludeNames?: Set<string>): 
 			structs.push(parsedStruct);
 		}
 	}
+
+	structs.push({
+		name: 'str',
+		location: { line: 0, column: 0, length: 0 },
+		fields: [],
+		methods: [],
+		path: ['str'],
+		iterable: true,
+		index: true,
+		impls: undefined,
+		prelude: true,
+	});
 
 	// Build the set of IDs that belong to impl blocks so we don't process them twice
 	const implItemIds = new Set<string>();

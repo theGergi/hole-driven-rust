@@ -1,0 +1,7 @@
+[
+	{
+		"line": 13,
+		"type": { "valType": "i32" },
+		"suggestionNames": ["num.len()"]
+	}
+]
