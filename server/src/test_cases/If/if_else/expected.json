@@ -1,0 +1,7 @@
+[
+	{
+		"line": 23,
+		"type": { "valType": "i32" },
+		"suggestionNames": ["current_depth"]
+	}
+]

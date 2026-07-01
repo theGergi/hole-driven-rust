@@ -157,7 +157,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     }
 
     loadState(state: any) {
-        this.variables = state.variables;
+        this.variables = structuredClone(state.variables);
     }
 
     /**
@@ -556,7 +556,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         // console.log("Inferred type: ", inferedType, "Declared type: ", declaredType)
         
         if (inferedType.valType === ValType.UNKNOWN && declaredType.valType === ValType.UNKNOWN) {
-            throw new Error("No type");
+            // throw new Error("No type");
         } else if (inferedType.valType === ValType.HOLE && declaredType.valType !== ValType.UNKNOWN) {
             inferedType = declaredType;
         } else if (inferedType.valType !== ValType.UNKNOWN && declaredType.valType !== ValType.UNKNOWN) {
@@ -565,7 +565,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
             if (declaredType.valType === ValType.VECTOR || declaredType.valType === ValType.REFERENCE) {
                 if (inferedType.elementType?.valType === ValType.UNKNOWN && declaredType.elementType?.valType === ValType.UNKNOWN) {
-                    throw new Error("No type");
+                    // throw new Error("No type");
                 } else if (inferedType.elementType?.valType === ValType.HOLE && declaredType.elementType !== undefined) {
                     inferedType = declaredType;
                 } else if (inferedType.elementType !== undefined && declaredType.elementType !== undefined) {
@@ -767,9 +767,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             const iteratorType = this.visit(ctx.expression())?.type || toType({valType: ValType.UNKNOWN});
             let elementType = toType({valType: ValType.UNKNOWN});
 
-            console.log("Iterator type:", iteratorType)
-            console.log("Element type:", elementType)
-
             if ((iteratorType.valType === ValType.STRUCT && iteratorType.structName === "Vec") ||iteratorType.valType === ValType.VECTOR || iteratorType.valType === ValType.RANGE) {
                 elementType = iteratorType.elementType ?? toType({valType: ValType.UNKNOWN});
             } else if (iteratorType.valType === ValType.REFERENCE && iteratorType.elementType?.valType === ValType.VECTOR) {
@@ -784,7 +781,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             loopVariable.type.mutable = mutable;
             this.variables.push(loopVariable);
         } else if (tuplePattern) {
-            this.visit(ctx.expression());
+            this.visit(ctx.expression()); // Unhandled for tuples
             const subPatterns: any[] = tuplePattern.tuplePatternItems()?.pattern() ?? [];
             for (const subPat of subPatterns) {
                 const idPat = subPat.patternNoTopAlt(0)?.patternWithoutRange()?.identifierPattern?.();
@@ -873,15 +870,20 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (ctx.expression()) {
             this.visit(ctx.expression());
         }
-
+        
         this.loadState(currentState);
-
         this.visit(ctx.blockExpression(0));
-
+        
         this.loadState(currentState);
 
         if (ctx.KW_ELSE()) {
-            this.visit(ctx.blockExpression(1));
+            if (ctx.blockExpression(1)) {
+                this.visit(ctx.blockExpression(1));
+            } else if (ctx.ifExpression()) {
+                this.visit(ctx.ifExpression());
+            } else if (ctx.ifLetExpression()) {
+                this.visit(ctx.ifLetExpression());
+            }
         }
 
         return {
