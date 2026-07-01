@@ -24,7 +24,7 @@
     "hole": "hole3",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 5
+    "suggestion_count": 41
   },
   {
     "task": "task_0",
@@ -46,7 +46,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 15,
+    "suggestion_count": 59,
     "suggestions_with_holes": [
       "result[??]"
     ]
@@ -59,7 +59,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 15,
+    "suggestion_count": 59,
     "suggestions_with_holes": [
       "result[??]"
     ]
@@ -69,14 +69,14 @@
     "hole": "hole3",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 12
+    "suggestion_count": 1498
   },
   {
     "task": "task_1",
     "hole": "hole4",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 12
+    "suggestion_count": 1498
   },
   {
     "task": "task_1",
@@ -86,7 +86,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 15,
+    "suggestion_count": 59,
     "suggestions_with_holes": [
       "result[??]"
     ]
@@ -99,7 +99,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 15,
+    "suggestion_count": 59,
     "suggestions_with_holes": [
       "result[??]"
     ]
@@ -111,7 +111,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 15,
+    "suggestion_count": 59,
     "suggestions_with_holes": [
       "result[??]"
     ]
@@ -125,7 +125,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 18
+    "suggestion_count": 3106
   },
   {
     "task": "task_10",
@@ -134,7 +134,7 @@
     "holeCategories": [
       "function_call"
     ],
-    "suggestion_count": 26
+    "suggestion_count": 6202
   },
   {
     "task": "task_10",
@@ -143,7 +143,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 34
+    "suggestion_count": 9298
   },
   {
     "task": "task_10",
@@ -152,7 +152,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 12
+    "suggestion_count": 4360
   },
   {
     "task": "task_10",
@@ -163,7 +163,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 36
+    "suggestion_count": 9806
   },
   {
     "task": "task_10",
@@ -172,7 +172,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 18
+    "suggestion_count": 3106
   },
   {
     "task": "task_10",
@@ -182,7 +182,7 @@
       "function_param",
       "string_type"
     ],
-    "suggestion_count": 19
+    "suggestion_count": 3613
   },
   {
     "task": "task_10",
@@ -193,7 +193,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_10",
@@ -202,14 +202,14 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 3105
   },
   {
     "task": "task_12",
     "hole": "hole1",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 14,
+    "suggestion_count": 1026,
     "suggestions_with_holes": [
       "strings[??]"
     ]
@@ -291,7 +291,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 15,
+    "suggestion_count": 59,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -303,7 +303,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 15,
+    "suggestion_count": 59,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -315,7 +315,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 15,
+    "suggestion_count": 59,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -329,7 +329,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 15,
+    "suggestion_count": 59,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -342,7 +342,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 12
+    "suggestion_count": 518
   },
   {
     "task": "task_15",
@@ -361,7 +361,7 @@
       "function_param",
       "primitive"
     ],
-    "suggestion_count": 5
+    "suggestion_count": 730
   },
   {
     "task": "task_16",
@@ -389,7 +389,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 12
+    "suggestion_count": 48
   },
   {
     "task": "task_18",
@@ -398,7 +398,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 13
+    "suggestion_count": 1025
   },
   {
     "task": "task_18",
@@ -426,7 +426,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 10
+    "suggestion_count": 1460
   },
   {
     "task": "task_18",
@@ -446,7 +446,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 12
+    "suggestion_count": 518
   },
   {
     "task": "task_19",
@@ -455,7 +455,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 11
+    "suggestion_count": 47
   },
   {
     "task": "task_19",
@@ -465,7 +465,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 1026
   },
   {
     "task": "task_19",
@@ -474,7 +474,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 12
+    "suggestion_count": 518
   },
   {
     "task": "task_2",
@@ -598,7 +598,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 38
   },
   {
     "task": "task_21",
@@ -616,7 +616,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "values[??]"
     ]
@@ -629,7 +629,7 @@
       "function_param",
       "struct"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "values[??]"
     ]
@@ -641,7 +641,7 @@
     "holeCategories": [
       "function_call"
     ],
-    "suggestion_count": 14,
+    "suggestion_count": 38,
     "suggestions_with_holes": [
       "values[??]"
     ]
@@ -747,7 +747,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_26",
@@ -758,7 +758,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 38
   },
   {
     "task": "task_26",
@@ -767,7 +767,7 @@
     "holeCategories": [
       "immutable_borrow"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 38
   },
   {
     "task": "task_27",
@@ -776,7 +776,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 12
+    "suggestion_count": 518
   },
   {
     "task": "task_27",
@@ -817,7 +817,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 15,
+    "suggestion_count": 49,
     "suggestions_with_holes": [
       "strings[??]"
     ]
@@ -829,7 +829,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "operations[??]"
     ]
@@ -851,7 +851,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 38
   },
   {
     "task": "task_31",
@@ -950,7 +950,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 13,
+    "suggestion_count": 121,
     "suggestions_with_holes": [
       "l[??]",
       "out[??]"
@@ -961,7 +961,7 @@
     "hole": "hole2",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 11,
+    "suggestion_count": 119,
     "suggestions_with_holes": [
       "l[??]",
       "out[??]"
@@ -974,7 +974,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_33",
@@ -983,14 +983,14 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_33",
     "hole": "hole5",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 13,
+    "suggestion_count": 121,
     "suggestions_with_holes": [
       "l[??]",
       "out[??]"
@@ -1004,7 +1004,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_33",
@@ -1013,14 +1013,14 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_33",
     "hole": "hole8",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 13,
+    "suggestion_count": 121,
     "suggestions_with_holes": [
       "l[??]",
       "out[??]"
@@ -1033,7 +1033,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_34",
@@ -1042,7 +1042,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_34",
@@ -1053,7 +1053,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 38
   },
   {
     "task": "task_35",
@@ -1064,7 +1064,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 5,
+    "suggestion_count": 41,
     "suggestions_with_holes": [
       "nmbs[??]"
     ]
@@ -1076,7 +1076,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 7,
+    "suggestion_count": 43,
     "suggestions_with_holes": [
       "ns[??]"
     ]
@@ -1089,7 +1089,7 @@
       "function_param",
       "primitive"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "ns[??]"
     ]
@@ -1109,7 +1109,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 11,
+    "suggestion_count": 772,
     "suggestions_with_holes": [
       "ns[??]"
     ]
@@ -1130,7 +1130,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 13,
+    "suggestion_count": 121,
     "suggestions_with_holes": [
       "nmbs[??]",
       "out[??]"
@@ -1143,7 +1143,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_37",
@@ -1152,7 +1152,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_37",
@@ -1161,7 +1161,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_37",
@@ -1170,7 +1170,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_37",
@@ -1179,7 +1179,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_37",
@@ -1188,7 +1188,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_38",
@@ -1463,7 +1463,7 @@
     "hole": "hole4",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 5,
+    "suggestion_count": 41,
     "suggestions_with_holes": [
       "nmbs[??]"
     ]
@@ -1507,7 +1507,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 38
   },
   {
     "task": "task_43",
@@ -1525,7 +1525,7 @@
     "hole": "hole2",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 4,
+    "suggestion_count": 40,
     "suggestions_with_holes": [
       "l[??]"
     ]
@@ -1535,7 +1535,7 @@
     "hole": "hole3",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 5,
+    "suggestion_count": 41,
     "suggestions_with_holes": [
       "l[??]"
     ]
@@ -1563,7 +1563,7 @@
     "hole": "hole3",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 7
+    "suggestion_count": 732
   },
   {
     "task": "task_44",
@@ -1573,7 +1573,7 @@
       "function_param",
       "primitive"
     ],
-    "suggestion_count": 7
+    "suggestion_count": 732
   },
   {
     "task": "task_45",
@@ -1592,7 +1592,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "results[??]"
     ]
@@ -1614,7 +1614,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "results[??]"
     ]
@@ -1627,7 +1627,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "results[??]"
     ]
@@ -1640,7 +1640,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "results[??]"
     ]
@@ -1653,7 +1653,7 @@
       "function_param",
       "primitive"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "results[??]"
     ]
@@ -1676,7 +1676,7 @@
       "function_param",
       "primitive"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "results[??]"
     ]
@@ -1734,7 +1734,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 8,
+    "suggestion_count": 80,
     "suggestions_with_holes": [
       "l[??]",
       "res[??]"
@@ -1749,7 +1749,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 13
+    "suggestion_count": 37
   },
   {
     "task": "task_48",
@@ -1758,7 +1758,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 11
+    "suggestion_count": 517
   },
   {
     "task": "task_48",
@@ -1768,7 +1768,7 @@
       "function_param",
       "string_type"
     ],
-    "suggestion_count": 13
+    "suggestion_count": 1025
   },
   {
     "task": "task_49",
@@ -1797,7 +1797,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_5",
@@ -1806,7 +1806,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_50",
@@ -1815,7 +1815,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 24
+    "suggestion_count": 4630
   },
   {
     "task": "task_50",
@@ -1824,7 +1824,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 25
+    "suggestion_count": 4631
   },
   {
     "task": "task_50",
@@ -1842,7 +1842,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_50",
@@ -1867,7 +1867,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 21
+    "suggestion_count": 3615
   },
   {
     "task": "task_50",
@@ -1876,7 +1876,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 22
+    "suggestion_count": 4122
   },
   {
     "task": "task_50",
@@ -1912,7 +1912,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 21
+    "suggestion_count": 3615
   },
   {
     "task": "task_50",
@@ -1921,7 +1921,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 27
+    "suggestion_count": 6586
   },
   {
     "task": "task_50",
@@ -1939,7 +1939,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 23
+    "suggestion_count": 4123
   },
   {
     "task": "task_50",
@@ -1948,14 +1948,14 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 22
+    "suggestion_count": 5856
   },
   {
     "task": "task_50",
     "hole": "hole5",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 22
+    "suggestion_count": 4122
   },
   {
     "task": "task_50",
@@ -1964,7 +1964,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 22
+    "suggestion_count": 5856
   },
   {
     "task": "task_50",
@@ -1975,7 +1975,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_50",
@@ -1984,7 +1984,7 @@
     "holeCategories": [
       "immutable_borrow"
     ],
-    "suggestion_count": 34,
+    "suggestion_count": 10600,
     "suggestions_with_holes": [
       "&s[??..??]",
       "alphabet[??]"
@@ -1998,14 +1998,14 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 26
+    "suggestion_count": 6585
   },
   {
     "task": "task_51",
     "hole": "hole1",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 24
+    "suggestion_count": 9445
   },
   {
     "task": "task_51",
@@ -2014,14 +2014,14 @@
     "holeCategories": [
       "method_receiver"
     ],
-    "suggestion_count": 28
+    "suggestion_count": 6710
   },
   {
     "task": "task_51",
     "hole": "hole3",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 28
+    "suggestion_count": 6710
   },
   {
     "task": "task_52",
@@ -2050,7 +2050,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 418
   },
   {
     "task": "task_54",
@@ -2069,7 +2069,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 10
+    "suggestion_count": 378
   },
   {
     "task": "task_54",
@@ -2078,7 +2078,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 18
+    "suggestion_count": 458
   },
   {
     "task": "task_54",
@@ -2160,7 +2160,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 11
+    "suggestion_count": 4359
   },
   {
     "task": "task_57",
@@ -2169,7 +2169,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 16
+    "suggestion_count": 64
   },
   {
     "task": "task_57",
@@ -2180,7 +2180,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 13
+    "suggestion_count": 37
   },
   {
     "task": "task_57",
@@ -2189,7 +2189,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 19
+    "suggestion_count": 91
   },
   {
     "task": "task_57",
@@ -2198,7 +2198,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 19
+    "suggestion_count": 91
   },
   {
     "task": "task_57",
@@ -2208,7 +2208,7 @@
       "function_param",
       "struct"
     ],
-    "suggestion_count": 19
+    "suggestion_count": 91
   },
   {
     "task": "task_58",
@@ -2217,7 +2217,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_58",
@@ -2226,7 +2226,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_58",
@@ -2236,7 +2236,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_59",
@@ -2275,7 +2275,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 10,
+    "suggestion_count": 771,
     "suggestions_with_holes": [
       "result[??]"
     ]
@@ -2287,7 +2287,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 10,
+    "suggestion_count": 771,
     "suggestions_with_holes": [
       "result[??]"
     ]
@@ -2299,7 +2299,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 15
+    "suggestion_count": 75
   },
   {
     "task": "task_6",
@@ -2308,7 +2308,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 10,
+    "suggestion_count": 771,
     "suggestions_with_holes": [
       "result[??]"
     ]
@@ -2320,7 +2320,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 15
+    "suggestion_count": 75
   },
   {
     "task": "task_6",
@@ -2359,7 +2359,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 12
+    "suggestion_count": 4360
   },
   {
     "task": "task_61",
@@ -2397,7 +2397,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 9,
+    "suggestion_count": 81,
     "suggestions_with_holes": [
       "xs[??]",
       "res[??]"
@@ -2410,7 +2410,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_62",
@@ -2420,7 +2420,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_63",
@@ -2461,7 +2461,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 22
+    "suggestion_count": 8718
   },
   {
     "task": "task_64",
@@ -2470,7 +2470,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 22
+    "suggestion_count": 8718
   },
   {
     "task": "task_64",
@@ -2490,7 +2490,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 22
+    "suggestion_count": 8718
   },
   {
     "task": "task_64",
@@ -2517,7 +2517,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 22
+    "suggestion_count": 8718
   },
   {
     "task": "task_64",
@@ -2527,7 +2527,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 23
+    "suggestion_count": 8719
   },
   {
     "task": "task_65",
@@ -2538,7 +2538,7 @@
       "method_receiver",
       "primitive"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 50
   },
   {
     "task": "task_65",
@@ -2566,7 +2566,7 @@
       "function_param",
       "primitive"
     ],
-    "suggestion_count": 8
+    "suggestion_count": 80
   },
   {
     "task": "task_65",
@@ -2609,7 +2609,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 11
+    "suggestion_count": 4359
   },
   {
     "task": "task_67",
@@ -2618,7 +2618,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 13
+    "suggestion_count": 4361
   },
   {
     "task": "task_67",
@@ -2628,7 +2628,7 @@
       "function_param",
       "primitive"
     ],
-    "suggestion_count": 13
+    "suggestion_count": 4361
   },
   {
     "task": "task_67",
@@ -2637,14 +2637,14 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 12
+    "suggestion_count": 4360
   },
   {
     "task": "task_68",
     "hole": "hole1",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 9,
+    "suggestion_count": 81,
     "suggestions_with_holes": [
       "arr[??]",
       "out[??]"
@@ -2657,7 +2657,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_68",
@@ -2666,14 +2666,14 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_69",
     "hole": "hole1",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 12,
+    "suggestion_count": 84,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -2685,7 +2685,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 11,
+    "suggestion_count": 83,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -2695,7 +2695,7 @@
     "hole": "hole3",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 9,
+    "suggestion_count": 81,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -2705,7 +2705,7 @@
     "hole": "hole4",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 11,
+    "suggestion_count": 83,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -2715,7 +2715,7 @@
     "hole": "hole5",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 12,
+    "suggestion_count": 84,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -2725,7 +2725,7 @@
     "hole": "hole6",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 12,
+    "suggestion_count": 84,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -2735,7 +2735,7 @@
     "hole": "hole7",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 12,
+    "suggestion_count": 84,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -2756,7 +2756,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_70",
@@ -2766,7 +2766,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_70",
@@ -2776,7 +2776,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_70",
@@ -2785,7 +2785,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 13,
+    "suggestion_count": 121,
     "suggestions_with_holes": [
       "lst[??]",
       "cp[??]",
@@ -2799,7 +2799,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 12,
+    "suggestion_count": 120,
     "suggestions_with_holes": [
       "lst[??]",
       "cp[??]",
@@ -2823,7 +2823,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 13,
+    "suggestion_count": 121,
     "suggestions_with_holes": [
       "lst[??]",
       "cp[??]",
@@ -2838,7 +2838,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 92
   },
   {
     "task": "task_70",
@@ -2847,7 +2847,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 12,
+    "suggestion_count": 120,
     "suggestions_with_holes": [
       "lst[??]",
       "cp[??]",
@@ -2859,7 +2859,7 @@
     "hole": "hole9",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 12,
+    "suggestion_count": 120,
     "suggestions_with_holes": [
       "lst[??]",
       "cp[??]",
@@ -2981,7 +2981,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "arr[??]"
     ]
@@ -2993,7 +2993,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 7,
+    "suggestion_count": 43,
     "suggestions_with_holes": [
       "arr[??]"
     ]
@@ -3005,7 +3005,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 7,
+    "suggestion_count": 43,
     "suggestions_with_holes": [
       "arr[??]"
     ]
@@ -3149,7 +3149,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 16
+    "suggestion_count": 4400
   },
   {
     "task": "task_78",
@@ -3158,7 +3158,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 15
+    "suggestion_count": 4399
   },
   {
     "task": "task_78",
@@ -3167,7 +3167,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 15
+    "suggestion_count": 4399
   },
   {
     "task": "task_79",
@@ -3203,21 +3203,21 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 12
+    "suggestion_count": 518
   },
   {
     "task": "task_79",
     "hole": "hole5",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 6
+    "suggestion_count": 731
   },
   {
     "task": "task_79",
     "hole": "hole6",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 6
+    "suggestion_count": 731
   },
   {
     "task": "task_8",
@@ -3243,7 +3243,7 @@
     "hole": "hole1",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 14
+    "suggestion_count": 4398
   },
   {
     "task": "task_80",
@@ -3252,7 +3252,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 10
+    "suggestion_count": 194
   },
   {
     "task": "task_80",
@@ -3269,7 +3269,7 @@
     "hole": "hole4",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 14
+    "suggestion_count": 4398
   },
   {
     "task": "task_81",
@@ -3296,7 +3296,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -3318,7 +3318,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -3331,7 +3331,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -3344,7 +3344,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -3372,21 +3372,21 @@
     "hole": "hole18",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 20
+    "suggestion_count": 260
   },
   {
     "task": "task_81",
     "hole": "hole19",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 20
+    "suggestion_count": 260
   },
   {
     "task": "task_81",
     "hole": "hole2",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 20
+    "suggestion_count": 260
   },
   {
     "task": "task_81",
@@ -3397,7 +3397,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -3410,7 +3410,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -3423,7 +3423,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -3435,7 +3435,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -3466,7 +3466,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 17,
+    "suggestion_count": 65,
     "suggestions_with_holes": [
       "res[??]"
     ]
@@ -3496,7 +3496,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 11
+    "suggestion_count": 4359
   },
   {
     "task": "task_82",
@@ -3505,7 +3505,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 12
+    "suggestion_count": 4360
   },
   {
     "task": "task_82",
@@ -3514,7 +3514,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 10
+    "suggestion_count": 4358
   },
   {
     "task": "task_83",
@@ -3542,7 +3542,7 @@
     "hole": "hole1",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -3552,7 +3552,7 @@
     "hole": "hole2",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -3566,7 +3566,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -3578,7 +3578,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_86",
@@ -3588,7 +3588,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_86",
@@ -3597,7 +3597,7 @@
     "holeCategories": [
       "function_call"
     ],
-    "suggestion_count": 18
+    "suggestion_count": 3106
   },
   {
     "task": "task_86",
@@ -3607,7 +3607,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_86",
@@ -3616,7 +3616,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_86",
@@ -3625,7 +3625,7 @@
     "holeCategories": [
       "string_type"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_86",
@@ -3634,7 +3634,7 @@
     "holeCategories": [
       "string_type"
     ],
-    "suggestion_count": 46,
+    "suggestion_count": 12680,
     "suggestions_with_holes": [
       "&s[??..??]"
     ]
@@ -3682,7 +3682,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_88",
@@ -3691,7 +3691,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_88",
@@ -3700,7 +3700,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_88",
@@ -3709,7 +3709,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_88",
@@ -3720,7 +3720,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 65
   },
   {
     "task": "task_89",
@@ -3729,7 +3729,7 @@
     "holeCategories": [
       "string_type"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_89",
@@ -3738,7 +3738,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_89",
@@ -3747,7 +3747,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 10
+    "suggestion_count": 194
   },
   {
     "task": "task_89",
@@ -3756,7 +3756,7 @@
     "holeCategories": [
       "immutable_borrow"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_89",
@@ -3765,7 +3765,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_89",
@@ -3781,7 +3781,7 @@
     "holeCategories": [
       "function_call"
     ],
-    "suggestion_count": 18
+    "suggestion_count": 3106
   },
   {
     "task": "task_89",
@@ -3790,7 +3790,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 17
+    "suggestion_count": 5126
   },
   {
     "task": "task_9",
@@ -3843,7 +3843,7 @@
     "hole": "hole1",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 8,
+    "suggestion_count": 44,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -3855,7 +3855,7 @@
     "holeCategories": [
       "method_receiver"
     ],
-    "suggestion_count": 8,
+    "suggestion_count": 44,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -3874,7 +3874,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 8,
+    "suggestion_count": 44,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -3915,7 +3915,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 8,
+    "suggestion_count": 44,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -3927,7 +3927,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 8,
+    "suggestion_count": 44,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -3939,7 +3939,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 8,
+    "suggestion_count": 44,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -3960,14 +3960,14 @@
     "holeCategories": [
       "method_receiver"
     ],
-    "suggestion_count": 10
+    "suggestion_count": 26
   },
   {
     "task": "task_91",
     "hole": "hole2",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 15
+    "suggestion_count": 4399
   },
   {
     "task": "task_91",
@@ -3983,7 +3983,7 @@
     "hole": "hole4",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 25
+    "suggestion_count": 8757
   },
   {
     "task": "task_92",
@@ -4041,7 +4041,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_93",
@@ -4060,7 +4060,7 @@
       "method_receiver",
       "struct"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 3614
   },
   {
     "task": "task_93",
@@ -4069,7 +4069,7 @@
     "holeCategories": [
       "immutable_borrow"
     ],
-    "suggestion_count": 33,
+    "suggestion_count": 9338,
     "suggestions_with_holes": [
       "&message[??..??]"
     ]
@@ -4088,7 +4088,7 @@
     "holeCategories": [
       "function_call"
     ],
-    "suggestion_count": 18
+    "suggestion_count": 3106
   },
   {
     "task": "task_93",
@@ -4113,7 +4113,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 15
+    "suggestion_count": 276
   },
   {
     "task": "task_93",
@@ -4122,7 +4122,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 11
+    "suggestion_count": 236
   },
   {
     "task": "task_93",
@@ -4131,7 +4131,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 20
+    "suggestion_count": 5165
   },
   {
     "task": "task_93",
@@ -4158,7 +4158,7 @@
     "holeCategories": [
       "method_receiver"
     ],
-    "suggestion_count": 11
+    "suggestion_count": 517
   },
   {
     "task": "task_94",
@@ -4167,7 +4167,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 6,
+    "suggestion_count": 42,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -4213,7 +4213,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 11,
+    "suggestion_count": 772,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -4223,7 +4223,7 @@
     "hole": "hole8",
     "category": "exact_match",
     "holeCategories": [],
-    "suggestion_count": 9,
+    "suggestion_count": 45,
     "suggestions_with_holes": [
       "lst[??]"
     ]
@@ -4271,7 +4271,7 @@
     "holeCategories": [
       "struct"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 38
   },
   {
     "task": "task_96",
@@ -4280,14 +4280,14 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 14
+    "suggestion_count": 38
   },
   {
     "task": "task_96",
     "hole": "hole3",
     "category": "found_suggestions",
     "holeCategories": [],
-    "suggestion_count": 14
+    "suggestion_count": 38
   },
   {
     "task": "task_97",
@@ -4315,7 +4315,7 @@
       "method_receiver",
       "string_type"
     ],
-    "suggestion_count": 22
+    "suggestion_count": 8718
   },
   {
     "task": "task_98",
@@ -4324,7 +4324,7 @@
     "holeCategories": [
       "method_call"
     ],
-    "suggestion_count": 22
+    "suggestion_count": 8718
   },
   {
     "task": "task_98",
@@ -4333,7 +4333,7 @@
     "holeCategories": [
       "primitive"
     ],
-    "suggestion_count": 22
+    "suggestion_count": 8718
   },
   {
     "task": "task_99",

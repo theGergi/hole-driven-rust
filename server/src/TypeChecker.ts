@@ -24,7 +24,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     private stdFunctions: Function[] = [];
     private stdStructs: SharedStruct[] = [];
     private holes: Hole[] = [];
-    
+
+    private static readonly MAX_METHOD_CHAIN_DEPTH = 3;
+
     private blockStack: string[] = ['global']; // Stack to track nested blocks
     private blockCounter: number = 0;          // Counter to generate unique block IDs
 
@@ -1316,18 +1318,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                             holeSuggestions.push({suggestionType: 'field', suggestion: {...field, name: variable.name + "." + field.name, location: variable.location}});
                         }
                     });
-                    struct.methods.forEach((method: Function) => {
-                        // For reference variables, skip methods that require an owned receiver (self by value)
-                        if (variable.type.valType === ValType.REFERENCE && method.params.length > 0) {
-                            if (method.params[0].type.valType !== ValType.REFERENCE) return;
-                        }
-                        if (method.type && this.canBeAssigned(hole, method.type, null, false)) {
-                            // Std structs have a multi-segment path; format just the method name
-                            const isStd = (struct as any).path && (struct as any).path.length > 1;
-                            const methodName = variable.name + "." + method.name + "()";
-                            holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: methodName, location: variable.location}});
-                        }
-                    });
+                    this.collectMethodChainSuggestions(hole, variable.type, variable.name, variable.location, holeSuggestions, TypeChecker.MAX_METHOD_CHAIN_DEPTH);
                     const refType = new Type();
                     Object.assign(refType, variable.type);
                     refType.valType = ValType.REFERENCE;
@@ -1383,10 +1374,39 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         });
 
         hole.suggestions = holeSuggestions;
-        
+
         this.holes.push(hole);
     }
-    
+
+    // Recursively collects method-call suggestions for a hole, chaining off the return type
+    // of each method (e.g. a.b().c()) up to `depth` levels deep.
+    private collectMethodChainSuggestions(hole: Hole, receiverType: Type, receiverName: string, receiverLocation: SourceLocation, holeSuggestions: Suggestion[], depth: number) {
+        if (depth <= 0 || !receiverType) return;
+
+        const isReference = receiverType.valType === ValType.REFERENCE;
+        const structType = isReference ? receiverType.elementType : receiverType;
+        if (!structType || structType.valType !== ValType.STRUCT) return;
+
+        const struct = this.structs.find(s => s.name === structType.structName);
+        if (!struct) return;
+
+        struct.methods.forEach((method: Function) => {
+            // For reference receivers, skip methods that require an owned receiver (self by value)
+            if (isReference && method.params.length > 0) {
+                if (method.params[0].type.valType !== ValType.REFERENCE) return;
+            }
+            if (!method.type) return;
+
+            const methodName = `${receiverName}.${method.name}()`;
+            if (this.canBeAssigned(hole, method.type, null, false)) {
+                holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: methodName, location: receiverLocation}});
+            }
+
+            // Chain further method calls off this method's return type
+            this.collectMethodChainSuggestions(hole, method.type, methodName, receiverLocation, holeSuggestions, depth - 1);
+        });
+    }
+
     public generateStructHole(hole: Hole, variable: Variable) {
         const structName = variable.type.structName;
         console.log("Generating struct hole for struct:", structName)
