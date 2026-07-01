@@ -62,6 +62,9 @@ export function constructTypeString(type: Type): string {
 export interface Suggestion {
 	suggestionType: string;
 	suggestion: any;
+	suggestionNameWithTypes?: string;
+	suggestionNameWithoutTypes?: string;
+	suggestionNameNoParams?: string;
 }
 
 export interface Variable {

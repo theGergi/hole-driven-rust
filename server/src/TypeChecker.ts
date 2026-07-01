@@ -1252,13 +1252,21 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         const variables = this.variables;
         const functions = this.functions;
 
-        console.log("Hole hey")
+        hole.suggestions = [];
+        hole.context = {
+            variables: structuredClone(this.variables),
+            functions: structuredClone(this.functions),
+            fields: [],
+            methods: []
+        };
+
+        // console.log("Hole hey")
         // this.functions.forEach((f) =>
         // {console.log(f.name)})
-        this.variables.forEach((f) =>
-        {console.log(f.name)
-            console.log(f.type)
-        })
+        // this.variables.forEach((f) =>
+        // {console.log(f.name)
+        //     console.log(f.type)
+        // })
         // console.log("Variables:")
         // console.log(variables)
 
@@ -1266,6 +1274,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         // console.log(functions)
         let holeSuggestions = [] as Suggestion[];
         
+        if (hole.type.valType === ValType.UNKNOWN) {
+            this.holes.push(hole);
+            return;
+        }
 
         variables.forEach((variable: Variable) => {
             // console.log("Checking variable:", variable.name, "of type", variable.type)
@@ -1344,18 +1356,34 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         })
 
-
-        if(hole.type.valType === ValType.HOLE) {
-            holeSuggestions = [];
-        }
+        holeSuggestions.forEach(s => {
+            if (s.suggestionType === 'function') {
+                const func = s.suggestion as Function;
+                let paramStringWithTypes = func.params.map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
+                let paramStringWithoutTypes = func.params.map(() => `??`).join(', ')
+                let name = func.name.slice(0, -2)
+                if (func.structName) {
+                    name = `${func.structName}::${name}`
+                }
+                s.suggestionNameWithTypes = `${name}(${paramStringWithTypes})`
+                s.suggestionNameWithoutTypes = `${name}(${paramStringWithoutTypes})`
+                s.suggestionNameNoParams = `${name}()`
+            } else if (s.suggestionType === 'method') {
+                const method = s.suggestion as Function;
+                let paramStringWithTypes = method.params.slice(1).map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
+                let paramStringWithoutTypes = method.params.slice(1).map(() => `??`).join(', ')
+                s.suggestionNameWithTypes = `${method.name}(${paramStringWithTypes})`
+                s.suggestionNameWithoutTypes = `${method.name}(${paramStringWithoutTypes})`
+                s.suggestionNameNoParams = `${method.name}()`
+            } else {
+                s.suggestionNameWithTypes = s.suggestion.name;
+                s.suggestionNameWithoutTypes = s.suggestion.name;
+                s.suggestionNameNoParams = s.suggestion.name;
+            }
+        });
 
         hole.suggestions = holeSuggestions;
-        hole.context = {
-            variables: structuredClone(this.variables),
-            functions: structuredClone(this.functions),
-            fields: [],
-            methods: []
-        };
+        
         this.holes.push(hole);
     }
     

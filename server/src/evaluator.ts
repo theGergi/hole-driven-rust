@@ -10,7 +10,7 @@ import * as path from 'path';
 import { execSync } from 'child_process';
 import { integer } from 'vscode-languageserver';
 
-type EvalCategory = 'failed_with_error' | 'found_type' | 'found_suggestions' | 'exact_match';
+type EvalCategory = 'failed_with_error' | 'found_type' | 'found_suggestions' | 'exact_match' | 'failed';
 
 interface TestCaseMeta {
 	line: number;
@@ -88,16 +88,16 @@ function evaluateHole(
 
 	const typeKnown = hole.type && hole.type.valType !== 'HOLE' && hole.type.valType !== 'UNKNOWN';
 	const hasSuggestions = hole.suggestions && hole.suggestions.length > 0;
-	const exactMatch = hasSuggestions && hole.suggestions.some(s => s.suggestion?.name === meta.original);
+	const exactMatch = hasSuggestions && hole.suggestions.some(s => s.suggestionNameNoParams === meta.original);
 
 	const suggestionNames = hasSuggestions
-		? hole.suggestions.map((s: any) => s.suggestion?.name as string).filter(Boolean)
+		? hole.suggestions.map((s: any) => s.suggestionNameNoParams as string).filter(Boolean)
 		: [];
 
 	if (exactMatch) return { category: 'exact_match', suggestions: suggestionNames };
 	if (hasSuggestions) return { category: 'found_suggestions', suggestions: suggestionNames };
 	if (typeKnown) return { category: 'found_type' };
-	return { category: 'failed_with_error', error: 'No type or suggestions found' };
+	return { category: 'failed', error: 'No type or suggestions found' };
 }
 
 function collectTestCases(dir: string): Array<{ task: string; hole: string; rsFile: string; jsonFile: string }> {
@@ -135,6 +135,7 @@ const counts: Record<EvalCategory, number> = {
 	found_type: 0,
 	found_suggestions: 0,
 	exact_match: 0,
+	failed: 0,
 };
 let totalSuggestionsTested = 0;
 let totalSuggestionsCompile = 0;
@@ -211,6 +212,7 @@ console.log(`exact_match:             ${counts.exact_match}`);
 console.log(`found_suggestions:       ${counts.found_suggestions}`);
 console.log(`found_type:              ${counts.found_type}`);
 console.log(`failed_with_error:       ${counts.failed_with_error}`);
+console.log(`failed:       ${counts.failed}`);
 console.log(`\nSuggestions with holes:  ${totalSuggestionsWithHoles}`);
 if (compileSuggestions) {
 	console.log(`Suggestions tested:      ${totalSuggestionsTested}`);
@@ -229,20 +231,20 @@ for (const r of results) {
 	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
 	for (const cat of cats) {
 		if (!categoryTable[cat]) {
-			categoryTable[cat] = { failed_with_error: 0, found_type: 0, found_suggestions: 0, exact_match: 0 };
+			categoryTable[cat] = { failed_with_error: 0, failed: 0, found_type: 0, found_suggestions: 0, exact_match: 0 };
 		}
 		categoryTable[cat][r.category]++;
 	}
 }
 
-const evalCats: EvalCategory[] = ['exact_match', 'found_suggestions', 'found_type', 'failed_with_error'];
-const colHeaders = ['category', 'exact', 'suggestions', 'type', 'failed', 'total'];
+const evalCats: EvalCategory[] = ['exact_match', 'found_suggestions', 'found_type', 'failed', 'failed_with_error'];
+const colHeaders = ['category', 'exact', 'suggestions', 'type', 'failed', 'failed_with_error', 'total'];
 const rows: string[][] = Object.entries(categoryTable)
 .sort(([a], [b]) => a.localeCompare(b))
 .map(([cat, c]) => {
 		const total = evalCats.reduce((s, k) => s + c[k], 0);
 		const stringify = (x: integer) => `${x} (${((x / total) * 100).toFixed(2)}%)`
-		return [cat, stringify(c.exact_match), stringify(c.found_suggestions), stringify(c.found_type), stringify(c.failed_with_error), String(total)];
+		return [cat, stringify(c.exact_match), stringify(c.found_suggestions), stringify(c.found_type), stringify(c.failed), stringify(c.failed_with_error), String(total)];
 	});
 
 const colWidths = colHeaders.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length)));

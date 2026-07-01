@@ -1,0 +1,7 @@
+[
+	{
+		"line": 20,
+		"type": { "valType": "struct", "structName": "String" },
+		"suggestionNames": ["str.to_lowercase()"]
+	}
+]

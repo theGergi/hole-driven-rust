@@ -145,36 +145,39 @@ connection.onHover((params: HoverParams): Hover | null => {
 
             const validSuggestions = suggestions.map((suggestion: any) => {
                 console.log("hey")
-                console.log(suggestion)
-                let replacementWithTypes = ''
-                let replacementWithoutTypes = ''
-                if (suggestion.suggestionType === 'variable') {
-                    replacementWithTypes = suggestion.suggestion.name
-                    replacementWithoutTypes = suggestion.suggestion.name
-                } else if (suggestion.suggestionType === 'function'){
-                    let paramStringWithTypes = suggestion.suggestion.params.map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
-                    let paramStringWithoutTypes = suggestion.suggestion.params.map(() => `??`).join(', ')
-                    let name = suggestion.suggestion.name.slice(0, -2)
-                    if (suggestion.suggestion.structName) {
-                        name = `${suggestion.suggestion.structName}::${name}`
-                    }
-                    replacementWithTypes = `${name}(${paramStringWithTypes})`
-                    replacementWithoutTypes = `${name}(${paramStringWithoutTypes})`
-                } else if (suggestion.suggestionType === 'method') {
-                    let paramStringWithTypes = suggestion.suggestion.params.slice(1).map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
-                    let paramStringWithoutTypes = suggestion.suggestion.params.slice(1).map(() => `??`).join(', ')
-                    replacementWithTypes = `${suggestion.suggestion.name.slice(0, -2)}(${paramStringWithTypes})`
-                    replacementWithoutTypes = `${suggestion.suggestion.name.slice(0, -2)}(${paramStringWithoutTypes})`
-                } else if (suggestion.suggestionType === 'field') {
-                    replacementWithTypes = suggestion.suggestion.name
-                    replacementWithoutTypes = suggestion.suggestion.name
-                } else if (suggestion.suggestionType === 'slice') {
-                    replacementWithTypes = suggestion.suggestion.name
-                    replacementWithoutTypes = suggestion.suggestion.name
-                } else if (suggestion.suggestionType === 'index') {
-                    replacementWithTypes = suggestion.suggestion.name
-                    replacementWithoutTypes = suggestion.suggestion.name
-                }
+                // console.log(suggestion)
+                // let replacementWithTypes = ''
+                // let replacementWithoutTypes = ''
+                // if (suggestion.suggestionType === 'variable') {
+                //     replacementWithTypes = suggestion.suggestion.name
+                //     replacementWithoutTypes = suggestion.suggestion.name
+                // } else if (suggestion.suggestionType === 'function'){
+                //     let paramStringWithTypes = suggestion.suggestion.params.map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
+                //     let paramStringWithoutTypes = suggestion.suggestion.params.map(() => `??`).join(', ')
+                //     let name = suggestion.suggestion.name.slice(0, -2)
+                //     if (suggestion.suggestion.structName) {
+                //         name = `${suggestion.suggestion.structName}::${name}`
+                //     }
+                //     replacementWithTypes = `${name}(${paramStringWithTypes})`
+                //     replacementWithoutTypes = `${name}(${paramStringWithoutTypes})`
+                // } else if (suggestion.suggestionType === 'method') {
+                //     let paramStringWithTypes = suggestion.suggestion.params.slice(1).map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
+                //     let paramStringWithoutTypes = suggestion.suggestion.params.slice(1).map(() => `??`).join(', ')
+                //     replacementWithTypes = `${suggestion.suggestion.name.slice(0, -2)}(${paramStringWithTypes})`
+                //     replacementWithoutTypes = `${suggestion.suggestion.name.slice(0, -2)}(${paramStringWithoutTypes})`
+                // } else if (suggestion.suggestionType === 'field') {
+                //     replacementWithTypes = suggestion.suggestion.name
+                //     replacementWithoutTypes = suggestion.suggestion.name
+                // } else if (suggestion.suggestionType === 'slice') {
+                //     replacementWithTypes = suggestion.suggestion.name
+                //     replacementWithoutTypes = suggestion.suggestion.name
+                // } else if (suggestion.suggestionType === 'index') {
+                //     replacementWithTypes = suggestion.suggestion.name
+                //     replacementWithoutTypes = suggestion.suggestion.name
+                // }
+
+                const replacementWithTypes = suggestion.suggestionNameWithTypes;
+                const replacementWithoutTypes = suggestion.suggestionNameWithoutTypes;
 
                 const args = [
                     textDocument.uri,
