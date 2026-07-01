@@ -2,6 +2,6 @@
 	{
 		"line": 14,
 		"type": { "valType": "struct", "structName": "String" },
-		"suggestionNames": ["b", "from()"]
+		"suggestionNames": ["b", "String::from()"]
 	}
 ]

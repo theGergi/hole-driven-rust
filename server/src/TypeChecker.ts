@@ -25,7 +25,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     private stdStructs: SharedStruct[] = [];
     private holes: Hole[] = [];
 
-    private static readonly MAX_METHOD_CHAIN_DEPTH = 3;
+    private static readonly MAX_METHOD_CHAIN_DEPTH = 1;
 
     private blockStack: string[] = ['global']; // Stack to track nested blocks
     private blockCounter: number = 0;          // Counter to generate unique block IDs
@@ -59,8 +59,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             this.structs.push({
                 name: struct.name,
                 location: struct.location,
-                fields: struct.fields,
-                methods: struct.methods,
+                fields: [...struct.fields],
+                methods: [...struct.methods],
                 path: struct.path ?? [],
                 iterable: struct.iterable,
                 index: struct.index,
@@ -134,8 +134,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             this.structs.push({
                 name: found.name,
                 location: found.location,
-                fields: found.fields,
-                methods: found.methods,
+                fields: [...found.fields],
+                methods: [...found.methods],
                 path: found.path ?? [],
                 iterable: found.iterable,
                 index: found.index,
@@ -1343,7 +1343,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         functions.forEach((func: Function) => {
             if (func.type && this.canBeAssigned(hole, func.type, null, false)) {
-                holeSuggestions.push({suggestionType: 'function', suggestion: {...func, name: func.name + "()", location: func.location}});
+                holeSuggestions.push({suggestionType: 'function', suggestion: {...func, name: func.name, location: func.location}});
             }
         })
 
@@ -1352,7 +1352,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 const func = s.suggestion as Function;
                 let paramStringWithTypes = func.params.map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
                 let paramStringWithoutTypes = func.params.map(() => `??`).join(', ')
-                let name = func.name.slice(0, -2)
+                let name = func.name
                 if (func.structName) {
                     name = `${func.structName}::${name}`
                 }
@@ -1379,16 +1379,23 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     }
 
     // Recursively collects method-call suggestions for a hole, chaining off the return type
-    // of each method (e.g. a.b().c()) up to `depth` levels deep.
-    private collectMethodChainSuggestions(hole: Hole, receiverType: Type, receiverName: string, receiverLocation: SourceLocation, holeSuggestions: Suggestion[], depth: number) {
+    // of each method (e.g. a.b().c()) up to `depth` levels deep. `visitedStructNames` prevents
+    // re-entering a struct type already seen in this chain (e.g. Vec::recycle() -> Vec again) —
+    // without it, structs with many self-returning methods (real-world Vec has ~200) blow up
+    // combinatorially across depth levels into hundreds of near-duplicate suggestions.
+    private collectMethodChainSuggestions(hole: Hole, receiverType: Type, receiverName: string, receiverLocation: SourceLocation, holeSuggestions: Suggestion[], depth: number, visitedStructNames: Set<string> = new Set()) {
         if (depth <= 0 || !receiverType) return;
 
         const isReference = receiverType.valType === ValType.REFERENCE;
         const structType = isReference ? receiverType.elementType : receiverType;
         if (!structType || structType.valType !== ValType.STRUCT) return;
+        if (!structType.structName || visitedStructNames.has(structType.structName)) return;
 
         const struct = this.structs.find(s => s.name === structType.structName);
         if (!struct) return;
+
+        const nextVisited = new Set(visitedStructNames);
+        nextVisited.add(structType.structName);
 
         struct.methods.forEach((method: Function) => {
             // For reference receivers, skip methods that require an owned receiver (self by value)
@@ -1397,13 +1404,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
             if (!method.type) return;
 
-            const methodName = `${receiverName}.${method.name}()`;
+            const methodName = `${receiverName}.${method.name}`;
             if (this.canBeAssigned(hole, method.type, null, false)) {
                 holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: methodName, location: receiverLocation}});
             }
 
             // Chain further method calls off this method's return type
-            this.collectMethodChainSuggestions(hole, method.type, methodName, receiverLocation, holeSuggestions, depth - 1);
+            this.collectMethodChainSuggestions(hole, method.type, methodName, receiverLocation, holeSuggestions, depth - 1, nextVisited);
         });
     }
 
@@ -1416,7 +1423,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         struct.fields.forEach((field: Param) => {
             if (field.type && this.canBeAssigned(hole, field.type)) {
-                holeSuggestions.push({suggestionType: 'field', suggestion: field});
+                holeSuggestions.push({suggestionType: 'field', suggestion: field, suggestionNameWithTypes: field.name, suggestionNameWithoutTypes: field.name, suggestionNameNoParams: field.name});
             }
         });
         
@@ -1428,7 +1435,12 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             methodRefType.elementType = variable.type;
             methodRefType.mutableReference = variable.type.mutable;
             if (method.type && this.canBeAssigned(hole, method.type, null, false) && (this.canBeAssigned(method.params[0], variable.type, variable) || this.canBeAssigned(method.params[0], methodRefType, variable))) {
-                holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: method.name + "()"}});
+                let paramStringWithTypes = method.params.slice(1).map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
+                let paramStringWithoutTypes = method.params.slice(1).map(() => `??`).join(', ')
+                const suggestionNameWithTypes = `${method.name}(${paramStringWithTypes})`
+                const suggestionNameWithoutTypes = `${method.name}(${paramStringWithoutTypes})`
+                const suggestionNameNoParams = `${method.name}()`
+                holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: method.name}, suggestionNameWithTypes, suggestionNameWithoutTypes, suggestionNameNoParams});
             }
         });
         

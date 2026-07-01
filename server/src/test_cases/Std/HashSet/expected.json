@@ -2,7 +2,7 @@
 	{
 		"line": 4,
 		"type": { "valType": "struct", "structName": "HashSet" },
-		"suggestionNames": ["new()", "new_in()", "s", "with_capacity()", "with_capacity_and_hasher()", "with_capacity_and_hasher_in()", "with_capacity_in()", "with_hasher()", "with_hasher_in()"]
+		"suggestionNames": ["HashSet::new()", "HashSet::new_in()", "s", "HashSet::with_capacity()", "HashSet::with_capacity_and_hasher()", "HashSet::with_capacity_and_hasher_in()", "HashSet::with_capacity_in()", "HashSet::with_hasher()", "HashSet::with_hasher_in()"]
 	},{
 		"line": 5,
 		"type": { "valType": "i32" },

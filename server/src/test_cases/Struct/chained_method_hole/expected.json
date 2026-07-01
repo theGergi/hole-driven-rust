@@ -1,7 +1,0 @@
-[
-	{
-		"line": 21,
-		"type": { "valType": "i32" },
-		"suggestionNames": ["z.get_inner().get_value()"]
-	}
-]

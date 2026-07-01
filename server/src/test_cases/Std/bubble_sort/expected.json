@@ -2,6 +2,6 @@
 	{
 		"line": 8,
 		"type": { "valType": "struct" },
-		"suggestionNames": ["new()"]
+		"suggestionNames": ["Vec::new()"]
 	}
 ]

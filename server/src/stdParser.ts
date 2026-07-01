@@ -13,6 +13,7 @@ import {
 
 const stdJsonPath   = path.resolve(__dirname, '..', 'src', 'assets', 'std.json');
 const allocJsonPath = path.resolve(__dirname, '..', 'src', 'assets', 'alloc.json');
+const coreJsonPath  = path.resolve(__dirname, '..', 'src', 'assets', 'core.json');
 
 export interface StdParseResult {
 	functions: SharedFunction[];
@@ -353,6 +354,17 @@ function parseImplEntry(entry: any, index: Record<string, any>, structs: SharedS
 		return;
 	}
 
+	if (implEntry.for?.slice && typeof implEntry.for.slice.generic === 'string') {
+		const sliceStructs = structs.filter(s => s.name === 'slice');
+		sliceStructs.forEach(s => {
+			implEntry.items.forEach((itemId: any) => {
+				const itemEntry = index[String(itemId)];
+				parseFunctionEntry(itemEntry, s, functions);
+			});
+		});
+		return;
+	}
+
 	if (!implEntry.for?.resolved_path?.path) {
 		return;
 	}
@@ -384,6 +396,22 @@ export function parseStdJson(stdJson: any, externalPreludeNames?: Set<string>): 
 		const parsedStruct = parseStructEntry(entry, index, id, paths, preludeNames);
 		if (parsedStruct) {
 			structs.push(parsedStruct);
+			continue;
+		}
+
+		const primitive = (entry as any)?.inner?.primitive;
+		if (primitive && primitive.name === 'slice') {
+			structs.push({
+				name: 'slice',
+				location: ZERO_LOCATION,
+				fields: [],
+				methods: [],
+				path: ['slice'],
+				iterable: true,
+				index: true,
+				impls: Array.isArray(primitive.impls) ? primitive.impls : [],
+				prelude: undefined,
+			});
 		}
 	}
 
@@ -422,20 +450,71 @@ export function parseStdJson(stdJson: any, externalPreludeNames?: Set<string>): 
 	};
 }
 
+function mergeStructsByName(structLists: SharedStruct[][]): SharedStruct[] {
+	const byName = new Map<string, SharedStruct>();
+
+	for (const list of structLists) {
+		for (const s of list) {
+			const existing = byName.get(s.name);
+			if (!existing) {
+				byName.set(s.name, { ...s, methods: [...s.methods] });
+				continue;
+			}
+
+			const existingMethodNames = new Set(existing.methods.map(m => m.name));
+			for (const method of s.methods) {
+				if (!existingMethodNames.has(method.name)) {
+					existing.methods.push(method);
+					existingMethodNames.add(method.name);
+				}
+			}
+			if (existing.fields.length === 0 && s.fields.length > 0) {
+				existing.fields = s.fields;
+			}
+			existing.iterable = existing.iterable ?? s.iterable;
+			existing.index = existing.index ?? s.index;
+			existing.prelude = existing.prelude ?? s.prelude;
+		}
+	}
+
+	return [...byName.values()];
+}
+
+let cachedStdParseResult: StdParseResult | null = null;
+
 export function parseStdJsonFile(): StdParseResult {
+	if (cachedStdParseResult) {
+		return cachedStdParseResult;
+	}
+
 	const stdRaw   = JSON.parse(fs.readFileSync(stdJsonPath,   'utf8'));
 	const allocRaw = JSON.parse(fs.readFileSync(allocJsonPath, 'utf8'));
+	const coreRaw  = JSON.parse(fs.readFileSync(coreJsonPath,  'utf8'));
 
-	// Prelude names are defined in std.json; share them with alloc so Vec/String/Box get marked
+	// Prelude names are defined in std.json; share them with alloc/core so Vec/String/Box get marked
 	const preludeNames = buildPreludeNames(stdRaw?.index ?? {}, stdRaw?.paths ?? {});
 
 	const std   = parseStdJson(stdRaw,   preludeNames);
 	const alloc = parseStdJson(allocRaw, preludeNames);
+	const core  = parseStdJson(coreRaw,  preludeNames);
 
-	return {
-		functions: [...std.functions, ...alloc.functions],
-		structs:   [...std.structs,   ...alloc.structs],
-	};
+	const structs = mergeStructsByName([std.structs, alloc.structs, core.structs]);
+	const functions = [...std.functions, ...alloc.functions, ...core.functions];
+
+	const sliceStruct = structs.find(s => s.name === 'slice');
+	const vecStruct = structs.find(s => s.name === 'Vec');
+	if (sliceStruct && vecStruct) {
+		const vecMethodNames = new Set(vecStruct.methods.map(m => m.name));
+		for (const method of sliceStruct.methods) {
+			if (!vecMethodNames.has(method.name)) {
+				vecStruct.methods.push({ ...method, structName: 'Vec' });
+				vecMethodNames.add(method.name);
+			}
+		}
+	}
+
+	cachedStdParseResult = { functions, structs };
+	return cachedStdParseResult;
 }
 
 

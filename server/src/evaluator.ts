@@ -126,7 +126,7 @@ function collectTestCases(dir: string): Array<{ task: string; hole: string; rsFi
 
 const compileSuggestions = process.argv.includes('--compile-suggestions');
 
-const generatedDir = path.resolve(process.cwd(), 'server', 'src', 'generated_test_cases');
+const generatedDir = path.resolve(process.cwd(), 'server', 'src', 'datasets', 'strategy1');
 const cases = collectTestCases(generatedDir);
 
 const results: EvalResult[] = [];
@@ -308,17 +308,17 @@ const suggestionTableLines = [
 for (const line of suggestionTableLines) console.log(line);
 
 // Write results to evaluations folder
-const evaluationsDir = path.resolve(process.cwd(), 'server', 'evaluations');
-fs.mkdirSync(evaluationsDir, { recursive: true });
+// const evaluationsDir = path.resolve(process.cwd(), 'server', 'evaluations');
+// fs.mkdirSync(evaluationsDir, { recursive: true });
 
-const jsonPath = path.join(evaluationsDir, 'eval_results.json');
+const jsonPath = path.join(generatedDir, 'eval_results.json');
 fs.writeFileSync(jsonPath, JSON.stringify(results, null, 2));
 console.log(`\nResults written to ${jsonPath}`);
 
-const tablePath = path.join(evaluationsDir, 'eval_table.txt');
+const tablePath = path.join(generatedDir, 'eval_table.txt');
 fs.writeFileSync(tablePath, tableLines.join('\n') + '\n');
 console.log(`Table written to ${tablePath}`);
 
-const suggestionTablePath = path.join(evaluationsDir, 'eval_suggestion_table.txt');
+const suggestionTablePath = path.join(generatedDir, 'eval_suggestion_table.txt');
 fs.writeFileSync(suggestionTablePath, suggestionTableLines.join('\n') + '\n');
 console.log(`Suggestion table written to ${suggestionTablePath}`);

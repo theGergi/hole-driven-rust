@@ -2,6 +2,6 @@
 	{
 		"line": 16,
 		"type": { "valType": "struct" },
-		"suggestionNames": ["new()"]
+		"suggestionNames": ["VecCustom::new()"]
 	}
 ]
