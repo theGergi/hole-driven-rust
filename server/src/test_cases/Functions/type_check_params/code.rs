@@ -1,16 +1,16 @@
 
-pub fn immutable(a: &str) -> i32 {}
+pub fn immutable(a: &String) -> i32 {}
 
-pub fn mutable(a: &mut str) -> i32 {}
+pub fn mutable(a: &mut String) -> i32 {}
 
-pub fn consume_immutable(a: str) -> i32 {}
+pub fn consume_immutable(a: String) -> i32 {}
 
-pub fn consume_mutable(mut a: str) -> i32 {}
+pub fn consume_mutable(mut a: String) -> i32 {}
 
 
 pub fn main() {
     {
-        let mut z = ""; // z is mutable and has no borrows so can be used to call any method
+        let mut z = String::from(""); // z is mutable and has no borrows so can be used to call any method
         immutable(??);
         mutable(??);
         consume_immutable(??);
@@ -18,7 +18,7 @@ pub fn main() {
     }
 
     {
-        let z = ""; // z is immutable and has no borrows so can only call methods that take &self or consume self
+        let z = String::from(""); // z is immutable and has no borrows so can only call methods that take &self or consume self
         immutable(??);
         mutable(??);
         consume_immutable(??);
@@ -26,7 +26,7 @@ pub fn main() {
     }
 
     {
-        let mut z = ""; // z is mutably borrowed so cannot call any methods
+        let mut z = String::from(""); // z is mutably borrowed so cannot call any methods
         let a = &mut z;
         immutable(??);
         mutable(??);
@@ -36,7 +36,7 @@ pub fn main() {
     }
     
     {
-        let z = ""; // z is immutably borrowed so can only call methods that take &self or consume self
+        let z = String::from(""); // z is immutably borrowed so can only call methods that take &self or consume self
         let a = &z;
         immutable(??);
         mutable(??);

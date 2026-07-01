@@ -71,6 +71,7 @@ export function printHoleSuggestionContext(hole: Hole): void {
 		const borrowName = type.borrows === Borrow.BFree ? 'free' : type.borrows === Borrow.BMut ? 'mut' : 'immut';
 		return `{
 valType: ${type.valType},
+structName: ${type.structName ?? 'none'},
 elementType: ${type.elementType ? constructTypeString(type.elementType) : 'none'},
 primitive: ${type.primitive},
 mutable: ${type.mutable},
@@ -96,6 +97,14 @@ owner: ${ownerName}
 			const params = func.params.map(p => `${p.name}: ${formatType(p.type)}`).join(', ');
 			return `function: ${func.name}(${params}) -> ${formatType(func.type)} (${formatLocation(func.location)})`;
 		}
+		if (suggestion.suggestionType === 'method') {
+			const method = suggestion.suggestion as Function;
+			const params = method.params.map(p => `${p.name}: ${formatType(p.type)}`).join(', ');
+			return `method: ${method.name}(${params}) -> ${formatType(method.type)} (${formatLocation(method.location)})`;
+		}
+		if (suggestion.suggestionType === 'slice') {
+			return `slice: ${suggestion.suggestion.name}`;
+		}
 		return `${suggestion.suggestionType}: ${JSON.stringify(suggestion.suggestion)}`;
 	});
 
@@ -109,7 +118,7 @@ owner: ${ownerName}
 	}) ?? [];
 
 	printSection('Suggestions', suggestionLines);
-	printSection('Context variables', variableLines);
-	printSection('Context functions', functionLines);
+	// printSection('Context variables', variableLines);
+	// printSection('Context functions', functionLines);
 	console.log('--- End hole suggestion context ---\n\n');
 }

@@ -1,13 +1,12 @@
 [
 	{
 		"line": 6,
-		"type": { "valType": "Vec", "elementType": "str" },
+		"type": { "valType": "struct", "structName": "Vec", "elementType": { "valType": "reference", "elementType": { "valType": "struct", "structName": "str" } } },
 		"suggestionNames": ["z"]
 	},
 	{
 		"line": 11,
-		"type": { "valType": "Vec", "elementType": "str" },
+		"type": { "valType": "struct", "structName": "Vec", "elementType": { "valType": "reference", "elementType": { "valType": "struct", "structName": "str" } } },
 		"suggestionNames": ["z"]
 	}
-	
 ]

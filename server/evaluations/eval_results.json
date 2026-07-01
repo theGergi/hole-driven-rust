@@ -294,6 +294,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -414,6 +418,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -455,6 +463,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -797,6 +809,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -917,6 +933,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -958,6 +978,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -1119,11 +1143,148 @@
   {
     "task": "task_10",
     "hole": "hole1",
-    "category": "failed_with_error",
+    "category": "found_suggestions",
     "holeCategories": [
       "method_call"
     ],
-    "error": "Cannot read properties of null (reading 'location')"
+    "suggestion_compile_results": [
+      {
+        "name": "str.replace()",
+        "compiles": false
+      },
+      {
+        "name": "str.replacen()",
+        "compiles": false
+      },
+      {
+        "name": "str.to_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "str.word_to_titlecase()",
+        "compiles": false
+      },
+      {
+        "name": "str.to_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "str.repeat()",
+        "compiles": false
+      },
+      {
+        "name": "str.to_ascii_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "str.to_ascii_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.replace()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.replacen()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.to_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.word_to_titlecase()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.to_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.repeat()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.to_ascii_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.to_ascii_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "nstr.replace()",
+        "compiles": false
+      },
+      {
+        "name": "nstr.replacen()",
+        "compiles": false
+      },
+      {
+        "name": "nstr.to_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "nstr.word_to_titlecase()",
+        "compiles": false
+      },
+      {
+        "name": "nstr.to_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "nstr.repeat()",
+        "compiles": false
+      },
+      {
+        "name": "nstr.to_ascii_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "nstr.to_ascii_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "from()",
+        "compiles": false
+      },
+      {
+        "name": "new()",
+        "compiles": false
+      },
+      {
+        "name": "with_capacity()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf8_lossy_owned()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf16_lossy()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf16le_lossy()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf16be_lossy()",
+        "compiles": false
+      },
+      {
+        "name": "from_raw_parts()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf8_unchecked()",
+        "compiles": false
+      },
+      {
+        "name": "make_palindrome()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_10",
@@ -1173,6 +1334,10 @@
       },
       {
         "name": "n2str.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -1254,6 +1419,10 @@
         "compiles": true
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -1325,6 +1494,10 @@
       },
       {
         "name": "str.to_ascii_lowercase()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -1416,6 +1589,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -1456,22 +1633,272 @@
   {
     "task": "task_10",
     "hole": "hole5",
-    "category": "failed_with_error",
+    "category": "found_suggestions",
     "holeCategories": [
       "function_call"
     ],
-    "error": "Cannot read properties of null (reading 'location')"
+    "suggestion_compile_results": [
+      {
+        "name": "str.replace()",
+        "compiles": false
+      },
+      {
+        "name": "str.replacen()",
+        "compiles": false
+      },
+      {
+        "name": "str.to_lowercase()",
+        "compiles": false
+      },
+      {
+        "name": "str.word_to_titlecase()",
+        "compiles": false
+      },
+      {
+        "name": "str.to_uppercase()",
+        "compiles": false
+      },
+      {
+        "name": "str.repeat()",
+        "compiles": false
+      },
+      {
+        "name": "str.to_ascii_uppercase()",
+        "compiles": false
+      },
+      {
+        "name": "str.to_ascii_lowercase()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.replace()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.replacen()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.to_lowercase()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.word_to_titlecase()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.to_uppercase()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.repeat()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.to_ascii_uppercase()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.to_ascii_lowercase()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
+        "compiles": false
+      },
+      {
+        "name": "new()",
+        "compiles": false
+      },
+      {
+        "name": "with_capacity()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf8_lossy_owned()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf16_lossy()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf16le_lossy()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf16be_lossy()",
+        "compiles": false
+      },
+      {
+        "name": "from_raw_parts()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf8_unchecked()",
+        "compiles": false
+      },
+      {
+        "name": "make_palindrome()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_10",
     "hole": "hole6",
-    "category": "failed_with_error",
+    "category": "found_suggestions",
     "holeCategories": [
       "function_param",
       "method_receiver",
       "string_type"
     ],
-    "error": "Cannot read properties of null (reading 'location')"
+    "suggestion_compile_results": [
+      {
+        "name": "str.replace()",
+        "compiles": false
+      },
+      {
+        "name": "str.replacen()",
+        "compiles": false
+      },
+      {
+        "name": "str.to_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "str.word_to_titlecase()",
+        "compiles": false
+      },
+      {
+        "name": "str.to_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "str.repeat()",
+        "compiles": false
+      },
+      {
+        "name": "str.to_ascii_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "str.to_ascii_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.replace()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.replacen()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.to_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.word_to_titlecase()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.to_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.repeat()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.to_ascii_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.to_ascii_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "nstr.replace()",
+        "compiles": false
+      },
+      {
+        "name": "nstr.replacen()",
+        "compiles": false
+      },
+      {
+        "name": "nstr.to_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "nstr.word_to_titlecase()",
+        "compiles": false
+      },
+      {
+        "name": "nstr.to_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "nstr.repeat()",
+        "compiles": false
+      },
+      {
+        "name": "nstr.to_ascii_uppercase()",
+        "compiles": true
+      },
+      {
+        "name": "nstr.to_ascii_lowercase()",
+        "compiles": true
+      },
+      {
+        "name": "n2str",
+        "compiles": true
+      },
+      {
+        "name": "n2str.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
+        "compiles": false
+      },
+      {
+        "name": "new()",
+        "compiles": false
+      },
+      {
+        "name": "with_capacity()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf8_lossy_owned()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf16_lossy()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf16le_lossy()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf16be_lossy()",
+        "compiles": false
+      },
+      {
+        "name": "from_raw_parts()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf8_unchecked()",
+        "compiles": false
+      },
+      {
+        "name": "make_palindrome()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_10",
@@ -1511,6 +1938,10 @@
       },
       {
         "name": "str.to_ascii_lowercase()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -1554,11 +1985,180 @@
   {
     "task": "task_10",
     "hole": "hole8",
-    "category": "failed_with_error",
+    "category": "found_suggestions",
     "holeCategories": [
       "immutable_borrow"
     ],
-    "error": "Cannot read properties of null (reading 'location')"
+    "suggestion_compile_results": [
+      {
+        "name": "str",
+        "compiles": true
+      },
+      {
+        "name": "str.slice_unchecked()",
+        "compiles": false
+      },
+      {
+        "name": "str.slice_mut_unchecked()",
+        "compiles": false
+      },
+      {
+        "name": "str.trim()",
+        "compiles": true
+      },
+      {
+        "name": "str.trim_start()",
+        "compiles": true
+      },
+      {
+        "name": "str.trim_end()",
+        "compiles": true
+      },
+      {
+        "name": "str.trim_left()",
+        "compiles": true
+      },
+      {
+        "name": "str.trim_right()",
+        "compiles": true
+      },
+      {
+        "name": "str.trim_matches()",
+        "compiles": false
+      },
+      {
+        "name": "str.trim_start_matches()",
+        "compiles": false
+      },
+      {
+        "name": "str.trim_prefix()",
+        "compiles": false
+      },
+      {
+        "name": "str.trim_suffix()",
+        "compiles": false
+      },
+      {
+        "name": "str.trim_end_matches()",
+        "compiles": false
+      },
+      {
+        "name": "str.trim_left_matches()",
+        "compiles": false
+      },
+      {
+        "name": "str.trim_right_matches()",
+        "compiles": false
+      },
+      {
+        "name": "str.trim_ascii_start()",
+        "compiles": true
+      },
+      {
+        "name": "str.trim_ascii_end()",
+        "compiles": true
+      },
+      {
+        "name": "str.trim_ascii()",
+        "compiles": true
+      },
+      {
+        "name": "str.as_str()",
+        "compiles": false
+      },
+      {
+        "name": "&str[??..??]",
+        "compiles": false
+      },
+      {
+        "name": "rstr",
+        "compiles": true
+      },
+      {
+        "name": "rstr.slice_unchecked()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.slice_mut_unchecked()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.trim()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.trim_start()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.trim_end()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.trim_left()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.trim_right()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.trim_matches()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.trim_start_matches()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.trim_prefix()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.trim_suffix()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.trim_end_matches()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.trim_left_matches()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.trim_right_matches()",
+        "compiles": false
+      },
+      {
+        "name": "rstr.trim_ascii_start()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.trim_ascii_end()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.trim_ascii()",
+        "compiles": true
+      },
+      {
+        "name": "rstr.as_str()",
+        "compiles": false
+      },
+      {
+        "name": "&rstr[??..??]",
+        "compiles": false
+      },
+      {
+        "name": "from_utf8_unchecked()",
+        "compiles": false
+      },
+      {
+        "name": "from_utf8_unchecked_mut()",
+        "compiles": false
+      }
+    ]
   },
   {
     "task": "task_10",
@@ -2084,6 +2684,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -2204,6 +2808,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -2245,6 +2853,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -2572,6 +3184,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -2692,6 +3308,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -2733,6 +3353,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -2912,6 +3536,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -2986,6 +3614,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -3045,6 +3677,10 @@
       },
       {
         "name": "res.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -3443,6 +4079,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -3563,6 +4203,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -3604,6 +4248,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -3903,6 +4551,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -4023,6 +4675,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -4064,6 +4720,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -4762,6 +5422,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -4882,6 +5546,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -4923,6 +5591,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -5001,6 +5673,10 @@
       },
       {
         "name": "string.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -5895,6 +6571,10 @@
       "method_call"
     ],
     "suggestion_compile_results": [
+      {
+        "name": "from()",
+        "compiles": false
+      },
       {
         "name": "new()",
         "compiles": false
@@ -6961,6 +7641,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -7081,6 +7765,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -7122,6 +7810,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -7459,6 +8151,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -7579,6 +8275,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -7620,6 +8320,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -7979,6 +8683,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -8099,6 +8807,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -8140,6 +8852,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -8476,6 +9192,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -8596,6 +9316,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -8637,6 +9361,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -9010,6 +9738,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -9130,6 +9862,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -9171,6 +9907,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -9532,6 +10272,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -9652,6 +10396,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -9693,6 +10441,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -9766,6 +10518,10 @@
     ],
     "suggestion_compile_results": [
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -9817,6 +10573,10 @@
       },
       {
         "name": "ret.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -10252,6 +11012,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -10372,6 +11136,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -10413,6 +11181,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -10830,6 +11602,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -10950,6 +11726,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -10991,6 +11771,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -11330,6 +12114,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -11450,6 +12238,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -11491,6 +12283,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -11717,6 +12513,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -11772,6 +12572,10 @@
       },
       {
         "name": "pr.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -11996,6 +12800,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -12089,6 +12897,10 @@
       },
       {
         "name": "c_shift.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -12297,6 +13109,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -12388,6 +13204,10 @@
       },
       {
         "name": "c_shift.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -12835,6 +13655,10 @@
       },
       {
         "name": "output.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -13480,6 +14304,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -13600,6 +14428,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -13641,6 +14473,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -14306,6 +15142,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -14426,6 +15266,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -14467,6 +15311,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -14584,6 +15432,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -14675,6 +15527,10 @@
       },
       {
         "name": "c_shift.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -14781,6 +15637,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -14864,6 +15724,10 @@
       },
       {
         "name": "output.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -14963,6 +15827,10 @@
       },
       {
         "name": "output.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -15072,6 +15940,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -15159,6 +16031,10 @@
       },
       {
         "name": "output.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -15354,6 +16230,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -15481,6 +16361,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -15596,6 +16480,10 @@
       },
       {
         "name": "out.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -16010,6 +16898,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -16130,6 +17022,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -16171,6 +17067,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -16261,11 +17161,17 @@
   {
     "task": "task_54",
     "hole": "hole1",
-    "category": "found_type",
+    "category": "found_suggestions",
     "holeCategories": [
       "function_param",
       "method_receiver",
       "string_type"
+    ],
+    "suggestion_compile_results": [
+      {
+        "name": "from()",
+        "compiles": false
+      }
     ]
   },
   {
@@ -16950,7 +17856,7 @@
       },
       {
         "name": "str2.to_ascii_lowercase()",
-        "compiles": false
+        "compiles": true
       },
       {
         "name": "&str2[??..??]",
@@ -17213,6 +18119,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -17333,6 +18243,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -17374,6 +18288,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -18623,6 +19541,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -18743,6 +19665,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -18784,6 +19710,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -18878,6 +19808,10 @@
       },
       {
         "name": "v2.into_flattened()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       }
     ]
@@ -19827,6 +20761,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -19947,6 +20885,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -19988,6 +20930,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -20072,6 +21018,10 @@
       },
       {
         "name": "v1.into_flattened()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       }
     ]
@@ -20543,6 +21493,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -20663,6 +21617,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -20704,6 +21662,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -21139,6 +22101,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -21259,6 +22225,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -21300,6 +22270,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -21739,6 +22713,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -21859,6 +22837,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -21900,6 +22882,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -22765,6 +23751,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -22885,6 +23875,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -22926,6 +23920,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -23723,6 +24721,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -23843,6 +24845,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -23884,6 +24890,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -24584,6 +25594,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -24704,6 +25718,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -24745,6 +25763,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -25295,6 +26317,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -25415,6 +26441,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -25456,6 +26486,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -25893,6 +26927,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -26013,6 +27051,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -26054,6 +27096,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -26487,6 +27533,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -26607,6 +27657,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -26648,6 +27702,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -27092,6 +28150,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -27212,6 +28274,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -27253,6 +28319,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -27560,6 +28630,10 @@
       {
         "name": "xcp.into_flattened()",
         "compiles": false
+      },
+      {
+        "name": "from()",
+        "compiles": false
       }
     ]
   },
@@ -27573,9 +28647,15 @@
   {
     "task": "task_65",
     "hole": "hole3",
-    "category": "found_type",
+    "category": "found_suggestions",
     "holeCategories": [
       "method_call"
+    ],
+    "suggestion_compile_results": [
+      {
+        "name": "from()",
+        "compiles": false
+      }
     ]
   },
   {
@@ -27587,6 +28667,10 @@
       "struct"
     ],
     "suggestion_compile_results": [
+      {
+        "name": "from()",
+        "compiles": false
+      },
       {
         "name": "new()",
         "compiles": false
@@ -27649,6 +28733,10 @@
       "method_call"
     ],
     "suggestion_compile_results": [
+      {
+        "name": "from()",
+        "compiles": false
+      },
       {
         "name": "new()",
         "compiles": false
@@ -29395,6 +30483,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -29515,6 +30607,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -29556,6 +30652,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -30362,6 +31462,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -30482,6 +31586,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -30523,6 +31631,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -31004,6 +32116,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -31124,6 +32240,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -31165,6 +32285,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -31625,6 +32749,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -31835,6 +32963,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -31955,6 +33087,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -31996,6 +33132,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -32247,6 +33387,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -32367,6 +33511,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -32408,6 +33556,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -32512,6 +33664,10 @@
       "function_call"
     ],
     "suggestion_compile_results": [
+      {
+        "name": "from()",
+        "compiles": false
+      },
       {
         "name": "new()",
         "compiles": false
@@ -33204,6 +34360,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -33324,6 +34484,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -33365,6 +34529,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -33432,9 +34600,15 @@
   {
     "task": "task_80",
     "hole": "hole2",
-    "category": "found_type",
+    "category": "found_suggestions",
     "holeCategories": [
       "method_call"
+    ],
+    "suggestion_compile_results": [
+      {
+        "name": "from()",
+        "compiles": false
+      }
     ]
   },
   {
@@ -34043,6 +35217,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -34163,6 +35341,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -34204,6 +35386,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -34938,6 +36124,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -35058,6 +36248,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -35099,6 +36293,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -35831,6 +37029,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -35951,6 +37153,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -35992,6 +37198,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -36243,6 +37453,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -36335,6 +37549,10 @@
       },
       {
         "name": "str_sorted.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -36458,6 +37676,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -36544,6 +37766,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -36593,9 +37819,15 @@
   {
     "task": "task_86",
     "hole": "hole7",
-    "category": "found_type",
+    "category": "found_suggestions",
     "holeCategories": [
       "method_receiver"
+    ],
+    "suggestion_compile_results": [
+      {
+        "name": "from()",
+        "compiles": false
+      }
     ]
   },
   {
@@ -36637,6 +37869,10 @@
       {
         "name": "s.to_ascii_lowercase()",
         "compiles": true
+      },
+      {
+        "name": "from()",
+        "compiles": false
       },
       {
         "name": "new()",
@@ -36724,6 +37960,10 @@
       },
       {
         "name": "res.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -36980,9 +38220,15 @@
   {
     "task": "task_89",
     "hole": "hole1",
-    "category": "found_type",
+    "category": "found_suggestions",
     "holeCategories": [
       "method_call"
+    ],
+    "suggestion_compile_results": [
+      {
+        "name": "from()",
+        "compiles": false
+      }
     ]
   },
   {
@@ -37114,6 +38360,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -37197,6 +38447,10 @@
       },
       {
         "name": "out.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -37286,6 +38540,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -37369,6 +38627,10 @@
       },
       {
         "name": "out.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -37458,6 +38720,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -37544,6 +38810,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -37627,6 +38897,10 @@
       },
       {
         "name": "out.split_off()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -37895,6 +39169,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -38015,6 +39293,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -38056,6 +39338,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {
@@ -39768,6 +41054,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -39888,6 +41178,10 @@
         "compiles": false
       },
       {
+        "name": "from()",
+        "compiles": false
+      },
+      {
         "name": "new()",
         "compiles": false
       },
@@ -39929,6 +41223,10 @@
       },
       {
         "name": "from_parts_in()",
+        "compiles": false
+      },
+      {
+        "name": "from()",
         "compiles": false
       },
       {

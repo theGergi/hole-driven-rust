@@ -1,47 +1,47 @@
 [
 	{
 		"line": 22,
-		"type": { "valType": "reference", "elementType": "str" },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"} },
 		"suggestionNames": ["s_imm_borrow", "&s"]
 	},
 	{
 		"line": 25,
-		"type": { "valType": "reference", "elementType": "str" },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"} },
 		"suggestionNames": ["s_imm_borrow", "&s"]
 	},
 	{
 		"line": 28,
-		"type": { "valType": "reference", "elementType": "str" },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"} },
 		"suggestionNames": ["s_imm_borrow", "&s"]
 	},
 	{
 		"line": 30,
-		"type": { "valType": "reference", "elementType": "str", "mutableReference": true },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"}, "mutableReference": true },
 		"suggestionNames": ["&mut s"]
 	},
 	{
 		"line": 33,
-		"type": { "valType": "reference", "elementType": "str", "mutableReference": true },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"} },
 		"suggestionNames": ["&mut s"]
 	},
 	{
 		"line": 37,
-		"type": { "valType": "reference", "elementType": "str", "mutableReference": true },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"}, "mutableReference": true },
 		"suggestionNames": []
 	},
 	{
 		"line": 40,
-		"type": { "valType": "reference", "elementType": "str", "mutableReference": true },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"} },
 		"suggestionNames": []
 	},
 	{
 		"line": 45,
-		"type": { "valType": "reference", "elementType": "str", "mutableReference": true },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"}, "mutableReference": true },
 		"suggestionNames": ["&mut s"]
 	},
 	{
 		"line": 47,
-		"type": { "valType": "reference", "elementType": "str", "mutableReference": true },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"} },
 		"suggestionNames": ["&mut s"]
 	}
 ]

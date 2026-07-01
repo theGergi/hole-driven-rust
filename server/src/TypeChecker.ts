@@ -9,7 +9,8 @@ import { parseStdJsonFile } from './stdParser';
 
 function typesEqual(a: Type | undefined, b: Type | undefined): boolean {
     if (a === b) return true;
-    if (!a || !b) return false;
+    if (!a || !b) return true; // missing elementType = unresolved generic (e.g. std Self-returning ctor), treat as wildcard match
+    if (a.valType === ValType.UNKNOWN || b.valType === ValType.UNKNOWN) return true;
     if (a.valType !== b.valType) return false;
     if (a.structName !== b.structName) return false;
     return typesEqual(a.elementType, b.elementType);
@@ -194,7 +195,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     getBoundFunction(functionName: string, structName: string | null = null): Function | undefined {
         const function_ = this.functions.find(function_ => (function_.name === functionName && (structName ? function_.structName === structName : true)))
-        console.log(functionName)
         return function_;
     }
 
@@ -214,7 +214,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     getBoundMethod(structName: string, identifier: string): Function | null {
         const struct = this.structs.find(s => s.name === structName);
         if (!struct) return null;
-        return struct.methods.find(m => m.name === identifier) ?? null;
+        return struct.methods.findLast(m => m.name === identifier) ?? null;
     }
 
     borrow(variableName: string, mutable: boolean, location: SourceLocation): Variable {
@@ -338,11 +338,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         if (assigned.borrows === Borrow.BMut) {
-            if (!this.checkBorrows(owner!, owner!.location)) {
+            if (owner && !this.checkBorrows(owner, owner.location)) {
                 return false;
             }
         } else if (assigned.borrows === Borrow.BImmut && ((assignee.type.valType === ValType.REFERENCE && assignee.type.mutableReference) || assignee.type.valType !== ValType.REFERENCE)  ) {
-            if (!this.checkBorrows(owner!, owner!.location)) {
+            if (owner && !this.checkBorrows(owner, owner.location)) {
                 return false;
             }
         }
@@ -553,7 +553,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
         
         this.typeStack.pop();
-        console.log("Inferred type: ", inferedType, "Declared type: ", declaredType)
+        // console.log("Inferred type: ", inferedType, "Declared type: ", declaredType)
         
         if (inferedType.valType === ValType.UNKNOWN && declaredType.valType === ValType.UNKNOWN) {
             throw new Error("No type");
@@ -577,9 +577,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             
             
         }
-        
-        // console.log("Inferred type: ", inferedType, "Declared type: ", declaredType)
-        // console.log("Record var", recordVar)
+
         if (recordVar) {
             let valType = inferedType;
             if ( inferedType.valType === ValType.UNKNOWN || (inferedType.elementType?.valType === ValType.UNKNOWN && declaredType.elementType && declaredType.elementType.valType !== ValType.UNKNOWN) ) {
@@ -656,9 +654,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             functionName = ctx.expression().pathExpression().pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier().getText()
         }
 
-        console.log(this.functions)
-        console.log(this.structs)
-
         console.log("Function call:", functionName, "Struct:", structName)
         const func = this.getBoundFunction(functionName, structName);
 
@@ -712,7 +707,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         ctx.callParams()?.expression().forEach((expr: any, i: number) => {
             const paramType = func.params[i + 1]?.type || toType({valType: ValType.UNKNOWN});
-            console.log("Param type:", paramType)
+
             this.typeStack.push(paramType);
             this.visit(expr);
             if (expr instanceof PathExpression_Context) {
@@ -871,8 +866,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         console.log("If expression")
 
         const currentState = this.saveState();
-        console.log(currentState)
-        console.log(ctx.expression().getText())
+
         if (ctx.expression()) {
             this.visit(ctx.expression());
         }
@@ -1220,7 +1214,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (ctx.getText() === "??") {
             const location = getLocation(ctx)
             const type = this.currentParentType;
-            console.log("Alleged type:", type)
+            // console.log("Alleged type:", type)
             const hole = {location: location, type: type, suggestions: []}
             return {
                 type: toType({valType: ValType.HOLE}),
@@ -1238,8 +1232,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         const location = getLocation(ctx)
         const type = this.currentParentType;
-        console.log("Alleged type:", type)
-        console.log("Location:", location)
+        // console.log("Alleged type:", type)
+        // console.log("Location:", location)
         const hole = {location:location, type: type, suggestions: []}
         this.generateHole(hole)
 

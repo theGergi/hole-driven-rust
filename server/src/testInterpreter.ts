@@ -63,18 +63,22 @@ function parseDocumentForUsageGraph(code: string) {
 
 
 function matchesSubset(source: Type, subset: Partial<Type>): boolean {
-  // Get keys from the subset to define the scope of the comparison
   const keys = Object.keys(subset) as Array<keyof Type>;
 
   return keys.every((key) => {
     const sourceValue = source[key];
     const subsetValue = subset[key];
 
-    // Basic equality check (Works for primitives like string, number, boolean)
+    // Recurse when both values are non-null objects (e.g. nested Type like elementType)
+    if (subsetValue !== null && typeof subsetValue === 'object' &&
+        sourceValue !== null && typeof sourceValue === 'object') {
+      return matchesSubset(sourceValue as Type, subsetValue as Partial<Type>);
+    }
+
     if (sourceValue === subsetValue) {
       return true;
     }
-	console.log(`Key ${key} does not match: source has ${sourceValue}, subset has ${subsetValue}`);
+    console.log(`Key ${key} does not match: source has ${JSON.stringify(sourceValue)}, subset has ${JSON.stringify(subsetValue)}`);
     return false;
   });
 }

@@ -1,7 +1,7 @@
 [
 	{
 		"line": 9,
-		"type": { "valType": "str" },
+		"type": { "valType": "reference", "elementType": { "valType": "struct", "structName": "str" }},
 		"suggestionNames": ["a", "main()", "r", "z"]
 	}
 ]

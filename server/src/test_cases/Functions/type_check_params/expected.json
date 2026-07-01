@@ -11,12 +11,12 @@
 	},
 	{
 		"line": 16,
-		"type": { "valType": "str" },
+		"type": { "valType": "struct", "structName": "String" },
 		"suggestionNames": ["z"]
 	},
 	{
 		"line": 17,
-		"type": { "valType": "str" },
+		"type": { "valType": "struct", "structName": "String" },
 		"suggestionNames": ["z"]
 	},
 
@@ -33,12 +33,12 @@
 	},
 	{
 		"line": 24,
-		"type": { "valType": "str" },
+		"type": { "valType": "struct", "structName": "String" },
 		"suggestionNames": ["z"]
 	},
 	{
 		"line": 25,
-		"type": { "valType": "str" },
+		"type": { "valType": "struct", "structName": "String" },
 		"suggestionNames": ["z"]
 	},
 
@@ -55,12 +55,12 @@
 	},
 	{
 		"line": 33,
-		"type": { "valType": "str" },
+		"type": { "valType": "struct", "structName": "String" },
 		"suggestionNames": []
 	},
 	{
 		"line": 34,
-		"type": { "valType": "str" },
+		"type": { "valType": "struct", "structName": "String" },
 		"suggestionNames": []
 	},
 
@@ -76,12 +76,12 @@
 	},
 	{
 		"line": 43,
-		"type": { "valType": "str" },
+		"type": { "valType": "struct", "structName": "String" },
 		"suggestionNames": []
 	},
 	{
 		"line": 44,
-		"type": { "valType": "str" },
+		"type": { "valType": "struct", "structName": "String" },
 		"suggestionNames": []
 	}
 ]

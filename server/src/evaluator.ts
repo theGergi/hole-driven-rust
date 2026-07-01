@@ -8,6 +8,7 @@ import { UsageGraphListener } from './UsageListener';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { integer } from 'vscode-languageserver';
 
 type EvalCategory = 'failed_with_error' | 'found_type' | 'found_suggestions' | 'exact_match';
 
@@ -31,7 +32,9 @@ interface EvalResult {
 	category: EvalCategory;
 	holeCategories: string[];
 	error?: string;
+	suggestion_count?: number;
 	suggestion_compile_results?: SuggestionCompileResult[];
+	suggestions_with_holes?: string[];
 }
 
 const evalCargoDir = path.resolve(process.cwd(), 'server', 'eval_cargo');
@@ -51,9 +54,6 @@ function parseDocument(code: string): Hole[] {
 }
 
 function checkCompiles(rustCode: string, suggestionName: string): boolean {
-	// Skip suggestions that still contain holes — they can't compile as-is
-	if (suggestionName.includes('??')) return false;
-
 	const filled = rustCode.replace('??', suggestionName);
 	// Suppress all warnings so only true errors fail the check
 	const source = `#![allow(warnings)]\n${filled}`;
@@ -124,6 +124,8 @@ function collectTestCases(dir: string): Array<{ task: string; hole: string; rsFi
 	return cases;
 }
 
+const compileSuggestions = process.argv.includes('--compile-suggestions');
+
 const generatedDir = path.resolve(process.cwd(), 'server', 'src', 'generated_test_cases');
 const cases = collectTestCases(generatedDir);
 
@@ -136,6 +138,7 @@ const counts: Record<EvalCategory, number> = {
 };
 let totalSuggestionsTested = 0;
 let totalSuggestionsCompile = 0;
+let totalSuggestionsWithHoles = 0;
 
 // Suppress console output from the tool during evaluation
 const origLog = console.log;
@@ -146,18 +149,40 @@ for (const tc of cases) {
 	const meta: TestCaseMeta = JSON.parse(fs.readFileSync(tc.jsonFile, 'utf8'));
 	const { category, error, suggestions } = evaluateHole(rustCode, meta);
 
+	let suggestion_count: number | undefined;
 	let suggestion_compile_results: SuggestionCompileResult[] | undefined;
+	let suggestions_with_holes: string[] | undefined;
 
 	if (suggestions && suggestions.length > 0) {
-		suggestion_compile_results = suggestions.map(name => {
-			const compiles = checkCompiles(rustCode, name);
-			totalSuggestionsTested++;
-			if (compiles) totalSuggestionsCompile++;
-			return { name, compiles };
-		});
+		suggestion_count = suggestions.length;
+
+		suggestions_with_holes = suggestions.filter(name => name.includes('??'));
+		if (suggestions_with_holes.length === 0) suggestions_with_holes = undefined;
+		else totalSuggestionsWithHoles += suggestions_with_holes.length;
+
+		if (compileSuggestions) {
+			const compilable = suggestions.filter(name => !name.includes('??'));
+			if (compilable.length > 0) {
+				suggestion_compile_results = compilable.map(name => {
+					const compiles = checkCompiles(rustCode, name);
+					totalSuggestionsTested++;
+					if (compiles) totalSuggestionsCompile++;
+					return { name, compiles };
+				});
+			}
+		}
 	}
 
-	results.push({ task: tc.task, hole: tc.hole, category, holeCategories: meta.categories, error, suggestion_compile_results });
+	results.push({
+		task: tc.task,
+		hole: tc.hole,
+		category,
+		holeCategories: meta.categories,
+		error,
+		suggestion_count,
+		suggestion_compile_results,
+		suggestions_with_holes,
+	});
 	counts[category]++;
 }
 
@@ -166,15 +191,16 @@ console.log = origLog;
 // Print per-result summary
 for (const r of results) {
 	const suffix = r.error ? ` — ${r.error}` : '';
-	let compileSuffix = '';
+	const parts: string[] = [];
+	if (r.suggestion_count !== undefined) parts.push(`suggestions: ${r.suggestion_count}`);
 	if (r.suggestion_compile_results) {
 		const passing = r.suggestion_compile_results.filter(s => s.compiles).map(s => s.name);
 		const failing = r.suggestion_compile_results.filter(s => !s.compiles).map(s => s.name);
-		const parts: string[] = [];
 		if (passing.length) parts.push(`compiles: [${passing.join(', ')}]`);
 		if (failing.length) parts.push(`no-compile: [${failing.join(', ')}]`);
-		compileSuffix = ' | ' + parts.join(' | ');
 	}
+	if (r.suggestions_with_holes) parts.push(`with-holes: [${r.suggestions_with_holes.join(', ')}]`);
+	const compileSuffix = parts.length ? ' | ' + parts.join(' | ') : '';
 	console.log(`${r.task}/${r.hole}: ${r.category}${suffix}${compileSuffix}`);
 }
 
@@ -185,11 +211,16 @@ console.log(`exact_match:             ${counts.exact_match}`);
 console.log(`found_suggestions:       ${counts.found_suggestions}`);
 console.log(`found_type:              ${counts.found_type}`);
 console.log(`failed_with_error:       ${counts.failed_with_error}`);
-console.log(`\nSuggestions tested:      ${totalSuggestionsTested}`);
-console.log(`Suggestions compile:     ${totalSuggestionsCompile}`);
-if (totalSuggestionsTested > 0) {
-	const pct = ((totalSuggestionsCompile / totalSuggestionsTested) * 100).toFixed(1);
-	console.log(`Compile rate:            ${pct}%`);
+console.log(`\nSuggestions with holes:  ${totalSuggestionsWithHoles}`);
+if (compileSuggestions) {
+	console.log(`Suggestions tested:      ${totalSuggestionsTested}`);
+	console.log(`Suggestions compile:     ${totalSuggestionsCompile}`);
+	if (totalSuggestionsTested > 0) {
+		const pct = ((totalSuggestionsCompile / totalSuggestionsTested) * 100).toFixed(1);
+		console.log(`Compile rate:            ${pct}%`);
+	}
+} else {
+	console.log(`\n(Run with --compile-suggestions to check suggestion compilation)`);
 }
 
 // Print per-category table
@@ -207,10 +238,11 @@ for (const r of results) {
 const evalCats: EvalCategory[] = ['exact_match', 'found_suggestions', 'found_type', 'failed_with_error'];
 const colHeaders = ['category', 'exact', 'suggestions', 'type', 'failed', 'total'];
 const rows: string[][] = Object.entries(categoryTable)
-	.sort(([a], [b]) => a.localeCompare(b))
-	.map(([cat, c]) => {
+.sort(([a], [b]) => a.localeCompare(b))
+.map(([cat, c]) => {
 		const total = evalCats.reduce((s, k) => s + c[k], 0);
-		return [cat, String(c.exact_match), String(c.found_suggestions), String(c.found_type), String(c.failed_with_error), String(total)];
+		const stringify = (x: integer) => `${x} (${((x / total) * 100).toFixed(2)}%)`
+		return [cat, stringify(c.exact_match), stringify(c.found_suggestions), stringify(c.found_type), stringify(c.failed_with_error), String(total)];
 	});
 
 const colWidths = colHeaders.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length)));

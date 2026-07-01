@@ -1,12 +1,12 @@
 [
 	{
 		"line": 24,
-		"type": { "valType": "reference", "elementType": "struct", "structName": "String", "mutableReference": false },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"}, "structName": "String", "mutableReference": false },
 		"suggestionNames": ["&s"]
 	},
 	{
 		"line": 26,
-		"type": { "valType": "reference", "elementType": "struct", "structName": "String", "mutableReference": true },
+		"type": { "valType": "reference", "elementType": {"valType": "struct", "structName": "String"}, "structName": "String", "mutableReference": true },
 		"suggestionNames": ["&mut s"]
 	}
 ]

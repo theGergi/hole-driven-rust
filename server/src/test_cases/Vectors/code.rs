@@ -3,11 +3,11 @@
 fn main() {
 	{
 		let z = vec!["a", "b", "c"];
-		let r: Vec<str> = ??;
+		let r: Vec<&str> = ??;
 	}
 
 	{
 		let z = vec!["a"; 3];
-		let r: Vec<str> = ??;
+		let r: Vec<&str> = ??;
 	}
 }

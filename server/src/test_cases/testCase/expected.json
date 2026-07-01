@@ -1,7 +1,7 @@
 [
 	{
 		"line": 7,
-		"type": { "valType": "Vec", "elementType": "i32" },
+		"type": { "valType": "struct", "structName": "Vec", "elementType": { "valType": "i32" } },
 		"suggestionNames": ["a"]
 	}
 ]

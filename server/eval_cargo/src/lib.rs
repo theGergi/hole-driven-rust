@@ -6,18 +6,18 @@ use regex::Regex;
 use md5;
 use std::any::{Any, TypeId};
 
-fn count_upper(s:&str) -> i32 {
+fn decimal_to_binary(decimal:i32) -> String{
 
 
-    let uvowel: &str = "AEIOU";
-    let mut count: i32 = 0;
-
-    for (indx, elem) in s.chars().into_iter().enumerate() {
-        if indx % 2 == 0 {
-            if uvowel.contains(count_upper()) {
-                count += 1;
-            }
-        }
+    let mut d_cp = decimal;
+    let mut out: String = String::from("");
+    if d_cp == 0 {
+        return "db0db".to_string();
     }
-    return count;
+    while d_cp > 0 {
+        out = (d_cp % 2).to_string() + out.into_chars();
+        d_cp = d_cp / 2;
+    }
+    out = "db".to_string() + &out + &"db".to_string();
+    return out;
 }

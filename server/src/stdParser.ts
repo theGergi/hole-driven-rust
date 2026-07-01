@@ -333,9 +333,12 @@ function parseImplEntry(entry: any, index: Record<string, any>, structs: SharedS
 		return;
 	}
 
-	// Skip trait impls (e.g. `impl Default for HashSet`) — only process direct impls
+	// Skip trait impls EXCEPT From — From impls provide constructors (e.g. String::from, Vec::from)
 	if (implEntry.trait != null) {
-		return;
+		const traitName = normalizePathName(implEntry.trait?.path ?? '');
+		if (traitName !== 'From') {
+			return;
+		}
 	}
 
 	const primitiveFor = implEntry.for?.primitive;
@@ -428,11 +431,6 @@ export function parseStdJsonFile(): StdParseResult {
 
 	const std   = parseStdJson(stdRaw,   preludeNames);
 	const alloc = parseStdJson(allocRaw, preludeNames);
-
-	console.log("hey hey")
-	console.log(alloc.structs.map(s => s.name).sort().reverse())
-	console.log(alloc.structs.filter(s => s.name === 'String')[0].methods.map(m => m.name))
-	console.log(alloc.functions.filter(s => s.structName === 'String').map(m => m.name))
 
 	return {
 		functions: [...std.functions, ...alloc.functions],
