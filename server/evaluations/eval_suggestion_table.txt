@@ -1,0 +1,14 @@
+
+=== Suggestion Stats by Hole Category ===
+(Run with --compile-suggestions to populate suggestions_tested/suggestions_compiled)
+category          total_suggestions  suggestions_with_holes  suggestions_tested  suggestions_compiled
+----------------  -----------------  ----------------------  ------------------  --------------------
+(none)            900                38 (4.22%)              0 (0.00%)           0 (0.00%)           
+function_call     796                5 (0.63%)               0 (0.00%)           0 (0.00%)           
+function_param    1696               11 (0.65%)              0 (0.00%)           0 (0.00%)           
+immutable_borrow  166                2 (1.20%)               0 (0.00%)           0 (0.00%)           
+method_call       3926               40 (1.02%)              0 (0.00%)           0 (0.00%)           
+method_receiver   2320               20 (0.86%)              0 (0.00%)           0 (0.00%)           
+primitive         1432               13 (0.91%)              0 (0.00%)           0 (0.00%)           
+string_type       1006               8 (0.80%)               0 (0.00%)           0 (0.00%)           
+struct            1622               16 (0.99%)              0 (0.00%)           0 (0.00%)           

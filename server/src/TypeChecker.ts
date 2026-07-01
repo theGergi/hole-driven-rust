@@ -767,7 +767,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             const iteratorType = this.visit(ctx.expression())?.type || toType({valType: ValType.UNKNOWN});
             let elementType = toType({valType: ValType.UNKNOWN});
 
-            if (iteratorType.valType === ValType.VECTOR || (iteratorType.valType === ValType.RANGE)) {
+            console.log("Iterator type:", iteratorType)
+            console.log("Element type:", elementType)
+
+            if ((iteratorType.valType === ValType.STRUCT && iteratorType.structName === "Vec") ||iteratorType.valType === ValType.VECTOR || iteratorType.valType === ValType.RANGE) {
                 elementType = iteratorType.elementType ?? toType({valType: ValType.UNKNOWN});
             } else if (iteratorType.valType === ValType.REFERENCE && iteratorType.elementType?.valType === ValType.VECTOR) {
                 elementType = iteratorType.elementType ?? toType({valType: ValType.UNKNOWN});
@@ -1247,11 +1250,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         const variables = this.variables;
         const functions = this.functions;
 
-        // console.log("Hole hey")
+        console.log("Hole hey")
         // this.functions.forEach((f) =>
         // {console.log(f.name)})
-        // this.variables.forEach((f) =>
-        // {console.log(f.name)})
+        this.variables.forEach((f) =>
+        {console.log(f.name)
+            console.log(f.type)
+        })
         // console.log("Variables:")
         // console.log(variables)
 

@@ -257,6 +257,54 @@ const tableLines = [
 ];
 for (const line of tableLines) console.log(line);
 
+// Print per-category suggestion stats table
+interface SuggestionCategoryStats {
+	total: number;
+	withHoles: number;
+	tested: number;
+	compiled: number;
+}
+
+const suggestionCategoryTable: Record<string, SuggestionCategoryStats> = {};
+for (const r of results) {
+	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
+	const total = r.suggestion_count ?? 0;
+	const withHoles = r.suggestions_with_holes?.length ?? 0;
+	const tested = r.suggestion_compile_results?.length ?? 0;
+	const compiled = r.suggestion_compile_results?.filter(s => s.compiles).length ?? 0;
+	for (const cat of cats) {
+		if (!suggestionCategoryTable[cat]) {
+			suggestionCategoryTable[cat] = { total: 0, withHoles: 0, tested: 0, compiled: 0 };
+		}
+		suggestionCategoryTable[cat].total += total;
+		suggestionCategoryTable[cat].withHoles += withHoles;
+		suggestionCategoryTable[cat].tested += tested;
+		suggestionCategoryTable[cat].compiled += compiled;
+	}
+}
+
+const suggestionColHeaders = ['category', 'total_suggestions', 'suggestions_with_holes', 'suggestions_tested', 'suggestions_compiled'];
+const suggestionRows: string[][] = Object.entries(suggestionCategoryTable)
+	.sort(([a], [b]) => a.localeCompare(b))
+	.map(([cat, s]) => {
+		const pctOfTotal = (x: integer) => s.total > 0 ? `${x} (${((x / s.total) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
+		const pctOfTested = (x: integer) => s.tested > 0 ? `${x} (${((x / s.tested) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
+		return [cat, String(s.total), pctOfTotal(s.withHoles), pctOfTotal(s.tested), pctOfTested(s.compiled)];
+	});
+
+const suggestionColWidths = suggestionColHeaders.map((h, i) => Math.max(h.length, ...suggestionRows.map(r => r[i].length)));
+const suggestionFmt = (row: string[]) => row.map((cell, i) => cell.padEnd(suggestionColWidths[i])).join('  ');
+const suggestionSep = suggestionColWidths.map(w => '-'.repeat(w)).join('  ');
+
+const suggestionTableLines = [
+	'\n=== Suggestion Stats by Hole Category ===',
+	...(compileSuggestions ? [] : ['(Run with --compile-suggestions to populate suggestions_tested/suggestions_compiled)']),
+	suggestionFmt(suggestionColHeaders),
+	suggestionSep,
+	...suggestionRows.map(suggestionFmt),
+];
+for (const line of suggestionTableLines) console.log(line);
+
 // Write results to evaluations folder
 const evaluationsDir = path.resolve(process.cwd(), 'server', 'evaluations');
 fs.mkdirSync(evaluationsDir, { recursive: true });
@@ -268,3 +316,7 @@ console.log(`\nResults written to ${jsonPath}`);
 const tablePath = path.join(evaluationsDir, 'eval_table.txt');
 fs.writeFileSync(tablePath, tableLines.join('\n') + '\n');
 console.log(`Table written to ${tablePath}`);
+
+const suggestionTablePath = path.join(evaluationsDir, 'eval_suggestion_table.txt');
+fs.writeFileSync(suggestionTablePath, suggestionTableLines.join('\n') + '\n');
+console.log(`Suggestion table written to ${suggestionTablePath}`);
