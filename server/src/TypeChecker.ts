@@ -3,7 +3,7 @@ import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpres
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
 import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct } from '../../shared/out/types.js';
-import { toType, getSourceLocationKey, getLocation } from './utils';
+import { toType, getSourceLocationKey, getLocation, cloneVariable, cloneFunction, cloneParam } from './utils';
 import { parseStdJsonFile, StdParseResult } from './stdParser';
 
 
@@ -155,11 +155,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     }
 
     saveState() {
-        return { variables: structuredClone(this.variables) }
+        return { variables: this.variables.map(cloneVariable) }
     }
 
     loadState(state: any) {
-        this.variables = structuredClone(state.variables);
+        this.variables = state.variables.map(cloneVariable);
     }
 
     /**
@@ -1256,8 +1256,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         hole.suggestions = [];
         hole.context = {
-            variables: structuredClone(this.variables),
-            functions: structuredClone(this.functions),
+            variables: this.variables.map(cloneVariable),
+            functions: this.functions.map(cloneFunction),
             fields: [],
             methods: []
         };
@@ -1446,10 +1446,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         
         hole.suggestions = holeSuggestions;
         hole.context = {
-            variables: structuredClone(this.variables),
-            functions: structuredClone(this.functions),
-            fields: structuredClone(struct.fields),
-            methods: structuredClone(struct.methods)
+            variables: this.variables.map(cloneVariable),
+            functions: this.functions.map(cloneFunction),
+            fields: struct.fields.map(cloneParam),
+            methods: struct.methods.map(cloneFunction)
         };
         this.holes.push(hole);
     }

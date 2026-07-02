@@ -1,5 +1,5 @@
 import { ParserRuleContext } from 'antlr4ng';
-import { Borrow, Hole, SourceLocation, Type, ValType, Variable, Function, constructTypeString } from '../../shared/out/types';
+import { Borrow, Hole, Param, SourceLocation, Type, ValType, Variable, Function, constructTypeString } from '../../shared/out/types';
 
 
 
@@ -35,6 +35,35 @@ export function toType(overrides: Partial<Type> & { valType: ValType }, variable
 	return type;
 }
 
+
+// structuredClone() drops class prototypes, turning cloned Type instances into plain
+// objects that no longer have toTypeString(). These helpers clone while reconstructing
+// proper Type instances, for use anywhere state needs to be snapshotted/restored.
+export function cloneType(type: Type): Type;
+export function cloneType(type: Type | undefined): Type | undefined;
+export function cloneType(type: Type | undefined): Type | undefined {
+	if (!type) return type;
+	const cloned = new Type();
+	Object.assign(cloned, type);
+	if (type.elementType) {
+		cloned.elementType = cloneType(type.elementType);
+	}
+	// owner intentionally kept as a shallow reference (not deep-cloned): checkBorrows()
+	// compares `variable.type.owner === owner` by identity, and owner graphs can be cyclic.
+	return cloned;
+}
+
+export function cloneVariable(variable: Variable): Variable {
+	return { ...variable, type: cloneType(variable.type) };
+}
+
+export function cloneParam(param: Param): Param {
+	return { ...param, type: cloneType(param.type) };
+}
+
+export function cloneFunction(func: Function): Function {
+	return { ...func, type: cloneType(func.type), params: func.params.map(cloneParam) };
+}
 
 export function formatType (type?: Type): string {
 	if (!type) {
