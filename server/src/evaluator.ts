@@ -38,6 +38,7 @@ interface EvalResult {
 	suggestions_with_holes?: string[];
 	hole_type?: string;
 	hole_type_compiles?: boolean;
+	hole_type_compile_error?: string;
 }
 
 const evalCargoDir = path.resolve(process.cwd(), 'server', 'eval_cargo');
@@ -58,7 +59,7 @@ function parseDocument(code: string): Hole[] {
 	return interpreter.holes;
 }
 
-function checkCompiles(rustCode: string, replacement: string): boolean {
+function runCargoCheck(rustCode: string, replacement: string): { compiles: boolean; error?: string } {
 	const filled = rustCode.replace('??', replacement);
 	// Suppress all warnings so only true errors fail the check
 	const source = `#![allow(warnings)]\n${filled}`;
@@ -66,14 +67,19 @@ function checkCompiles(rustCode: string, replacement: string): boolean {
 	fs.writeFileSync(evalLibPath, source, 'utf8');
 	try {
 		execSync(`cargo check --quiet --manifest-path ${evalCargoDir}/Cargo.toml 2>&1`, { stdio: 'pipe' });
-		return true;
-	} catch {
-		return false;
+		return { compiles: true };
+	} catch (e: any) {
+		const error = e?.stdout?.toString() ?? e?.message ?? String(e);
+		return { compiles: false, error };
 	}
 }
 
-function checkHoleTypeCompiles(rustCode: string, holeType: string): boolean {
-	return checkCompiles(rustCode, `{ let temp: ${holeType} = todo!(); temp }`);
+function checkCompiles(rustCode: string, replacement: string): boolean {
+	return runCargoCheck(rustCode, replacement).compiles;
+}
+
+function checkHoleTypeCompiles(rustCode: string, holeType: string): { compiles: boolean; error?: string } {
+	return runCargoCheck(rustCode, `{ let temp: ${holeType} = todo!(); temp }`);
 }
 
 function evaluateHole(
@@ -158,6 +164,8 @@ let totalSuggestionsWithHoles = 0;
 let totalHoleTypesTested = 0;
 let totalHoleTypesCompile = 0;
 
+console.log(`Evaluating ${cases.length} test cases in dataset "${dataset}"...`);
+
 // Suppress console output from the tool during evaluation
 const origLog = console.log;
 console.log = () => {};
@@ -171,6 +179,7 @@ for (const tc of cases) {
 	let suggestion_compile_results: SuggestionCompileResult[] | undefined;
 	let suggestions_with_holes: string[] | undefined;
 	let hole_type_compiles: boolean | undefined;
+	let hole_type_compile_error: string | undefined;
 
 	if (suggestions && suggestions.length > 0) {
 		suggestion_count = suggestions.length;
@@ -193,7 +202,9 @@ for (const tc of cases) {
 	}
 
 	if (compileTypes && holeType) {
-		hole_type_compiles = checkHoleTypeCompiles(rustCode, holeType);
+		const holeTypeResult = checkHoleTypeCompiles(rustCode, holeType);
+		hole_type_compiles = holeTypeResult.compiles;
+		hole_type_compile_error = holeTypeResult.error;
 		totalHoleTypesTested++;
 		if (hole_type_compiles) totalHoleTypesCompile++;
 	}
@@ -209,6 +220,7 @@ for (const tc of cases) {
 		suggestions_with_holes,
 		hole_type: holeType,
 		hole_type_compiles,
+		hole_type_compile_error,
 	});
 	counts[category]++;
 }
@@ -241,6 +253,8 @@ console.log(`found_type:              ${counts.found_type}`);
 console.log(`failed_with_error:       ${counts.failed_with_error}`);
 console.log(`failed:       ${counts.failed}`);
 console.log(`\nSuggestions with holes:  ${totalSuggestionsWithHoles}`);
+
+console.log("Compiling suggestions...")
 if (compileSuggestions) {
 	console.log(`Suggestions tested:      ${totalSuggestionsTested}`);
 	console.log(`Suggestions compile:     ${totalSuggestionsCompile}`);
@@ -252,6 +266,7 @@ if (compileSuggestions) {
 	console.log(`\n(Run with --compile-suggestions to check suggestion compilation)`);
 }
 
+console.log("Compiling types...")
 if (compileTypes) {
 	console.log(`\nHole types tested:       ${totalHoleTypesTested}`);
 	console.log(`Hole types compile:      ${totalHoleTypesCompile}`);
@@ -385,7 +400,7 @@ const holeTypeSep = holeTypeColWidths.map(w => '-'.repeat(w)).join('  ');
 
 const holeTypeTableLines = [
 	'\n=== Hole Type Compile Stats by Hole Category ===',
-	...(compileSuggestions ? [] : ['(Run with --compile-suggestions to populate hole_types_tested/hole_types_compiled)']),
+	...(compileTypes ? [] : ['(Run with --compile-types to populate hole_types_tested/hole_types_compiled)']),
 	holeTypeFmt(holeTypeColHeaders),
 	holeTypeSep,
 	...holeTypeRows.map(holeTypeFmt),
