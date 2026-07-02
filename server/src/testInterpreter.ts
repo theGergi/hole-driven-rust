@@ -13,7 +13,7 @@ import * as path from 'path';
 import { parseStdJsonFile } from './stdParser';
 import { constructTypeString, formatFunction, formatVariable } from '../../shared/out/types.js';
 
-
+const stdParseResult = parseStdJsonFile();
 
 function parseDocument(code: string): Hole[] {
 	const inputStream = CharStream.fromString(code);
@@ -31,7 +31,7 @@ function parseDocument(code: string): Hole[] {
 	ParseTreeWalker.DEFAULT.walk(listener, tree);
 	console.log(listener.getUsages());
 
-	const interpreter = new TypeChecker(listener) as any;
+	const interpreter = new TypeChecker(listener, stdParseResult) as any;
 	interpreter.visit(tree)
 
 	const result = interpreter.holes;

@@ -4,7 +4,7 @@ import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
 import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct } from '../../shared/out/types.js';
 import { toType, getSourceLocationKey, getLocation } from './utils';
-import { parseStdJsonFile } from './stdParser';
+import { parseStdJsonFile, StdParseResult } from './stdParser';
 
 
 function typesEqual(a: Type | undefined, b: Type | undefined): boolean {
@@ -34,15 +34,15 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     private usageListener: UsageGraphListener;
 
-    constructor(usageListener: UsageGraphListener) {
+    constructor(usageListener: UsageGraphListener, stdParseResult?: StdParseResult) {
         super();
         this.usageListener = usageListener;
 
-        this.loadStdLibrary();
+        this.loadStdLibrary(stdParseResult);
     }
 
-    private loadStdLibrary() {
-        const { functions, structs } = parseStdJsonFile();
+    private loadStdLibrary(stdParseResult?: StdParseResult) {
+        const { functions, structs } = stdParseResult ?? parseStdJsonFile();
         this.stdFunctions = functions;
         this.stdStructs = structs;
         this.loadPrelude()

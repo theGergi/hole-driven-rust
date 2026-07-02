@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { integer } from 'vscode-languageserver';
+import { parseStdJsonFile } from './stdParser';
 
 type EvalCategory = 'failed_with_error' | 'found_type' | 'found_suggestions' | 'exact_match' | 'failed';
 
@@ -40,6 +41,8 @@ interface EvalResult {
 const evalCargoDir = path.resolve(process.cwd(), 'server', 'eval_cargo');
 const evalLibPath = path.join(evalCargoDir, 'src', 'lib.rs');
 
+const stdParseResult = parseStdJsonFile();
+
 function parseDocument(code: string): Hole[] {
 	const inputStream = CharStream.fromString(code);
 	const lexer = new RustLexer(inputStream);
@@ -48,7 +51,7 @@ function parseDocument(code: string): Hole[] {
 	const tree = parser.crate();
 	const listener = new UsageGraphListener();
 	ParseTreeWalker.DEFAULT.walk(listener, tree);
-	const interpreter = new TypeChecker(listener) as any;
+	const interpreter = new TypeChecker(listener, stdParseResult) as any;
 	interpreter.visit(tree);
 	return interpreter.holes;
 }
@@ -126,7 +129,10 @@ function collectTestCases(dir: string): Array<{ task: string; hole: string; rsFi
 
 const compileSuggestions = process.argv.includes('--compile-suggestions');
 
-const generatedDir = path.resolve(process.cwd(), 'server', 'src', 'datasets', 'strategy1');
+const datasetArg = process.argv.find((arg) => arg.startsWith('--dataset='));
+const dataset = datasetArg ? datasetArg.slice('--dataset='.length) : 'strategy1';
+
+const generatedDir = path.resolve(process.cwd(), 'server', 'src', 'datasets', dataset);
 const cases = collectTestCases(generatedDir);
 
 const results: EvalResult[] = [];

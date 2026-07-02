@@ -26,8 +26,9 @@ import TypeChecker from './TypeChecker';
 import { CharStream, CommonTokenStream, ParseTreeWalker } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
 import { getSourceLocationKey } from './utils.js';
+import { parseStdJsonFile } from './stdParser';
 
-
+const stdParseResult = parseStdJsonFile();
 
 function parseDocument(code: string) {
     const inputStream = CharStream.fromString(code);
@@ -45,7 +46,7 @@ function parseDocument(code: string) {
     ParseTreeWalker.DEFAULT.walk(listener, tree);
     
 
-    const interpreter = new TypeChecker(listener) as any;
+    const interpreter = new TypeChecker(listener, stdParseResult) as any;
     interpreter.visit(tree)
     return interpreter.getFinalResult();
 }
