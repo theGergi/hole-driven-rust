@@ -36,6 +36,8 @@ interface EvalResult {
 	suggestion_count?: number;
 	suggestion_compile_results?: SuggestionCompileResult[];
 	suggestions_with_holes?: string[];
+	hole_type?: string;
+	hole_type_compiles?: boolean;
 }
 
 const evalCargoDir = path.resolve(process.cwd(), 'server', 'eval_cargo');
@@ -56,8 +58,8 @@ function parseDocument(code: string): Hole[] {
 	return interpreter.holes;
 }
 
-function checkCompiles(rustCode: string, suggestionName: string): boolean {
-	const filled = rustCode.replace('??', suggestionName);
+function checkCompiles(rustCode: string, replacement: string): boolean {
+	const filled = rustCode.replace('??', replacement);
 	// Suppress all warnings so only true errors fail the check
 	const source = `#![allow(warnings)]\n${filled}`;
 
@@ -70,10 +72,14 @@ function checkCompiles(rustCode: string, suggestionName: string): boolean {
 	}
 }
 
+function checkHoleTypeCompiles(rustCode: string, holeType: string): boolean {
+	return checkCompiles(rustCode, `{ let temp: ${holeType} = todo!(); temp }`);
+}
+
 function evaluateHole(
 	rustCode: string,
 	meta: TestCaseMeta
-): { category: EvalCategory; error?: string; suggestions?: string[] } {
+): { category: EvalCategory; error?: string; suggestions?: string[]; holeType?: string } {
 	let holes: Hole[];
 	try {
 		holes = parseDocument(rustCode);
@@ -90,6 +96,7 @@ function evaluateHole(
 	}
 
 	const typeKnown = hole.type && hole.type.valType !== 'HOLE' && hole.type.valType !== 'UNKNOWN';
+	const holeType = typeKnown ? hole.type.toTypeString() : undefined;
 	const hasSuggestions = hole.suggestions && hole.suggestions.length > 0;
 	const exactMatch = hasSuggestions && hole.suggestions.some(s => s.suggestionNameNoParams === meta.original);
 
@@ -97,9 +104,9 @@ function evaluateHole(
 		? hole.suggestions.map((s: any) => s.suggestionNameNoParams as string).filter(Boolean)
 		: [];
 
-	if (exactMatch) return { category: 'exact_match', suggestions: suggestionNames };
-	if (hasSuggestions) return { category: 'found_suggestions', suggestions: suggestionNames };
-	if (typeKnown) return { category: 'found_type' };
+	if (exactMatch) return { category: 'exact_match', suggestions: suggestionNames, holeType };
+	if (hasSuggestions) return { category: 'found_suggestions', suggestions: suggestionNames, holeType };
+	if (typeKnown) return { category: 'found_type', holeType };
 	return { category: 'failed', error: 'No type or suggestions found' };
 }
 
@@ -129,6 +136,7 @@ function collectTestCases(dir: string, rootDir: string = dir): Array<{ task: str
 }
 
 const compileSuggestions = process.argv.includes('--compile-suggestions');
+const compileTypes = process.argv.includes('--compile-types');
 
 const datasetArg = process.argv.find((arg) => arg.startsWith('--dataset='));
 const dataset = datasetArg ? datasetArg.slice('--dataset='.length) : 'strategy1';
@@ -147,6 +155,8 @@ const counts: Record<EvalCategory, number> = {
 let totalSuggestionsTested = 0;
 let totalSuggestionsCompile = 0;
 let totalSuggestionsWithHoles = 0;
+let totalHoleTypesTested = 0;
+let totalHoleTypesCompile = 0;
 
 // Suppress console output from the tool during evaluation
 const origLog = console.log;
@@ -155,11 +165,12 @@ console.log = () => {};
 for (const tc of cases) {
 	const rustCode = fs.readFileSync(tc.rsFile, 'utf8');
 	const meta: TestCaseMeta = JSON.parse(fs.readFileSync(tc.jsonFile, 'utf8'));
-	const { category, error, suggestions } = evaluateHole(rustCode, meta);
+	const { category, error, suggestions, holeType } = evaluateHole(rustCode, meta);
 
 	let suggestion_count: number | undefined;
 	let suggestion_compile_results: SuggestionCompileResult[] | undefined;
 	let suggestions_with_holes: string[] | undefined;
+	let hole_type_compiles: boolean | undefined;
 
 	if (suggestions && suggestions.length > 0) {
 		suggestion_count = suggestions.length;
@@ -181,6 +192,12 @@ for (const tc of cases) {
 		}
 	}
 
+	if (compileTypes && holeType) {
+		hole_type_compiles = checkHoleTypeCompiles(rustCode, holeType);
+		totalHoleTypesTested++;
+		if (hole_type_compiles) totalHoleTypesCompile++;
+	}
+
 	results.push({
 		task: tc.task,
 		hole: tc.hole,
@@ -190,6 +207,8 @@ for (const tc of cases) {
 		suggestion_count,
 		suggestion_compile_results,
 		suggestions_with_holes,
+		hole_type: holeType,
+		hole_type_compiles,
 	});
 	counts[category]++;
 }
@@ -208,6 +227,7 @@ for (const r of results) {
 		if (failing.length) parts.push(`no-compile: [${failing.join(', ')}]`);
 	}
 	if (r.suggestions_with_holes) parts.push(`with-holes: [${r.suggestions_with_holes.join(', ')}]`);
+	if (r.hole_type) parts.push(`hole_type: ${r.hole_type}${r.hole_type_compiles !== undefined ? (r.hole_type_compiles ? ' (compiles)' : ' (no-compile)') : ''}`);
 	const compileSuffix = parts.length ? ' | ' + parts.join(' | ') : '';
 	console.log(`${r.task}/${r.hole}: ${r.category}${suffix}${compileSuffix}`);
 }
@@ -230,6 +250,17 @@ if (compileSuggestions) {
 	}
 } else {
 	console.log(`\n(Run with --compile-suggestions to check suggestion compilation)`);
+}
+
+if (compileTypes) {
+	console.log(`\nHole types tested:       ${totalHoleTypesTested}`);
+	console.log(`Hole types compile:      ${totalHoleTypesCompile}`);
+	if (totalHoleTypesTested > 0) {
+		const pct = ((totalHoleTypesCompile / totalHoleTypesTested) * 100).toFixed(1);
+		console.log(`Hole type compile rate:  ${pct}%`);
+	}
+} else {
+	console.log(`\n(Run with --compile-types to check hole type compilation)`);
 }
 
 // Print per-category table
@@ -320,6 +351,47 @@ const suggestionTableLines = [
 ];
 for (const line of suggestionTableLines) console.log(line);
 
+// Print per-category hole-type compile stats table
+interface HoleTypeCategoryStats {
+	tested: number;
+	compiled: number;
+}
+
+const holeTypeCategoryTable: Record<string, HoleTypeCategoryStats> = {};
+for (const r of results) {
+	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
+	const tested = r.hole_type_compiles !== undefined ? 1 : 0;
+	const compiled = r.hole_type_compiles ? 1 : 0;
+	for (const cat of cats) {
+		if (!holeTypeCategoryTable[cat]) {
+			holeTypeCategoryTable[cat] = { tested: 0, compiled: 0 };
+		}
+		holeTypeCategoryTable[cat].tested += tested;
+		holeTypeCategoryTable[cat].compiled += compiled;
+	}
+}
+
+const holeTypeColHeaders = ['category', 'hole_types_tested', 'hole_types_compiled'];
+const holeTypeRows: string[][] = Object.entries(holeTypeCategoryTable)
+	.sort(([a], [b]) => a.localeCompare(b))
+	.map(([cat, s]) => {
+		const pctOfTested = (x: integer) => s.tested > 0 ? `${x} (${((x / s.tested) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
+		return [cat, String(s.tested), pctOfTested(s.compiled)];
+	});
+
+const holeTypeColWidths = holeTypeColHeaders.map((h, i) => Math.max(h.length, ...holeTypeRows.map(r => r[i].length)));
+const holeTypeFmt = (row: string[]) => row.map((cell, i) => cell.padEnd(holeTypeColWidths[i])).join('  ');
+const holeTypeSep = holeTypeColWidths.map(w => '-'.repeat(w)).join('  ');
+
+const holeTypeTableLines = [
+	'\n=== Hole Type Compile Stats by Hole Category ===',
+	...(compileSuggestions ? [] : ['(Run with --compile-suggestions to populate hole_types_tested/hole_types_compiled)']),
+	holeTypeFmt(holeTypeColHeaders),
+	holeTypeSep,
+	...holeTypeRows.map(holeTypeFmt),
+];
+for (const line of holeTypeTableLines) console.log(line);
+
 // Write results to evaluations folder
 // const evaluationsDir = path.resolve(process.cwd(), 'server', 'evaluations');
 // fs.mkdirSync(evaluationsDir, { recursive: true });
@@ -335,3 +407,7 @@ console.log(`Table written to ${tablePath}`);
 const suggestionTablePath = path.join(generatedDir, 'eval_suggestion_table.txt');
 fs.writeFileSync(suggestionTablePath, suggestionTableLines.join('\n') + '\n');
 console.log(`Suggestion table written to ${suggestionTablePath}`);
+
+const holeTypeTablePath = path.join(generatedDir, 'eval_hole_type_table.txt');
+fs.writeFileSync(holeTypeTablePath, holeTypeTableLines.join('\n') + '\n');
+console.log(`Hole type table written to ${holeTypeTablePath}`);
