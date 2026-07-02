@@ -170,10 +170,6 @@ function parseTypeDesc(typeDesc: any): Type {
 			return createType({ valType: ValType.STRUCT, structName: 'str', primitive: false });
 		}
 
-		if (pathName === 'Option' || pathName === 'Result' || pathName === 'Box' || pathName === 'VecDeque' || pathName === 'HashMap' || pathName === 'HashSet') {
-			return createType({ valType: ValType.STRUCT, structName: pathName });
-		}
-
 		return createType({ valType: ValType.STRUCT, structName: pathName });
 	}
 
@@ -305,6 +301,46 @@ function buildPreludeNames(index: Record<string, any>, paths: Record<string, any
 	return names;
 }
 
+// trait name -> (method name -> raw index item entry for that default-body method).
+// Concrete impls only restate items they override, so a type implementing e.g. Iterator
+// without overriding `collect`/`map`/`filter` would otherwise never expose them.
+function buildTraitDefaultMethods(index: Record<string, any>): Map<string, Map<string, any>> {
+	const result = new Map<string, Map<string, any>>();
+	for (const entry of Object.values(index)) {
+		const trait = (entry as any)?.inner?.trait;
+		if (!trait || !Array.isArray(trait.items)) continue;
+		const traitName = typeof (entry as any).name === 'string' ? (entry as any).name : null;
+		if (!traitName) continue;
+
+		const methodMap = result.get(traitName) ?? new Map<string, any>();
+		for (const itemId of trait.items) {
+			const itemEntry = index[String(itemId)];
+			if (itemEntry?.inner?.function?.has_body === true && typeof itemEntry.name === 'string') {
+				methodMap.set(itemEntry.name, itemEntry);
+			}
+		}
+		if (methodMap.size > 0) result.set(traitName, methodMap);
+	}
+	return result;
+}
+
+// A trait implemented by a struct in one crate (e.g. alloc) may be fully defined with
+// default method bodies only in another (e.g. core), so this is built across all three
+// std/alloc/core files before any of them are parsed.
+function mergeTraitDefaultMethods(maps: Map<string, Map<string, any>>[]): Map<string, Map<string, any>> {
+	const merged = new Map<string, Map<string, any>>();
+	for (const map of maps) {
+		for (const [traitName, methods] of map) {
+			const target = merged.get(traitName) ?? new Map<string, any>();
+			for (const [methodName, itemEntry] of methods) {
+				if (!target.has(methodName)) target.set(methodName, itemEntry);
+			}
+			merged.set(traitName, target);
+		}
+	}
+	return merged;
+}
+
 function parseStructEntry(entry: any, index: Record<string, any>, id: string, paths: Record<string, any>, preludeNames: Set<string>): SharedStruct | null {
 	const structEntry = entry?.inner?.struct;
 	if (!structEntry) {
@@ -328,40 +364,46 @@ function parseStructEntry(entry: any, index: Record<string, any>, id: string, pa
 	};
 }
 
-function parseImplEntry(entry: any, index: Record<string, any>, structs: SharedStruct[], functions: SharedFunction[]) {
+function parseImplEntry(
+	entry: any,
+	index: Record<string, any>,
+	structs: SharedStruct[],
+	functions: SharedFunction[],
+	traitDefaultMethods: Map<string, Map<string, any>>
+) {
 	const implEntry = entry?.inner?.impl;
 	if (!implEntry || !Array.isArray(implEntry.items)) {
 		return;
 	}
 
-	// Skip trait impls EXCEPT From — From impls provide constructors (e.g. String::from, Vec::from)
-	if (implEntry.trait != null) {
-		const traitName = normalizePathName(implEntry.trait?.path ?? '');
-		if (traitName !== 'From') {
-			return;
+	const traitName = implEntry.trait != null ? normalizePathName(implEntry.trait?.path ?? '') : null;
+
+	// Applies this impl's own (overridden) items to a struct, then fills in any of the
+	// trait's default-body methods (e.g. Iterator::collect/map/filter) that this impl
+	// didn't override. The guard only applies to defaults — an override always wins.
+	const applyTo = (s: SharedStruct) => {
+		implEntry.items.forEach((itemId: any) => {
+			const itemEntry = index[String(itemId)];
+			parseFunctionEntry(itemEntry, s, functions);
+		});
+
+		if (traitName) {
+			traitDefaultMethods.get(traitName)?.forEach((itemEntry, methodName) => {
+				if (!s.methods.some(m => m.name === methodName)) {
+					parseFunctionEntry(itemEntry, s, functions);
+				}
+			});
 		}
-	}
+	};
 
 	const primitiveFor = implEntry.for?.primitive;
 	if (primitiveFor === 'str') {
-		const strStructs = structs.filter(s => s.name === 'str');
-		strStructs.forEach(s => {
-			implEntry.items.forEach((itemId: any) => {
-				const itemEntry = index[String(itemId)];
-				parseFunctionEntry(itemEntry, s, functions);
-			});
-		});
+		structs.filter(s => s.name === 'str').forEach(applyTo);
 		return;
 	}
 
 	if (implEntry.for?.slice && typeof implEntry.for.slice.generic === 'string') {
-		const sliceStructs = structs.filter(s => s.name === 'slice');
-		sliceStructs.forEach(s => {
-			implEntry.items.forEach((itemId: any) => {
-				const itemEntry = index[String(itemId)];
-				parseFunctionEntry(itemEntry, s, functions);
-			});
-		});
+		structs.filter(s => s.name === 'slice').forEach(applyTo);
 		return;
 	}
 
@@ -374,16 +416,14 @@ function parseImplEntry(entry: any, index: Record<string, any>, structs: SharedS
 		return;
 	}
 
-	const matchingStructs = structs.filter(s => s.name === ownerName && s.impls);
-	matchingStructs.forEach(s => {
-		implEntry.items.forEach((itemId: any) => {
-			const itemEntry = index[String(itemId)];
-			parseFunctionEntry(itemEntry, s, functions);
-		});
-	});
+	structs.filter(s => s.name === ownerName && s.impls).forEach(applyTo);
 }
 
-export function parseStdJson(stdJson: any, externalPreludeNames?: Set<string>): StdParseResult {
+export function parseStdJson(
+	stdJson: any,
+	externalPreludeNames?: Set<string>,
+	traitDefaultMethods: Map<string, Map<string, any>> = new Map()
+): StdParseResult {
 	const index = stdJson?.index ?? {};
 	const paths = stdJson?.paths ?? {};
 
@@ -441,7 +481,7 @@ export function parseStdJson(stdJson: any, externalPreludeNames?: Set<string>): 
 		if (!implItemIds.has(id)) {
 			parseFunctionEntry(entry as any, null, functions);
 		}
-		parseImplEntry(entry, index, structs, functions);
+		parseImplEntry(entry, index, structs, functions, traitDefaultMethods);
 	}
 
 	return {
@@ -494,9 +534,18 @@ export function parseStdJsonFile(): StdParseResult {
 	// Prelude names are defined in std.json; share them with alloc/core so Vec/String/Box get marked
 	const preludeNames = buildPreludeNames(stdRaw?.index ?? {}, stdRaw?.paths ?? {});
 
-	const std   = parseStdJson(stdRaw,   preludeNames);
-	const alloc = parseStdJson(allocRaw, preludeNames);
-	const core  = parseStdJson(coreRaw,  preludeNames);
+	// A trait implemented by a struct in one crate may only have its full definition
+	// (with default method bodies) in another crate's index, so this is built across
+	// all three files up front and shared by every parseStdJson call below.
+	const traitDefaultMethods = mergeTraitDefaultMethods([
+		buildTraitDefaultMethods(stdRaw?.index ?? {}),
+		buildTraitDefaultMethods(allocRaw?.index ?? {}),
+		buildTraitDefaultMethods(coreRaw?.index ?? {}),
+	]);
+
+	const std   = parseStdJson(stdRaw,   preludeNames, traitDefaultMethods);
+	const alloc = parseStdJson(allocRaw, preludeNames, traitDefaultMethods);
+	const core  = parseStdJson(coreRaw,  preludeNames, traitDefaultMethods);
 
 	const structs = mergeStructsByName([std.structs, alloc.structs, core.structs]);
 	const functions = [...std.functions, ...alloc.functions, ...core.functions];
