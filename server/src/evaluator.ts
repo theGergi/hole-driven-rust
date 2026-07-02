@@ -253,7 +253,11 @@ const rows: string[][] = Object.entries(categoryTable)
 		return [cat, stringify(c.exact_match), stringify(c.found_suggestions), stringify(c.found_type), stringify(c.failed), stringify(c.failed_with_error), String(total)];
 	});
 
-const colWidths = colHeaders.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length)));
+const grandTotal = results.length;
+const stringifyTotal = (x: integer) => `${x} (${((x / grandTotal) * 100).toFixed(2)}%)`;
+const totalRow = ['TOTAL', stringifyTotal(counts.exact_match), stringifyTotal(counts.found_suggestions), stringifyTotal(counts.found_type), stringifyTotal(counts.failed), stringifyTotal(counts.failed_with_error), String(grandTotal)];
+
+const colWidths = colHeaders.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length), totalRow[i].length));
 const fmt = (row: string[]) => row.map((cell, i) => cell.padEnd(colWidths[i])).join('  ');
 const sep = colWidths.map(w => '-'.repeat(w)).join('  ');
 
@@ -262,6 +266,8 @@ const tableLines = [
 	fmt(colHeaders),
 	sep,
 	...rows.map(fmt),
+	sep,
+	fmt(totalRow),
 ];
 for (const line of tableLines) console.log(line);
 
