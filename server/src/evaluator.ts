@@ -103,27 +103,28 @@ function evaluateHole(
 	return { category: 'failed', error: 'No type or suggestions found' };
 }
 
-function collectTestCases(dir: string): Array<{ task: string; hole: string; rsFile: string; jsonFile: string }> {
+function collectTestCases(dir: string, rootDir: string = dir): Array<{ task: string; hole: string; rsFile: string; jsonFile: string }> {
 	const cases: Array<{ task: string; hole: string; rsFile: string; jsonFile: string }> = [];
-	for (const taskEntry of fs.readdirSync(dir, { withFileTypes: true })) {
-		if (!taskEntry.isDirectory()) continue;
-		const taskDir = path.join(dir, taskEntry.name);
-		for (const holeEntry of fs.readdirSync(taskDir, { withFileTypes: true })) {
-			if (!holeEntry.isDirectory()) continue;
-			const holeDir = path.join(taskDir, holeEntry.name);
-			const files = fs.readdirSync(holeDir);
-			const rsFile = files.find(f => f.endsWith('.rs'));
-			const jsonFile = files.find(f => f.endsWith('.json'));
-			if (rsFile && jsonFile) {
-				cases.push({
-					task: taskEntry.name,
-					hole: holeEntry.name,
-					rsFile: path.join(holeDir, rsFile),
-					jsonFile: path.join(holeDir, jsonFile),
-				});
-			}
+	const entries = fs.readdirSync(dir, { withFileTypes: true });
+	const files = entries.filter(e => e.isFile()).map(e => e.name);
+	const rsFile = files.find(f => f.endsWith('.rs'));
+	const jsonFile = files.find(f => f.endsWith('.json'));
+
+	if (rsFile && jsonFile) {
+		cases.push({
+			task: path.relative(rootDir, path.dirname(dir)) || path.basename(dir),
+			hole: path.basename(dir),
+			rsFile: path.join(dir, rsFile),
+			jsonFile: path.join(dir, jsonFile),
+		});
+	}
+
+	for (const entry of entries) {
+		if (entry.isDirectory()) {
+			cases.push(...collectTestCases(path.join(dir, entry.name), rootDir));
 		}
 	}
+
 	return cases;
 }
 
