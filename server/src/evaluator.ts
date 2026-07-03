@@ -20,6 +20,7 @@ interface TestCaseMeta {
 	original: string;
 	categories: string[];
 	imports: string[];
+	type?: string;
 }
 
 interface SuggestionCompileResult {
@@ -39,6 +40,8 @@ interface EvalResult {
 	hole_type?: string;
 	hole_type_compiles?: boolean;
 	hole_type_compile_error?: string;
+	expected_type?: string;
+	matched_type?: boolean;
 }
 
 const evalCargoDir = path.resolve(process.cwd(), 'server', 'eval_cargo');
@@ -80,6 +83,17 @@ function checkCompiles(rustCode: string, replacement: string): boolean {
 
 function checkHoleTypeCompiles(rustCode: string, holeType: string): { compiles: boolean; error?: string } {
 	return runCargoCheck(rustCode, `{ let temp: ${holeType} = todo!(); temp }`);
+}
+
+function normalizeType(type: string): string {
+	// Strip module-path qualifiers (e.g. `std::vec::Vec` -> `Vec`, `std::string::String` -> `String`)
+	// so semantically identical types written with different path qualification still compare equal.
+	const stripped = type.replace(/(?:[A-Za-z_][A-Za-z0-9_]*::)+([A-Za-z_][A-Za-z0-9_]*)/g, '$1');
+	return stripped.replace(/\s+/g, '');
+}
+
+function typesMatch(foundType: string, expectedType: string): boolean {
+	return normalizeType(foundType) === normalizeType(expectedType);
 }
 
 function evaluateHole(
@@ -163,6 +177,8 @@ let totalSuggestionsCompile = 0;
 let totalSuggestionsWithHoles = 0;
 let totalHoleTypesTested = 0;
 let totalHoleTypesCompile = 0;
+let totalTypesTested = 0;
+let totalTypesMatched = 0;
 
 console.log(`Evaluating ${cases.length} test cases in dataset "${dataset}"...`);
 
@@ -209,6 +225,13 @@ for (const tc of cases) {
 		if (hole_type_compiles) totalHoleTypesCompile++;
 	}
 
+	let matched_type: boolean | undefined;
+	if (meta.type && holeType) {
+		matched_type = typesMatch(holeType, meta.type);
+		totalTypesTested++;
+		if (matched_type) totalTypesMatched++;
+	}
+
 	results.push({
 		task: tc.task,
 		hole: tc.hole,
@@ -221,6 +244,8 @@ for (const tc of cases) {
 		hole_type: holeType,
 		hole_type_compiles,
 		hole_type_compile_error,
+		expected_type: meta.type,
+		matched_type,
 	});
 	counts[category]++;
 }
@@ -240,6 +265,7 @@ for (const r of results) {
 	}
 	if (r.suggestions_with_holes) parts.push(`with-holes: [${r.suggestions_with_holes.join(', ')}]`);
 	if (r.hole_type) parts.push(`hole_type: ${r.hole_type}${r.hole_type_compiles !== undefined ? (r.hole_type_compiles ? ' (compiles)' : ' (no-compile)') : ''}`);
+	if (r.expected_type) parts.push(`expected_type: ${r.expected_type}${r.matched_type !== undefined ? (r.matched_type ? ' (matched)' : ' (mismatch)') : ''}`);
 	const compileSuffix = parts.length ? ' | ' + parts.join(' | ') : '';
 	console.log(`${r.task}/${r.hole}: ${r.category}${suffix}${compileSuffix}`);
 }
@@ -276,6 +302,13 @@ if (compileTypes) {
 	}
 } else {
 	console.log(`\n(Run with --compile-types to check hole type compilation)`);
+}
+
+console.log(`\nTypes tested against expected: ${totalTypesTested}`);
+console.log(`Types matched:                 ${totalTypesMatched}`);
+if (totalTypesTested > 0) {
+	const pct = ((totalTypesMatched / totalTypesTested) * 100).toFixed(1);
+	console.log(`Match rate:                    ${pct}%`);
 }
 
 // Print per-category table
@@ -407,6 +440,46 @@ const holeTypeTableLines = [
 ];
 for (const line of holeTypeTableLines) console.log(line);
 
+// Print per-category matched-type stats table
+interface MatchedTypeCategoryStats {
+	tested: number;
+	matched: number;
+}
+
+const matchedTypeCategoryTable: Record<string, MatchedTypeCategoryStats> = {};
+for (const r of results) {
+	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
+	const tested = r.matched_type !== undefined ? 1 : 0;
+	const matched = r.matched_type ? 1 : 0;
+	for (const cat of cats) {
+		if (!matchedTypeCategoryTable[cat]) {
+			matchedTypeCategoryTable[cat] = { tested: 0, matched: 0 };
+		}
+		matchedTypeCategoryTable[cat].tested += tested;
+		matchedTypeCategoryTable[cat].matched += matched;
+	}
+}
+
+const matchedTypeColHeaders = ['category', 'types_tested', 'types_matched'];
+const matchedTypeRows: string[][] = Object.entries(matchedTypeCategoryTable)
+	.sort(([a], [b]) => a.localeCompare(b))
+	.map(([cat, s]) => {
+		const pctOfTested = (x: integer) => s.tested > 0 ? `${x} (${((x / s.tested) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
+		return [cat, String(s.tested), pctOfTested(s.matched)];
+	});
+
+const matchedTypeColWidths = matchedTypeColHeaders.map((h, i) => Math.max(h.length, ...matchedTypeRows.map(r => r[i].length)));
+const matchedTypeFmt = (row: string[]) => row.map((cell, i) => cell.padEnd(matchedTypeColWidths[i])).join('  ');
+const matchedTypeSep = matchedTypeColWidths.map(w => '-'.repeat(w)).join('  ');
+
+const matchedTypeTableLines = [
+	'\n=== Matched Type Stats by Hole Category ===',
+	matchedTypeFmt(matchedTypeColHeaders),
+	matchedTypeSep,
+	...matchedTypeRows.map(matchedTypeFmt),
+];
+for (const line of matchedTypeTableLines) console.log(line);
+
 // Write results to evaluations folder
 // const evaluationsDir = path.resolve(process.cwd(), 'server', 'evaluations');
 // fs.mkdirSync(evaluationsDir, { recursive: true });
@@ -426,3 +499,7 @@ console.log(`Suggestion table written to ${suggestionTablePath}`);
 const holeTypeTablePath = path.join(generatedDir, 'eval_hole_type_table.txt');
 fs.writeFileSync(holeTypeTablePath, holeTypeTableLines.join('\n') + '\n');
 console.log(`Hole type table written to ${holeTypeTablePath}`);
+
+const matchedTypeTablePath = path.join(generatedDir, 'eval_matched_type_table.txt');
+fs.writeFileSync(matchedTypeTablePath, matchedTypeTableLines.join('\n') + '\n');
+console.log(`Matched type table written to ${matchedTypeTablePath}`);

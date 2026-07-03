@@ -687,10 +687,29 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         this.visit(methodSegment?.pathIdentSegment()?.identifier())
 
+        let struct = this.structs.filter(s => s.methods.some(m => m.name === methodName))[0];
+        if (!struct) {
+            console.log("hey")
+            struct = this.stdStructs.filter(s => s.methods.some(m => m.name === methodName))[0] as Struct;
+            console.log(this.stdStructs.map(s => s.name + " methods: " + s.methods.map(m => m.name).join(", ")).join("\n"))
+        }
+
+        if (struct) {
+            const method = struct.methods.filter(m => m.name === methodName)[0];
+            const mutable = method.params[0].type.mutable;
+            const mutableReference = method.params[0].type.mutableReference;
+            if (method.params[0].type.valType === ValType.REFERENCE) {
+                this.typeStack.push(toType({valType: ValType.REFERENCE, elementType: toType({valType: ValType.STRUCT, structName: struct.name}), mutable: mutable, mutableReference: mutableReference}));
+            } else {
+                this.typeStack.push(toType({valType: ValType.STRUCT, structName: struct.name, mutable: mutable}));
+            }
+        }
+
         let receiverType = toType({valType: ValType.UNKNOWN});
         if (receiver) {
             receiverType = this.visit(receiver)?.type || receiverType;
         }
+        this.typeStack.pop();
 
         const structName = receiverType?.structName;
         if (!methodName) {
@@ -1239,7 +1258,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         const location = getLocation(ctx)
         const type = this.currentParentType;
-        // console.log("Alleged type:", type)
+        console.log("Alleged type:", type)
         // console.log("Location:", location)
         const hole = {location:location, type: type, suggestions: []}
         this.generateHole(hole)
