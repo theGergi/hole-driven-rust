@@ -311,6 +311,50 @@ if (totalTypesTested > 0) {
 	console.log(`Match rate:                    ${pct}%`);
 }
 
+// Per-category matched-type stats (computed here so it can feed the main results table below)
+interface MatchedTypeCategoryStats {
+	tested: number;
+	matched: number;
+}
+
+const matchedTypeCategoryTable: Record<string, MatchedTypeCategoryStats> = {};
+for (const r of results) {
+	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
+	const tested = r.matched_type !== undefined ? 1 : 0;
+	const matched = r.matched_type ? 1 : 0;
+	for (const cat of cats) {
+		if (!matchedTypeCategoryTable[cat]) {
+			matchedTypeCategoryTable[cat] = { tested: 0, matched: 0 };
+		}
+		matchedTypeCategoryTable[cat].tested += tested;
+		matchedTypeCategoryTable[cat].matched += matched;
+	}
+}
+const stringifyMatchedType = (s: MatchedTypeCategoryStats) =>
+	s.tested > 0 ? `${s.matched}/${s.tested} (${((s.matched / s.tested) * 100).toFixed(2)}%)` : `0/0 (0.00%)`;
+
+// Per-category hole-type compile stats (computed here so it can feed the main results table below)
+interface HoleTypeCategoryStats {
+	tested: number;
+	compiled: number;
+}
+
+const holeTypeCategoryTable: Record<string, HoleTypeCategoryStats> = {};
+for (const r of results) {
+	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
+	const tested = r.hole_type_compiles !== undefined ? 1 : 0;
+	const compiled = r.hole_type_compiles ? 1 : 0;
+	for (const cat of cats) {
+		if (!holeTypeCategoryTable[cat]) {
+			holeTypeCategoryTable[cat] = { tested: 0, compiled: 0 };
+		}
+		holeTypeCategoryTable[cat].tested += tested;
+		holeTypeCategoryTable[cat].compiled += compiled;
+	}
+}
+const stringifyHoleTypeCompiles = (s: HoleTypeCategoryStats) =>
+	s.tested > 0 ? `${s.compiled}/${s.tested} (${((s.compiled / s.tested) * 100).toFixed(2)}%)` : `0/0 (0.00%)`;
+
 // Print per-category table
 const categoryTable: Record<string, Record<EvalCategory, number>> = {};
 for (const r of results) {
@@ -324,18 +368,22 @@ for (const r of results) {
 }
 
 const evalCats: EvalCategory[] = ['exact_match', 'found_suggestions', 'found_type', 'failed', 'failed_with_error'];
-const colHeaders = ['category', 'exact', 'suggestions', 'type', 'failed', 'failed_with_error', 'total'];
+const colHeaders = ['category', 'exact', 'suggestions', 'type', 'failed', 'failed_with_error', 'total', 'matched_type', 'hole_type_compiles'];
 const rows: string[][] = Object.entries(categoryTable)
 .sort(([a], [b]) => a.localeCompare(b))
 .map(([cat, c]) => {
 		const total = evalCats.reduce((s, k) => s + c[k], 0);
 		const stringify = (x: integer) => `${x} (${((x / total) * 100).toFixed(2)}%)`
-		return [cat, stringify(c.exact_match), stringify(c.found_suggestions), stringify(c.found_type), stringify(c.failed), stringify(c.failed_with_error), String(total)];
+		const matchedTypeStats = matchedTypeCategoryTable[cat] ?? { tested: 0, matched: 0 };
+		const holeTypeStats = holeTypeCategoryTable[cat] ?? { tested: 0, compiled: 0 };
+		return [cat, stringify(c.exact_match), stringify(c.found_suggestions), stringify(c.found_type), stringify(c.failed), stringify(c.failed_with_error), String(total), stringifyMatchedType(matchedTypeStats), stringifyHoleTypeCompiles(holeTypeStats)];
 	});
 
 const grandTotal = results.length;
 const stringifyTotal = (x: integer) => `${x} (${((x / grandTotal) * 100).toFixed(2)}%)`;
-const totalRow = ['TOTAL', stringifyTotal(counts.exact_match), stringifyTotal(counts.found_suggestions), stringifyTotal(counts.found_type), stringifyTotal(counts.failed), stringifyTotal(counts.failed_with_error), String(grandTotal)];
+const totalMatchedTypeStats: MatchedTypeCategoryStats = { tested: totalTypesTested, matched: totalTypesMatched };
+const totalHoleTypeStats: HoleTypeCategoryStats = { tested: totalHoleTypesTested, compiled: totalHoleTypesCompile };
+const totalRow = ['TOTAL', stringifyTotal(counts.exact_match), stringifyTotal(counts.found_suggestions), stringifyTotal(counts.found_type), stringifyTotal(counts.failed), stringifyTotal(counts.failed_with_error), String(grandTotal), stringifyMatchedType(totalMatchedTypeStats), stringifyHoleTypeCompiles(totalHoleTypeStats)];
 
 const colWidths = colHeaders.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length), totalRow[i].length));
 const fmt = (row: string[]) => row.map((cell, i) => cell.padEnd(colWidths[i])).join('  ');
@@ -400,25 +448,6 @@ const suggestionTableLines = [
 for (const line of suggestionTableLines) console.log(line);
 
 // Print per-category hole-type compile stats table
-interface HoleTypeCategoryStats {
-	tested: number;
-	compiled: number;
-}
-
-const holeTypeCategoryTable: Record<string, HoleTypeCategoryStats> = {};
-for (const r of results) {
-	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
-	const tested = r.hole_type_compiles !== undefined ? 1 : 0;
-	const compiled = r.hole_type_compiles ? 1 : 0;
-	for (const cat of cats) {
-		if (!holeTypeCategoryTable[cat]) {
-			holeTypeCategoryTable[cat] = { tested: 0, compiled: 0 };
-		}
-		holeTypeCategoryTable[cat].tested += tested;
-		holeTypeCategoryTable[cat].compiled += compiled;
-	}
-}
-
 const holeTypeColHeaders = ['category', 'hole_types_tested', 'hole_types_compiled'];
 const holeTypeRows: string[][] = Object.entries(holeTypeCategoryTable)
 	.sort(([a], [b]) => a.localeCompare(b))
@@ -441,25 +470,6 @@ const holeTypeTableLines = [
 for (const line of holeTypeTableLines) console.log(line);
 
 // Print per-category matched-type stats table
-interface MatchedTypeCategoryStats {
-	tested: number;
-	matched: number;
-}
-
-const matchedTypeCategoryTable: Record<string, MatchedTypeCategoryStats> = {};
-for (const r of results) {
-	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
-	const tested = r.matched_type !== undefined ? 1 : 0;
-	const matched = r.matched_type ? 1 : 0;
-	for (const cat of cats) {
-		if (!matchedTypeCategoryTable[cat]) {
-			matchedTypeCategoryTable[cat] = { tested: 0, matched: 0 };
-		}
-		matchedTypeCategoryTable[cat].tested += tested;
-		matchedTypeCategoryTable[cat].matched += matched;
-	}
-}
-
 const matchedTypeColHeaders = ['category', 'types_tested', 'types_matched'];
 const matchedTypeRows: string[][] = Object.entries(matchedTypeCategoryTable)
 	.sort(([a], [b]) => a.localeCompare(b))
