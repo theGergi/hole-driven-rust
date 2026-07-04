@@ -213,8 +213,18 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     getBoundMethod(structName: string, identifier: string): Function | null {
         const struct = this.structs.find(s => s.name === structName);
-        if (!struct) return null;
-        return getAllMethods(struct).findLast(m => m.name === identifier) ?? null;
+        if (struct) {
+            const method = getAllMethods(struct).findLast(m => m.name === identifier);
+            if (method) return method;
+        }
+
+        for (const s of this.structs) { // TODO Separate into function
+            const trait = s.traits.find(t => t.name === structName);
+            const method = trait?.methods.find(m => m.name === identifier);
+            if (method) return method;
+        }
+
+        return null;
     }
 
     borrow(variableName: string, mutable: boolean, location: SourceLocation): Variable {
@@ -326,9 +336,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     canBeAssigned(assignee: Type, assigned: Type, owner: Variable | null = null, checkMutability: boolean = true): boolean {
         
-        if (assigned.structName === "HashMap") {
-
-            console.log("Checking assignability. Assignee type:", assignee, "Assigned type:", assigned)
+        if (assignee.valType === 'trait') {
+            const matchinStructs = [...this.structs, ...this.stdStructs].filter(s => s.traits.some(t => t.name === assignee.structName))
+            return matchinStructs.some(s => this.canBeAssigned(toType({...assignee, valType: ValType.STRUCT, structName: s.name}), assigned, owner, checkMutability))
         }
         if (checkMutability && assignee.mutable && !assigned.mutable) {
             return false;
@@ -349,14 +359,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
         
         if (assignee.valType === ValType.UNKNOWN) {
-            console.log("tuka sme")
             return true;
         }
 
         if (assignee.valType === assigned.valType) {
-            console.log("Huge hello")
-            console.log(assignee)
-            console.log(assigned)
             if (assignee.valType === ValType.VECTOR ) {
                 return typesEqual(assignee.elementType, assigned.elementType);
             } else if (assignee.valType === ValType.REFERENCE) {
@@ -365,7 +371,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 }
                 return typesEqual(assignee.elementType, assigned.elementType);
             } else if (assignee.valType === ValType.STRUCT) {
-                console.log("Big hello")
                 if (assignee.structName !== assigned.structName) return false;
                 return typesEqual(assignee.elementType, assigned.elementType); // TODO: check if elementType exists
             }
@@ -658,14 +663,21 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         console.log("Function call:", functionName, "Struct:", structName)
-        const func = this.getBoundFunction(functionName, structName);
+        let func = this.getBoundFunction(functionName, structName);
+
+        let matchedTraitName: string | null = null; // TODO Should go in bound function
+        if (!func && structName) {
+            const implementors = this.structs.filter(s => s.traits.some(t => t.name === structName));
+            func = this.functions.find(f => f.name === functionName && implementors.some(s => s.name === f.structName));
+            if (func) matchedTraitName = structName;
+        }
 
         if (!func) {
             return { type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
         }
 
         ctx.callParams()?.expression().forEach((expr: any, i: number) => {
-            const otherType = func.params[i]?.type ?? toType({valType: ValType.UNKNOWN});
+            const otherType = func!.params[i]?.type ?? toType({valType: ValType.UNKNOWN});
 
             this.typeStack.push(otherType)
             const type = this.visit(expr)?.type;
@@ -674,6 +686,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
             this.typeStack.pop()
         })
+
+        if (matchedTraitName) {
+            return { type: toType({valType: ValType.TRAIT, structName: matchedTraitName}), location: getLocation(ctx) };
+        }
 
         return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
     }
@@ -694,13 +710,22 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         if (struct) {
-            const method = getAllMethods(struct).filter(m => m.name === methodName)[0];
+            const method = getAllMethods(struct).filter(m => m.name === methodName)[0]; // TODO separate traits and structs
             const mutable = method.params[0].type.mutable;
             const mutableReference = method.params[0].type.mutableReference;
+            // A method only found via one of the struct's traits could equally belong to any
+            // other implementor of that trait, so the guessed receiver type is the trait
+            // itself rather than this one arbitrarily-picked struct.
+            const traitName = struct.methods.some(m => m.name === methodName)
+                ? undefined
+                : struct.traits.find(t => t.methods.some(m => m.name === methodName))?.name;
+            const guessedType = traitName
+                ? toType({valType: ValType.TRAIT, structName: traitName})
+                : toType({valType: ValType.STRUCT, structName: struct.name});
             if (method.params[0].type.valType === ValType.REFERENCE) {
-                this.typeStack.push(toType({methodCall: true, valType: ValType.REFERENCE, elementType: toType({valType: ValType.STRUCT, structName: struct.name}), mutable: mutable, mutableReference: mutableReference}));
+                this.typeStack.push(toType({methodCall: true, valType: ValType.REFERENCE, elementType: guessedType, mutable: mutable, mutableReference: mutableReference}));
             } else {
-                this.typeStack.push(toType({methodCall: true, valType: ValType.STRUCT, structName: struct.name, mutable: mutable}));
+                this.typeStack.push(toType({methodCall: true, valType: guessedType.valType, structName: guessedType.structName, mutable: mutable}));
             }
         } else {
             this.typeStack.push(toType({valType: ValType.UNKNOWN}));
@@ -1418,6 +1443,14 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 s.suggestionNameNoParams = s.suggestion.name;
             }
         });
+
+        if (hole.type.valType === ValType.TRAIT) {
+            const matchinStructs = [...this.structs, ...this.stdStructs].filter(s => s.traits.some(t => t.name === hole.type.structName))
+            hole.subTypes = matchinStructs.map(s => toType({...hole.type, valType: ValType.STRUCT, structName: s.name}))
+            console.log("Big hey")
+            console.log(hole.subTypes.map(s => s.toTypeString()))
+        }
+
 
         hole.suggestions = holeSuggestions;
 

@@ -51,9 +51,9 @@ export function constructTypeString(type: Type): string {
 			}
 		} else if (type.valType === 'Vec') {
 			typeString += "Vec<" + (type.elementType ? constructTypeString(type.elementType) : "?") + ">";
-		} else if (type.valType === 'struct') {
-			if (type.structName === 'Vec' && type.elementType) {
-				typeString += "Vec<" + constructTypeString(type.elementType) + ">";
+		} else if (type.valType === 'struct' || type.valType === 'trait') {
+			if (type.elementType) {
+				typeString += type.structName + "<" + constructTypeString(type.elementType) + ">";
 			} else {
 				typeString += type.structName;
 			}
@@ -111,6 +111,7 @@ export interface Param {
 export interface Hole {
 	location: SourceLocation;
 	type: Type;
+	subTypes?: Type[]; // For traits / multiple types
 	context?: HoleContext;
 	suggestions: Suggestion[]
 }

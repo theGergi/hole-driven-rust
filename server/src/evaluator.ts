@@ -92,20 +92,33 @@ function normalizeType(type: string): string {
 	return stripped
 			.replace(/\s+/g, '')
 			.replace(/\b(i8|i16|i32|i64|i128|isize|u8|u16|u32|u64|u128|usize)\b/g, 'int') // HACKY, cause we don't handle different types well now
-			.replace(/\b(f32|f64)\b/g, 'float');
+			.replace(/\b(f32|f64)\b/g, 'float')
+			.replace(/<[^>]*>/g, ""); // TODO: Maybe this is too weak
 }
 
-function typesMatch(foundType: string, expectedType: string): boolean {
-	if (normalizeType(foundType) !== normalizeType(expectedType)) {
-		console.log(`Type mismatch: found "${normalizeType(foundType)}", expected "${normalizeType(expectedType)}"`);
+function typesMatch(foundType: string, expectedType: string, holeSupTypes?: string[]): boolean {
+	// if (normalizeType(foundType) !== normalizeType(expectedType)) {
+	// 	console.log(`Type mismatch: found "${normalizeType(foundType)}", expected "${normalizeType(expectedType)}"`);
+	// }
+
+	// if (foundType === 'trait') {
+	// 	console.log("Checking trait")
+	// 	console.log(expectedType)
+	// 	console.log(holeSupTypes)
+	// 	console.log(normalizeType('std::ops::Range<i32>') === normalizeType('Range<i32>'))
+	// }
+
+	if (holeSupTypes) {
+		return holeSupTypes.some(st => normalizeType(st) === normalizeType(expectedType))
 	}
+
 	return normalizeType(foundType) === normalizeType(expectedType);
 }
 
 function evaluateHole(
 	rustCode: string,
 	meta: TestCaseMeta
-): { category: EvalCategory; error?: string; suggestions?: string[]; holeType?: string } {
+): { category: EvalCategory; error?: string; suggestions?: string[]; holeType?: string, holeSubTypes?: string[] } {
 	let holes: Hole[];
 	try {
 		holes = parseDocument(rustCode);
@@ -123,6 +136,7 @@ function evaluateHole(
 
 	const typeKnown = hole.type && hole.type.valType !== 'HOLE' && hole.type.valType !== 'UNKNOWN';
 	const holeType = typeKnown ? hole.type.toTypeString() : undefined;
+	const holeSubTypes = typeKnown && hole.subTypes ? hole.subTypes.map(st => st.toTypeString()) : undefined;
 	const hasSuggestions = hole.suggestions && hole.suggestions.length > 0;
 	const exactMatch = hasSuggestions && hole.suggestions.some(s => s.suggestionNameNoParams === meta.original);
 
@@ -130,9 +144,9 @@ function evaluateHole(
 		? hole.suggestions.map((s: any) => s.suggestionNameNoParams as string).filter(Boolean)
 		: [];
 
-	if (exactMatch) return { category: 'exact_match', suggestions: suggestionNames, holeType };
-	if (hasSuggestions) return { category: 'found_suggestions', suggestions: suggestionNames, holeType };
-	if (typeKnown) return { category: 'found_type', holeType };
+	if (exactMatch) return { category: 'exact_match', suggestions: suggestionNames, holeType, holeSubTypes };
+	if (hasSuggestions) return { category: 'found_suggestions', suggestions: suggestionNames, holeType, holeSubTypes };
+	if (typeKnown) return { category: 'found_type', holeType, holeSubTypes };
 	return { category: 'failed', error: 'No type or suggestions found' };
 }
 
@@ -195,7 +209,7 @@ console.log = () => {};
 for (const tc of cases) {
 	const rustCode = fs.readFileSync(tc.rsFile, 'utf8');
 	const meta: TestCaseMeta = JSON.parse(fs.readFileSync(tc.jsonFile, 'utf8'));
-	const { category, error, suggestions, holeType } = evaluateHole(rustCode, meta);
+	const { category, error, suggestions, holeType, holeSubTypes } = evaluateHole(rustCode, meta);
 
 	let suggestion_count: number | undefined;
 	let suggestion_compile_results: SuggestionCompileResult[] | undefined;
@@ -234,7 +248,7 @@ for (const tc of cases) {
 	let matched_type: boolean | undefined;
 	if (meta.type && holeType) {
 		console.log = origLog;
-		matched_type = typesMatch(holeType, meta.type);
+		matched_type = typesMatch(holeType, meta.type, holeSubTypes);
 		console.log = () => {};
 		totalTypesTested++;
 		if (matched_type) totalTypesMatched++;

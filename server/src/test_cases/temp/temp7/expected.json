@@ -1,0 +1,10 @@
+[
+	{
+		"line": 14,
+		"type": {
+			"valType": "trait",
+			"structName": "Iterator"
+			},
+		"suggestionNames": []
+	}
+]
