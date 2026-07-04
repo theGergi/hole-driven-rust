@@ -56,3 +56,6 @@ coverage/
 target/
 Cargo.*
 server/src/datasets/*
+!server/src/datasets/strategy2_with_types
+server/src/datasets/strategy2_with_types/*
+!server/src/datasets/strategy2_with_types/eval_results.json

@@ -97,19 +97,20 @@ function normalizeType(type: string): string {
 }
 
 function typesMatch(foundType: string, expectedType: string, holeSupTypes?: string[]): boolean {
-	// if (normalizeType(foundType) !== normalizeType(expectedType)) {
-	// 	console.log(`Type mismatch: found "${normalizeType(foundType)}", expected "${normalizeType(expectedType)}"`);
-	// }
-
+	
 	// if (foundType === 'trait') {
-	// 	console.log("Checking trait")
-	// 	console.log(expectedType)
-	// 	console.log(holeSupTypes)
-	// 	console.log(normalizeType('std::ops::Range<i32>') === normalizeType('Range<i32>'))
-	// }
+		// 	console.log("Checking trait")
+		// 	console.log(expectedType)
+		// 	console.log(holeSupTypes)
+		// 	console.log(normalizeType('std::ops::Range<i32>') === normalizeType('Range<i32>'))
+		// }
 
 	if (holeSupTypes) {
 		return holeSupTypes.some(st => normalizeType(st) === normalizeType(expectedType))
+	}
+	
+	if (normalizeType(foundType) !== normalizeType(expectedType)) {
+		console.log(`Type mismatch: found "${normalizeType(foundType)}", expected "${normalizeType(expectedType)}"`);
 	}
 
 	return normalizeType(foundType) === normalizeType(expectedType);

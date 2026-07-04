@@ -1,5 +1,5 @@
 import { RustParserVisitor } from './parser/RustParserVisitor';
-import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext } from './parser/RustParser';
+import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext, CompoundAssignmentExpressionContext, DereferenceExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
 import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct, getAllMethods } from '../../shared/out/types.js';
@@ -184,12 +184,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     }
 
 
-    getBoundVariable(variableName: string): Variable {
+    getBoundVariable(variableName: string): Variable | undefined {
         const variable = this.variables.findLast(variable => (variable.name === variableName)) // Find last temporary fix for shadowing
         if(variable) {
             return variable;
         } else {
-            throw Error("Variable not bound")
+            // throw Error("Variable not bound")
+            return undefined;
         }
     }
 
@@ -227,8 +228,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         return null;
     }
 
-    borrow(variableName: string, mutable: boolean, location: SourceLocation): Variable {
+    borrow(variableName: string, mutable: boolean, location: SourceLocation): Variable | undefined {
         const variable = this.getBoundVariable(variableName);
+        if (!variable) {
+            return variable;
+        }
 
         if (variable.type?.borrows === Borrow.BFree) {
             variable.type.borrows = mutable ? Borrow.BMut : Borrow.BImmut
@@ -245,6 +249,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     consume(variableName: string) {
         const variable = this.getBoundVariable(variableName)
+
+        if (!variable) {
+            return
+        }
+
         if (variable.type.primitive || variable.type.valType === ValType.REFERENCE) {
             return
         }
@@ -384,11 +393,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     visitLiteralExpression = (ctx: any): ReturnType => {
         console.log("Literal Expression")
-        console.log(ctx)
         
         if (ctx.FLOAT_LITERAL()) {
-            
-
             return {
                 type: toType({valType: ValType.FLOAT}),
                 location: getLocation(ctx)
@@ -490,28 +496,40 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     visitAssignmentExpression = (ctx: any): ReturnType | null => {
         console.log("Assignment expression")
-
+        console.log(ctx.getText())
         const leftHandExpression = ctx.expression(0);
+        const rightHandExpression = ctx.expression(1);
 
         let variable;
-        let varType;
+        let varType = toType({valType: ValType.UNKNOWN});
 
+        if (leftHandExpression.getText() === '??') {
+            const right = this.visit(rightHandExpression) as ReturnType;
+            this.typeStack.push(right.type || toType({valType: ValType.UNKNOWN}));
+            this.visit(leftHandExpression) as ReturnType;
+            this.typeStack.pop()
+            return null
+        }
+        
         if (leftHandExpression instanceof FieldExpressionContext) {
             variable = this.getBoundVariable(leftHandExpression.expression().getText());
-            varType = this.getBoundField(variable.type.structName!, leftHandExpression.identifier().getText()).type
+            varType = variable ? this.getBoundField(variable.type.structName!, leftHandExpression.identifier().getText()).type : toType({valType: ValType.UNKNOWN})
         } else if (leftHandExpression instanceof IndexExpressionContext) {
             const baseName = leftHandExpression.expression(0)!.getText();
             variable = this.getBoundVariable(baseName);
-            varType = variable.type.elementType ?? toType({valType: ValType.UNKNOWN});
+            varType = variable?.type.elementType ?? toType({valType: ValType.UNKNOWN});
+        } else if (leftHandExpression instanceof DereferenceExpressionContext) {
+            variable = this.visit(leftHandExpression.expression())!.type!.owner
+            varType = variable?.type ?? toType({valType: ValType.UNKNOWN});
         } else {
             const variableName = leftHandExpression.getText();
             variable = this.getBoundVariable(variableName)
-            varType = variable.type
+            varType = variable?.type ?? toType({valType: ValType.UNKNOWN})
         }
-        const expression = ctx.expression(1);
 
 
-        if (!variable.type.mutable && !variable.type.mutableReference) {
+
+        if (variable && !variable.type.mutable && !variable.type.mutableReference) {
             throw Error("Cannot modify immutable variable", ctx.expression(0).getText())
         }
 
@@ -520,19 +538,28 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         let inferedType: Type = toType({valType: ValType.UNKNOWN});
-        if (expression) {
-            inferedType = this.visit(expression)?.type as Type;
+        if (rightHandExpression) {
+            inferedType = this.visit(rightHandExpression)?.type as Type;
         }
 
-        if(expression instanceof PathExpression_Context && expression?.pathExpression()?.pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier()) { // a variable is being assigned
-            this.consume(expression.getText())
+        if(rightHandExpression instanceof PathExpression_Context && rightHandExpression?.pathExpression()?.pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier()) { // a variable is being assigned
+            this.consume(rightHandExpression.getText())
         }
 
-        variable.location = getLocation(ctx);
+        if(variable){
+            variable.location = getLocation(ctx);
+        }
 
-        this.typeStack.pop();
+        if (varType) {
+            this.typeStack.pop();
+        }
 
         return null
+    }
+
+    visitCompoundAssignmentExpression = (ctx: any): ReturnType | null => {
+        console.log("Compound Assignment")
+        return this.visitAssignmentExpression(ctx);
     }
     
     visitLetStatement = (ctx: any): ReturnType | null => {
@@ -664,6 +691,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         console.log("Function call:", functionName, "Struct:", structName)
         let func = this.getBoundFunction(functionName, structName);
+
+        console.log(func)
 
         let matchedTraitName: string | null = null; // TODO Should go in bound function
         if (!func && structName) {
@@ -846,7 +875,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             this.visit(ctx.expression());
         }
 
+        this.typeStack.push(toType({valType: ValType.VOID}))
+
         this.visit(ctx.blockExpression());
+
+        this.typeStack.pop()
 
         this.loadState(currentState);
 
@@ -868,7 +901,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         if (visitedField?.type?.valType === ValType.HOLE) {
             const hole = {location: getLocation(ctx.identifier()), type: this.currentParentType, suggestions: []}
-            this.generateStructHole(hole, variable)
+            variable ? this.generateStructHole(hole, variable) : {}
             return { type: visitedField.type, location: getLocation(ctx) };
         }
 
@@ -899,13 +932,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             console.log("Function call:", func?.name)
             return { type: func?.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
         } else {
-            try {
-                const variable = this.getBoundVariable(ctx.getText());
-                console.log("Variable:", variable.name)
-                return { type: variable.type, location: getLocation(ctx) };
-            } catch {
-                return { type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) }
-            }
+            const variable = this.getBoundVariable(ctx.getText());
+            console.log("Variable:", variable?.name)
+            const type = variable ? variable.type : toType({valType: ValType.UNKNOWN})
+            console.log("hey")
+            return { type: type, location: getLocation(ctx) };
         }
     }
 
@@ -920,6 +951,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
         this.typeStack.pop();
         
+        this.typeStack.push(toType({valType: ValType.VOID}))
+
         this.loadState(currentState);
         this.visit(ctx.blockExpression(0));
         
@@ -934,6 +967,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 this.visit(ctx.ifLetExpression());
             }
         }
+
+        this.typeStack.pop()
 
         return {
             type: this.currentParentType,
@@ -1252,6 +1287,19 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             location: getLocation(ctx)
         };
     };
+
+    visitDereferenceExpression = (ctx: DereferenceExpressionContext): ReturnType => {
+        console.log("Dereference Expression")
+
+        const expr = this.visit(ctx.expression());
+
+        const type = expr?.type?.owner?.type ?? toType({valType: ValType.UNKNOWN});
+
+        return {
+            type: type,
+            location: getLocation(ctx)
+        };
+    }
 
     visitRangeExpression = (ctx: any): ReturnType => {
         console.log("Range Expression")
