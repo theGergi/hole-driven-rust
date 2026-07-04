@@ -28,6 +28,7 @@ export class Type {
 	borrows!: Borrow;
 	owner?: Variable;
 	structName?: string; // For struct types
+	methodCall?: Boolean // Hack for case of x.keys() where keys(&self)
 
 	toTypeString(): string {
 		return constructTypeString(this)

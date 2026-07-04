@@ -187,7 +187,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
 
     getBoundVariable(variableName: string): Variable {
-        const variable = this.variables.find(variable => (variable.name === variableName))
+        const variable = this.variables.findLast(variable => (variable.name === variableName)) // Find last temporary fix for shadowing
         if(variable) {
             return variable;
         } else {
@@ -287,13 +287,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return toType({valType: ValType.STRING});
         }
 
-        if (typeString === 'Vec' && genericArgs) {
+        
+        if (genericArgs) {
             const elementType = this.parseStringType(genericArgs);
-            if (this.structs.find(s => s.name === "Vec")) {
-                return toType({valType: ValType.STRUCT, structName: "Vec", elementType: elementType});
-            } else {
-                return toType({valType: ValType.VECTOR, elementType: elementType});
-            }
+            return toType({valType: ValType.STRUCT, structName: typeString, elementType: elementType});
         }
         const refMatch = typeString.match(/^(&)?\s*(mut)?\s*([a-zA-Z_][a-zA-Z0-9_]*)(?:<([^>]+)>)?$/);
 
@@ -328,14 +325,17 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         return true;
     }
 
-    canBeAssigned(assignee: Hole | Param, assigned: Type, owner: Variable | null = null, checkMutability: boolean = true): boolean {
+    canBeAssigned(assignee: Type, assigned: Type, owner: Variable | null = null, checkMutability: boolean = true): boolean {
         
-        // console.log("Checking assignability. Assignee type:", assignee.type, "Assigned type:", assigned)
-        if (checkMutability && assignee.type.mutable && !assigned.mutable) {
+        if (assigned.structName === "HashMap") {
+
+            console.log("Checking assignability. Assignee type:", assignee, "Assigned type:", assigned)
+        }
+        if (checkMutability && assignee.mutable && !assigned.mutable) {
             return false;
         }
 
-        if (assigned.primitive && assignee.type.valType === assigned.valType) {
+        if (assigned.primitive && assignee.valType === assigned.valType) {
             return true;
         }
 
@@ -343,27 +343,32 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             if (owner && !this.checkBorrows(owner, owner.location)) {
                 return false;
             }
-        } else if (assigned.borrows === Borrow.BImmut && ((assignee.type.valType === ValType.REFERENCE && assignee.type.mutableReference) || assignee.type.valType !== ValType.REFERENCE)  ) {
+        } else if (assigned.borrows === Borrow.BImmut && ((assignee.valType === ValType.REFERENCE && assignee.mutableReference) || assignee.valType !== ValType.REFERENCE)  ) {
             if (owner && !this.checkBorrows(owner, owner.location)) {
                 return false;
             }
         }
         
-        if (assignee.type.valType === ValType.UNKNOWN) {
+        if (assignee.valType === ValType.UNKNOWN) {
+            console.log("tuka sme")
             return true;
         }
 
-        if (assignee.type.valType === assigned.valType) {
-            if (assignee.type.valType === ValType.VECTOR ) {
-                return typesEqual(assignee.type.elementType, assigned.elementType);
-            } else if (assignee.type.valType === ValType.REFERENCE) {
-                if (assignee.type.mutableReference && !assigned.mutableReference) {
+        if (assignee.valType === assigned.valType) {
+            console.log("Huge hello")
+            console.log(assignee)
+            console.log(assigned)
+            if (assignee.valType === ValType.VECTOR ) {
+                return typesEqual(assignee.elementType, assigned.elementType);
+            } else if (assignee.valType === ValType.REFERENCE) {
+                if (assignee.mutableReference && !assigned.mutableReference) {
                     return false;
                 }
-                return typesEqual(assignee.type.elementType, assigned.elementType);
-            } else if (assignee.type.valType === ValType.STRUCT) {
-                if (assignee.type.structName !== assigned.structName) return false;
-                return typesEqual(assignee.type.elementType, assigned.elementType);
+                return typesEqual(assignee.elementType, assigned.elementType);
+            } else if (assignee.valType === ValType.STRUCT) {
+                console.log("Big hello")
+                if (assignee.structName !== assigned.structName) return false;
+                return typesEqual(assignee.elementType, assigned.elementType); // TODO: check if elementType exists
             }
             return true;
         }
@@ -689,9 +694,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         let struct = this.structs.filter(s => s.methods.some(m => m.name === methodName))[0];
         if (!struct) {
-            console.log("hey")
             struct = this.stdStructs.filter(s => s.methods.some(m => m.name === methodName))[0] as Struct;
-            console.log(this.stdStructs.map(s => s.name + " methods: " + s.methods.map(m => m.name).join(", ")).join("\n"))
         }
 
         if (struct) {
@@ -699,9 +702,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             const mutable = method.params[0].type.mutable;
             const mutableReference = method.params[0].type.mutableReference;
             if (method.params[0].type.valType === ValType.REFERENCE) {
-                this.typeStack.push(toType({valType: ValType.REFERENCE, elementType: toType({valType: ValType.STRUCT, structName: struct.name}), mutable: mutable, mutableReference: mutableReference}));
+                this.typeStack.push(toType({methodCall: true, valType: ValType.REFERENCE, elementType: toType({valType: ValType.STRUCT, structName: struct.name}), mutable: mutable, mutableReference: mutableReference}));
             } else {
-                this.typeStack.push(toType({valType: ValType.STRUCT, structName: struct.name, mutable: mutable}));
+                this.typeStack.push(toType({methodCall: true, valType: ValType.STRUCT, structName: struct.name, mutable: mutable}));
             }
         }
 
@@ -1301,29 +1304,38 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         variables.forEach((variable: Variable) => {
+            if (variable.name == 'dict') {
+
+                console.log("Checking dict")
+                // console.log(variable.type)
+            }
             // console.log("Checking variable:", variable.name, "of type", variable.type)
-            if (variable.type && this.canBeAssigned(hole, variable.type, variable, false) && !variable.type.consumed) {
+            if (variable.type && this.canBeAssigned(hole.type, variable.type, variable, false) && !variable.type.consumed) {
                 if (this.checkBorrows(variable.type.owner!, hole.location, variable.name)) {
                     holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
                 }
             }
-            if (hole.type.valType === ValType.REFERENCE && hole.type.elementType?.valType === variable.type.valType && !variable.type.consumed && (variable.type.valType === ValType.STRUCT ? variable.type.structName === hole.type.elementType?.structName : true)) {
+            if (hole.type.valType === ValType.REFERENCE && this.canBeAssigned(hole.type.elementType!, variable.type, variable, false) && !variable.type.consumed) {
+                console.log("opaaaa")
+                console.log(hole.type)
+                console.log(variable.type)
                 if (hole.type.mutableReference) {
                     if (variable.type.mutable) {
                         if (variable.type.borrows === Borrow.BFree) {
-                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
+                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: variable.type.methodCall ? "&mut " : "" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                         } else {
                             if (this.checkBorrows(variable, hole.location, variable.name)) {
-                                holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&mut " + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
+                                holeSuggestions.push({suggestionType: 'variable', suggestion: {name: variable.type.methodCall ? "&mut " : "" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                             }
                         }
                     }
                 } else {
                     if (variable.type.borrows === Borrow.BFree || variable.type.borrows === Borrow.BImmut) {
-                        holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName}), location: variable.location}});
+                        console.log("here here")
+                        holeSuggestions.push({suggestionType: 'variable', suggestion: {name: variable.type.methodCall ? "&" : "" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName}), location: variable.location}});
                     } else {
                         if (this.checkBorrows(variable, hole.location, variable.name)) {
-                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: "&" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
+                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: variable.type.methodCall ? "&mut " : "" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                         }
                     }
                 }
@@ -1333,7 +1345,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 if (struct) {
                     // console.log("Checking struct:", struct.name)
                     struct.fields.forEach((field: Param) => {
-                        if (field.type && this.canBeAssigned(hole, field.type)) {
+                        if (field.type && this.canBeAssigned(hole.type, field.type)) {
                             holeSuggestions.push({suggestionType: 'field', suggestion: {...field, name: variable.name + "." + field.name, location: variable.location}});
                         }
                     });
@@ -1343,7 +1355,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                     refType.valType = ValType.REFERENCE;
                     refType.elementType = variable.type;
                     refType.mutableReference = variable.type.mutable;
-                    if (struct.index && (this.canBeAssigned(hole, variable.type) || this.canBeAssigned(hole, refType))) {
+                    if (struct.index && (this.canBeAssigned(hole.type, variable.type) || this.canBeAssigned(hole.type, refType))) {
                         holeSuggestions.push({suggestionType: 'slice', suggestion: {...struct, name: "&" + variable.name + "[??..??]", location: variable.location}});
                     }
 
@@ -1361,7 +1373,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         });
 
         functions.forEach((func: Function) => {
-            if (func.type && this.canBeAssigned(hole, func.type, null, false)) {
+            if (func.type && this.canBeAssigned(hole.type, func.type, null, false)) {
                 holeSuggestions.push({suggestionType: 'function', suggestion: {...func, name: func.name, location: func.location}});
             }
         })
@@ -1424,7 +1436,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             if (!method.type) return;
 
             const methodName = `${receiverName}.${method.name}`;
-            if (this.canBeAssigned(hole, method.type, null, false)) {
+            if (this.canBeAssigned(hole.type, method.type, null, false)) {
                 holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: methodName, location: receiverLocation}});
             }
 
@@ -1441,7 +1453,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         let holeSuggestions = [] as Suggestion[];
 
         struct.fields.forEach((field: Param) => {
-            if (field.type && this.canBeAssigned(hole, field.type)) {
+            if (field.type && this.canBeAssigned(hole.type, field.type)) {
                 holeSuggestions.push({suggestionType: 'field', suggestion: field, suggestionNameWithTypes: field.name, suggestionNameWithoutTypes: field.name, suggestionNameNoParams: field.name});
             }
         });
@@ -1453,7 +1465,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             methodRefType.valType = ValType.REFERENCE;
             methodRefType.elementType = variable.type;
             methodRefType.mutableReference = variable.type.mutable;
-            if (method.type && this.canBeAssigned(hole, method.type, null, false) && (this.canBeAssigned(method.params[0], variable.type, variable) || this.canBeAssigned(method.params[0], methodRefType, variable))) {
+            if (method.type && this.canBeAssigned(hole.type, method.type, null, false) && (this.canBeAssigned(method.params[0].type, variable.type, variable) || this.canBeAssigned(method.params[0].type, methodRefType, variable))) {
                 let paramStringWithTypes = method.params.slice(1).map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
                 let paramStringWithoutTypes = method.params.slice(1).map(() => `??`).join(', ')
                 const suggestionNameWithTypes = `${method.name}(${paramStringWithTypes})`

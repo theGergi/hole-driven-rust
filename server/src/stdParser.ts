@@ -157,20 +157,16 @@ function parseTypeDesc(typeDesc: any): Type {
 		const pathName = normalizePathName(resolved.path ?? '');
 		const angleArgs = resolved.args?.angle_bracketed?.args ?? [];
 
-		if (pathName === 'Vec') {
-			const inner = angleArgs.length > 0 ? parseTypeDesc(angleArgs[0].type ?? angleArgs[0]) : createType({ valType: ValType.UNKNOWN });
-			return createType({
-				valType: ValType.STRUCT,
-				structName: 'Vec',
-				elementType: inner,
-			});
-		}
-
 		if (pathName === 'str') {
 			return createType({ valType: ValType.STRUCT, structName: 'str', primitive: false });
 		}
 
-		return createType({ valType: ValType.STRUCT, structName: pathName });
+		const inner = angleArgs.length > 0 ? parseTypeDesc(angleArgs[0].type ?? angleArgs[0]) : undefined;
+		return createType({
+			valType: ValType.STRUCT,
+			structName: pathName,
+			elementType: inner,
+		});
 	}
 
 	if ('qualified_path' in typeDesc && typeof typeDesc.qualified_path === 'object') {

@@ -12,9 +12,9 @@ fn count_upper(s:&str) -> i32 {
     let uvowel: &str = "AEIOU";
     let mut count: i32 = 0;
 
-    for (indx, elem) in s.chars().into_iter().enumerate() {
+    for (indx, elem) in { let temp: i32 = todo!(); temp } {
         if indx % 2 == 0 {
-            if uvowel.contains(count_upper()) {
+            if uvowel.contains(elem) {
                 count += 1;
             }
         }

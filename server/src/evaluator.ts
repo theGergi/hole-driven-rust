@@ -93,6 +93,9 @@ function normalizeType(type: string): string {
 }
 
 function typesMatch(foundType: string, expectedType: string): boolean {
+	if (normalizeType(foundType) !== normalizeType(expectedType)) {
+		console.log(`Type mismatch: found "${normalizeType(foundType)}", expected "${normalizeType(expectedType)}"`);
+	}
 	return normalizeType(foundType) === normalizeType(expectedType);
 }
 
@@ -227,7 +230,10 @@ for (const tc of cases) {
 
 	let matched_type: boolean | undefined;
 	if (meta.type && holeType) {
+		console.log = origLog;
+		console.log(`Comparing hole type "${holeType}" with expected type "${meta.type}" for test case ${tc.task}/${tc.hole}`);
 		matched_type = typesMatch(holeType, meta.type);
+		console.log = () => {};
 		totalTypesTested++;
 		if (matched_type) totalTypesMatched++;
 	}
