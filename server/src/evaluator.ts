@@ -89,7 +89,10 @@ function normalizeType(type: string): string {
 	// Strip module-path qualifiers (e.g. `std::vec::Vec` -> `Vec`, `std::string::String` -> `String`)
 	// so semantically identical types written with different path qualification still compare equal.
 	const stripped = type.replace(/(?:[A-Za-z_][A-Za-z0-9_]*::)+([A-Za-z_][A-Za-z0-9_]*)/g, '$1');
-	return stripped.replace(/\s+/g, '');
+	return stripped
+			.replace(/\s+/g, '')
+			.replace(/\b(i8|i16|i32|i64|i128|isize|u8|u16|u32|u64|u128|usize)\b/g, 'int') // HACKY, cause we don't handle different types well now
+			.replace(/\b(f32|f64)\b/g, 'float');
 }
 
 function typesMatch(foundType: string, expectedType: string): boolean {

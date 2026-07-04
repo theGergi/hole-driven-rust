@@ -274,7 +274,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         }
 
-        if (["i8", "i16", "i32", "i64", "i128", "isize"].includes(typeString as any)) {
+        if (["i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64", "u128", "usize"].includes(typeString as any)) {
             return toType({valType: ValType.INT});
         }
         if (typeString === 'f32' || typeString === 'f64') {
@@ -289,7 +289,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         
         if (genericArgs) {
-            const elementType = this.parseStringType(genericArgs);
+            let elementType : Type | undefined = this.parseStringType(genericArgs);
+            elementType = elementType.valType === ValType.UNKNOWN ? undefined : elementType
             return toType({valType: ValType.STRUCT, structName: typeString, elementType: elementType});
         }
         const refMatch = typeString.match(/^(&)?\s*(mut)?\s*([a-zA-Z_][a-zA-Z0-9_]*)(?:<([^>]+)>)?$/);
@@ -335,7 +336,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return false;
         }
 
-        if (assigned.primitive && assignee.valType === assigned.valType) {
+        if (assigned.primitive && (assignee.valType === assigned.valType)) {
             return true;
         }
 
@@ -392,8 +393,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         if (ctx.INTEGER_LITERAL()) {
-            
-
             return {
                 type: toType({valType: ValType.INT}),
                 location: getLocation(ctx)
@@ -962,7 +961,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         this.typeStack.pop();
 
-        return { type: toType({valType: ValType.INT}), location: getLocation(ctx) };
+        return { type: toType({valType: ValType.BOOL}), location: getLocation(ctx) };
     }
 
 
@@ -1116,6 +1115,25 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
     };
 
+    visitTypeCastExpression = (ctx: TypeCastExpressionContext): ReturnType => {
+        console.log("Type Cast Expression")
+        
+        const type = this.parseType(ctx.typeNoBounds());
+            
+        const currentType = this.currentParentType;
+
+        // this.typeStack.push(toType({...currentType, valType: ValType.FLOAT})); // TODO: TOO Restrictive
+        
+        const expr = this.visit(ctx.expression());
+
+        // this.typeStack.pop();
+        
+        return {
+            type: type,
+            location: getLocation(ctx)
+        };
+    }
+
     visitArithmeticOrLogicalExpression = (ctx: ArithmeticOrLogicalExpressionContext): ReturnType => {
         console.log("ArithmeticOrLogicalExpression")
 
@@ -1193,17 +1211,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             location: getLocation(ctx)
         };
     };
-
-    visitTypeCastExpression = (ctx: TypeCastExpressionContext): ReturnType => {
-        console.log("Type Cast Expression")
-
-        const type = this.parseType(ctx.typeNoBounds());
-
-        return {
-            type: type,
-            location: getLocation(ctx)
-        };
-    }
 
     visitBorrowExpression = (ctx: BorrowExpressionContext): ReturnType => {
         console.log("BorrowExpression");
