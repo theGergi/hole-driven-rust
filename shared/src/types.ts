@@ -11,7 +11,7 @@ export enum ValType {
 	STRUCT = "struct",
 	TRAIT = "trait",
 	RANGE = "range",
-	VOID = "void"
+	VOID = "()"
 }
 
 export enum Borrow {
