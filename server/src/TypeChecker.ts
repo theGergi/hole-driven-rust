@@ -274,7 +274,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         }
 
-        if (["i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64", "u128", "usize"].includes(typeString as any)) {
+        if (["i8", "i16", "i32", "i64", "i128", "isize"].includes(typeString as any)) {
             return toType({valType: ValType.INT});
         }
         if (typeString === 'f32' || typeString === 'f64') {
@@ -380,8 +380,20 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     visitLiteralExpression = (ctx: any): ReturnType => {
         console.log("Literal Expression")
+        console.log(ctx)
+        
+        if (ctx.FLOAT_LITERAL()) {
+            
+
+            return {
+                type: toType({valType: ValType.FLOAT}),
+                location: getLocation(ctx)
+            };
+        }
 
         if (ctx.INTEGER_LITERAL()) {
+            
+
             return {
                 type: toType({valType: ValType.INT}),
                 location: getLocation(ctx)
@@ -402,7 +414,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         if (ctx.KW_TRUE() || ctx.KW_FALSE()) {
             return {
-                type: toType({valType: ValType.INT}),
+                type: toType({valType: ValType.BOOL}),
                 location: getLocation(ctx)
             };
         }
@@ -706,6 +718,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             } else {
                 this.typeStack.push(toType({methodCall: true, valType: ValType.STRUCT, structName: struct.name, mutable: mutable}));
             }
+        } else {
+            this.typeStack.push(toType({valType: ValType.UNKNOWN}));
         }
 
         let receiverType = toType({valType: ValType.UNKNOWN});
@@ -891,9 +905,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         const currentState = this.saveState();
 
+        this.typeStack.push(toType({valType: ValType.BOOL}));
         if (ctx.expression()) {
             this.visit(ctx.expression());
         }
+        this.typeStack.pop();
         
         this.loadState(currentState);
         this.visit(ctx.blockExpression(0));
@@ -917,6 +933,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     }
 
     visitComparisonExpression = (ctx: any): ReturnType => {
+        console.log("Comparison expression")
+
+        console.log(ctx.getText())
         const leftChild = ctx.expression(0);
         const rightChild = ctx.expression(1);
 
@@ -928,7 +947,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         let right: ReturnType;
 
         if (leftChild.getText() === '??') {
+            console.log("here here")
             right = this.visit(rightChild) as ReturnType;
+            console.log(right)
+            console.log(rightChild.getText())
+            console.log("Right type:", right.type)
             this.typeStack.push(right.type || toType({valType: ValType.UNKNOWN}));
             left = this.visit(leftChild) as ReturnType;
         } else {

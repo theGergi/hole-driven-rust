@@ -231,7 +231,6 @@ for (const tc of cases) {
 	let matched_type: boolean | undefined;
 	if (meta.type && holeType) {
 		console.log = origLog;
-		console.log(`Comparing hole type "${holeType}" with expected type "${meta.type}" for test case ${tc.task}/${tc.hole}`);
 		matched_type = typesMatch(holeType, meta.type);
 		console.log = () => {};
 		totalTypesTested++;
