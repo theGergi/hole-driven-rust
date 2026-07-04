@@ -5,6 +5,7 @@ import {
 	Param,
 	SourceLocation,
 	SharedStruct,
+	Trait,
 	Type,
 	ValType,
 	Function as SharedFunction
@@ -204,7 +205,10 @@ function isSelfParam(param: Param): boolean {
 	return false;
 }
 
-function parseFunctionEntry(entry: any, struct: SharedStruct | null, functions: SharedFunction[]) {
+// `methodsTarget` is where this item lands when it's a self-method (e.g. a struct's own
+// `methods` array, or a `Trait`'s `methods` array when the item comes from a trait impl).
+// Associated functions (no self param) always go into the flat `functions` list instead.
+function parseFunctionEntry(entry: any, structName: string | null, methodsTarget: SharedFunction[] | null, functions: SharedFunction[]) {
 	const fn = entry?.inner?.function;
 	if (!fn) {
 		return null;
@@ -217,16 +221,16 @@ function parseFunctionEntry(entry: any, struct: SharedStruct | null, functions: 
 		params: Array.isArray(fn.sig?.inputs) ? fn.sig.inputs.map(parseParam) : []
 	};
 
-	if (struct) {
+	if (structName) {
 		if (parsed.params.length > 0 && isSelfParam(parsed.params[0])) {
-			parsed.structName = struct.name;
-			struct.methods.push(parsed);
+			parsed.structName = structName;
+			methodsTarget?.push(parsed);
 			return;
 		}
 
-		parsed.structName = struct.name;
+		parsed.structName = structName;
 		if (parsed.type?.valType === ValType.STRUCT && parsed.type.structName === 'Self') {
-			parsed.type.structName = struct.name;
+			parsed.type.structName = structName;
 		}
 	}
 
@@ -297,25 +301,36 @@ function buildPreludeNames(index: Record<string, any>, paths: Record<string, any
 	return names;
 }
 
-// trait name -> (method name -> raw index item entry for that default-body method).
-// Concrete impls only restate items they override, so a type implementing e.g. Iterator
-// without overriding `collect`/`map`/`filter` would otherwise never expose them.
-function buildTraitDefaultMethods(index: Record<string, any>): Map<string, Map<string, any>> {
-	const result = new Map<string, Map<string, any>>();
-	for (const entry of Object.values(index)) {
+interface TraitDefinition {
+	location: SourceLocation;
+	path: string[];
+	defaultMethods: Map<string, any>;
+}
+
+function buildTraitDefinitions(index: Record<string, any>, paths: Record<string, any>): Map<string, TraitDefinition> {
+	const result = new Map<string, TraitDefinition>();
+	for (const [id, entry] of Object.entries(index)) {
 		const trait = (entry as any)?.inner?.trait;
 		if (!trait || !Array.isArray(trait.items)) continue;
 		const traitName = typeof (entry as any).name === 'string' ? (entry as any).name : null;
 		if (!traitName) continue;
 
-		const methodMap = result.get(traitName) ?? new Map<string, any>();
+		const defaultMethods = new Map<string, any>();
 		for (const itemId of trait.items) {
 			const itemEntry = index[String(itemId)];
 			if (itemEntry?.inner?.function?.has_body === true && typeof itemEntry.name === 'string') {
-				methodMap.set(itemEntry.name, itemEntry);
+				defaultMethods.set(itemEntry.name, itemEntry);
 			}
 		}
-		if (methodMap.size > 0) result.set(traitName, methodMap);
+
+		const pathEntry = paths[id];
+		const path: string[] = Array.isArray(pathEntry?.path) ? pathEntry.path : [];
+
+		result.set(traitName, {
+			location: parseSourceLocation((entry as any).span),
+			path,
+			defaultMethods
+		});
 	}
 	return result;
 }
@@ -323,15 +338,19 @@ function buildTraitDefaultMethods(index: Record<string, any>): Map<string, Map<s
 // A trait implemented by a struct in one crate (e.g. alloc) may be fully defined with
 // default method bodies only in another (e.g. core), so this is built across all three
 // std/alloc/core files before any of them are parsed.
-function mergeTraitDefaultMethods(maps: Map<string, Map<string, any>>[]): Map<string, Map<string, any>> {
-	const merged = new Map<string, Map<string, any>>();
-	for (const map of maps) {
-		for (const [traitName, methods] of map) {
-			const target = merged.get(traitName) ?? new Map<string, any>();
-			for (const [methodName, itemEntry] of methods) {
-				if (!target.has(methodName)) target.set(methodName, itemEntry);
+function mergeTraitDefinitions(defsList: Map<string, TraitDefinition>[]): Map<string, TraitDefinition> {
+	const merged = new Map<string, TraitDefinition>();
+	for (const defs of defsList) {
+		for (const [traitName, def] of defs) {
+			const target = merged.get(traitName);
+			if (!target) {
+				merged.set(traitName, { location: def.location, path: def.path, defaultMethods: new Map(def.defaultMethods) });
+				continue;
 			}
-			merged.set(traitName, target);
+			for (const [methodName, itemEntry] of def.defaultMethods) {
+				if (!target.defaultMethods.has(methodName)) target.defaultMethods.set(methodName, itemEntry);
+			}
+			if (target.path.length === 0 && def.path.length > 0) target.path = def.path;
 		}
 	}
 	return merged;
@@ -353,10 +372,9 @@ function parseStructEntry(entry: any, index: Record<string, any>, id: string, pa
 		fields: parseStructFields(structEntry.kind, index),
 		methods: [],
 		path,
-		iterable: undefined,
-		index: undefined,
 		impls: structEntry.impls,
-		prelude: preludeNames.has(name) ? true : undefined
+		prelude: preludeNames.has(name) ? true : undefined,
+		traits: []
 	};
 }
 
@@ -365,7 +383,7 @@ function parseImplEntry(
 	index: Record<string, any>,
 	structs: SharedStruct[],
 	functions: SharedFunction[],
-	traitDefaultMethods: Map<string, Map<string, any>>
+	traitDefinitions: Map<string, TraitDefinition>
 ) {
 	const implEntry = entry?.inner?.impl;
 	if (!implEntry || !Array.isArray(implEntry.items)) {
@@ -374,22 +392,35 @@ function parseImplEntry(
 
 	const traitName = implEntry.trait != null ? normalizePathName(implEntry.trait?.path ?? '') : null;
 
-	// Applies this impl's own (overridden) items to a struct, then fills in any of the
-	// trait's default-body methods (e.g. Iterator::collect/map/filter) that this impl
-	// didn't override. The guard only applies to defaults — an override always wins.
 	const applyTo = (s: SharedStruct) => {
+		if (!traitName) {
+			implEntry.items.forEach((itemId: any) => {
+				const itemEntry = index[String(itemId)];
+				parseFunctionEntry(itemEntry, s.name, s.methods, functions);
+			});
+			return;
+		}
+
+		const traitDef = traitDefinitions.get(traitName);
+		const trait: Trait = {
+			name: traitName,
+			location: traitDef?.location ?? ZERO_LOCATION,
+			path: traitDef?.path ?? [],
+			methods: []
+		};
+
 		implEntry.items.forEach((itemId: any) => {
 			const itemEntry = index[String(itemId)];
-			parseFunctionEntry(itemEntry, s, functions);
+			parseFunctionEntry(itemEntry, s.name, trait.methods, functions);
 		});
 
-		if (traitName) {
-			traitDefaultMethods.get(traitName)?.forEach((itemEntry, methodName) => {
-				if (!s.methods.some(m => m.name === methodName)) {
-					parseFunctionEntry(itemEntry, s, functions);
-				}
-			});
-		}
+		traitDef?.defaultMethods.forEach((itemEntry, methodName) => {
+			if (!trait.methods.some(m => m.name === methodName)) {
+				parseFunctionEntry(itemEntry, s.name, trait.methods, functions);
+			}
+		});
+
+		s.traits.push(trait);
 	};
 
 	const primitiveFor = implEntry.for?.primitive;
@@ -418,7 +449,7 @@ function parseImplEntry(
 export function parseStdJson(
 	stdJson: any,
 	externalPreludeNames?: Set<string>,
-	traitDefaultMethods: Map<string, Map<string, any>> = new Map()
+	traitDefinitions: Map<string, TraitDefinition> = new Map()
 ): StdParseResult {
 	const index = stdJson?.index ?? {};
 	const paths = stdJson?.paths ?? {};
@@ -443,10 +474,9 @@ export function parseStdJson(
 				fields: [],
 				methods: [],
 				path: ['slice'],
-				iterable: true,
-				index: true,
 				impls: Array.isArray(primitive.impls) ? primitive.impls : [],
 				prelude: undefined,
+				traits: [],
 			});
 		}
 	}
@@ -457,10 +487,9 @@ export function parseStdJson(
 		fields: [],
 		methods: [],
 		path: ['str'],
-		iterable: true,
-		index: true,
 		impls: undefined,
 		prelude: true,
+		traits: [],
 	});
 
 	// Build the set of IDs that belong to impl blocks so we don't process them twice
@@ -475,9 +504,9 @@ export function parseStdJson(
 	for (const [id, entry] of Object.entries(index)) {
 		// Only scan free functions (those not owned by an impl block)
 		if (!implItemIds.has(id)) {
-			parseFunctionEntry(entry as any, null, functions);
+			parseFunctionEntry(entry as any, null, null, functions);
 		}
-		parseImplEntry(entry, index, structs, functions, traitDefaultMethods);
+		parseImplEntry(entry, index, structs, functions, traitDefinitions);
 	}
 
 	return {
@@ -493,7 +522,7 @@ function mergeStructsByName(structLists: SharedStruct[][]): SharedStruct[] {
 		for (const s of list) {
 			const existing = byName.get(s.name);
 			if (!existing) {
-				byName.set(s.name, { ...s, methods: [...s.methods] });
+				byName.set(s.name, { ...s, methods: [...s.methods], traits: s.traits.map(t => ({ ...t, methods: [...t.methods] })) });
 				continue;
 			}
 
@@ -504,11 +533,23 @@ function mergeStructsByName(structLists: SharedStruct[][]): SharedStruct[] {
 					existingMethodNames.add(method.name);
 				}
 			}
+			for (const trait of s.traits) {
+				const existingTrait = existing.traits.find(t => t.name === trait.name);
+				if (!existingTrait) {
+					existing.traits.push({ ...trait, methods: [...trait.methods] });
+					continue;
+				}
+				const existingTraitMethodNames = new Set(existingTrait.methods.map(m => m.name));
+				for (const method of trait.methods) {
+					if (!existingTraitMethodNames.has(method.name)) {
+						existingTrait.methods.push(method);
+						existingTraitMethodNames.add(method.name);
+					}
+				}
+			}
 			if (existing.fields.length === 0 && s.fields.length > 0) {
 				existing.fields = s.fields;
 			}
-			existing.iterable = existing.iterable ?? s.iterable;
-			existing.index = existing.index ?? s.index;
 			existing.prelude = existing.prelude ?? s.prelude;
 		}
 	}
@@ -533,15 +574,15 @@ export function parseStdJsonFile(): StdParseResult {
 	// A trait implemented by a struct in one crate may only have its full definition
 	// (with default method bodies) in another crate's index, so this is built across
 	// all three files up front and shared by every parseStdJson call below.
-	const traitDefaultMethods = mergeTraitDefaultMethods([
-		buildTraitDefaultMethods(stdRaw?.index ?? {}),
-		buildTraitDefaultMethods(allocRaw?.index ?? {}),
-		buildTraitDefaultMethods(coreRaw?.index ?? {}),
+	const traitDefinitions = mergeTraitDefinitions([
+		buildTraitDefinitions(stdRaw?.index ?? {}, stdRaw?.paths ?? {}),
+		buildTraitDefinitions(allocRaw?.index ?? {}, allocRaw?.paths ?? {}),
+		buildTraitDefinitions(coreRaw?.index ?? {}, coreRaw?.paths ?? {}),
 	]);
 
-	const std   = parseStdJson(stdRaw,   preludeNames, traitDefaultMethods);
-	const alloc = parseStdJson(allocRaw, preludeNames, traitDefaultMethods);
-	const core  = parseStdJson(coreRaw,  preludeNames, traitDefaultMethods);
+	const std   = parseStdJson(stdRaw,   preludeNames, traitDefinitions);
+	const alloc = parseStdJson(allocRaw, preludeNames, traitDefinitions);
+	const core  = parseStdJson(coreRaw,  preludeNames, traitDefinitions);
 
 	const structs = mergeStructsByName([std.structs, alloc.structs, core.structs]);
 	const functions = [...std.functions, ...alloc.functions, ...core.functions];

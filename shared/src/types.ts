@@ -9,6 +9,7 @@ export enum ValType {
 	VECTOR = "Vec",
 	REFERENCE = "reference",
 	STRUCT = "struct",
+	TRAIT = "trait",
 	RANGE = "range",
 	VOID = "void"
 }
@@ -29,7 +30,9 @@ export class Type {
 	borrows!: Borrow;
 	owner?: Variable;
 	structName?: string; // For struct types
-	methodCall?: Boolean // Hack for case of x.keys() where keys(&self)
+	methodCall?: Boolean; // Hack for case of x.keys() where keys(&self)
+
+	traits: Trait[] = [];
 
 	toTypeString(): string {
 		return constructTypeString(this)
@@ -89,8 +92,14 @@ export interface Struct {
 	fields: Param[];
 	methods: Function[];
 	path: string[]; // Full path for matching against user imports, e.g., ["std", "collections", "HashSet"]
-	iterable?: boolean; // Indicates if the type can be iterated over
-	index?: boolean; // Indicates if the type can be indexed/sliced (e.g., Vec, arrays)
+	traits: Trait[];
+}
+
+export interface Trait {
+	name: string;
+	location: SourceLocation;
+	methods: Function[];
+	path: string[]; // Full path for matching against user imports, e.g., ["std", "collections", "HashSet"]
 }
 
 export interface Param {
@@ -125,6 +134,13 @@ export interface SourceLocation {
 }
 
 
+// Flattens a struct's inherent methods together with the methods it gets from
+// implemented traits, so callers doing method-call resolution don't need to know
+// whether a method is inherent or trait-provided.
+export function getAllMethods(struct: { methods: Function[]; traits: Trait[] }): Function[] {
+	return [...struct.methods, ...struct.traits.flatMap(t => t.methods)];
+}
+
 // Helper function to format a variable as "name: type"
 export function formatVariable(variable: any): string {
 	return `${variable.name}: ${constructTypeString(variable.type)}`;
@@ -150,8 +166,7 @@ export interface SharedStruct {
 	fields: Param[];
 	methods: Function[];
 	path?: string[]; // Full path e.g. ["std", "collections", "HashSet"]
-	iterable?: boolean; // Indicates if the type can be iterated over
-	index?: boolean; // Indicates if the type can be indexed/sliced (e.g., Vec, arrays)
+	traits: Trait[];
 	impls?: any[]; // Store raw impl data for later processing
 	prelude?: boolean; // True if automatically imported via the Rust prelude
 }

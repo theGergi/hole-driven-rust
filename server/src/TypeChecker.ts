@@ -2,7 +2,7 @@ import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
-import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct } from '../../shared/out/types.js';
+import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct, getAllMethods } from '../../shared/out/types.js';
 import { toType, getSourceLocationKey, getLocation, cloneVariable, cloneFunction, cloneParam } from './utils';
 import { parseStdJsonFile, StdParseResult } from './stdParser';
 
@@ -62,8 +62,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 fields: [...struct.fields],
                 methods: [...struct.methods],
                 path: struct.path ?? [],
-                iterable: struct.iterable,
-                index: struct.index,
+                traits: struct.traits.map(t => ({ ...t, methods: [...t.methods] })),
             });
         }
         
@@ -137,8 +136,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 fields: [...found.fields],
                 methods: [...found.methods],
                 path: found.path ?? [],
-                iterable: found.iterable,
-                index: found.index,
+                traits: found.traits.map(t => ({ ...t, methods: [...t.methods] })),
             });
         }
 
@@ -216,7 +214,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     getBoundMethod(structName: string, identifier: string): Function | null {
         const struct = this.structs.find(s => s.name === structName);
         if (!struct) return null;
-        return struct.methods.findLast(m => m.name === identifier) ?? null;
+        return getAllMethods(struct).findLast(m => m.name === identifier) ?? null;
     }
 
     borrow(variableName: string, mutable: boolean, location: SourceLocation): Variable {
@@ -446,7 +444,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             path: [structName],
             location: getLocation(ctx),
             fields: fields,
-            methods: []
+            methods: [],
+            traits: []
         };
 
         this.structs.push(struct);
@@ -479,21 +478,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         const struct = this.structs.find(s => s.name === typeName);
 
-        if (ctx.typePath().getText() === "Iterator") {
-            if (struct) {
-                struct.iterable = true;
-            } else {
-                throw Error(`Struct '${typeName}' not found for Iterator impl`);
-            }
-        }
-
-        if (ctx.typePath().getText() === "Index") {
-            if (struct) {
-                struct.index = true;
-            } else {
-                throw Error(`Struct '${typeName}' not found for Index impl`);
-            }
-        }
+        struct?.traits.push({ name: ctx.typePath().getText(), location: getLocation(ctx), methods: [], path: [] });
 
         return null;
     };
@@ -703,13 +688,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         this.visit(methodSegment?.pathIdentSegment()?.identifier())
 
-        let struct = this.structs.filter(s => s.methods.some(m => m.name === methodName))[0];
+        let struct = this.structs.filter(s => getAllMethods(s).some(m => m.name === methodName))[0];
         if (!struct) {
-            struct = this.stdStructs.filter(s => s.methods.some(m => m.name === methodName))[0] as Struct;
+            struct = this.stdStructs.filter(s => getAllMethods(s).some(m => m.name === methodName))[0] as Struct;
         }
 
         if (struct) {
-            const method = struct.methods.filter(m => m.name === methodName)[0];
+            const method = getAllMethods(struct).filter(m => m.name === methodName)[0];
             const mutable = method.params[0].type.mutable;
             const mutableReference = method.params[0].type.mutableReference;
             if (method.params[0].type.valType === ValType.REFERENCE) {
@@ -1385,7 +1370,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                     refType.valType = ValType.REFERENCE;
                     refType.elementType = variable.type;
                     refType.mutableReference = variable.type.mutable;
-                    if (struct.index && (this.canBeAssigned(hole.type, variable.type) || this.canBeAssigned(hole.type, refType))) {
+                    if (struct.traits.some(t => t.name === "Index") && (this.canBeAssigned(hole.type, variable.type) || this.canBeAssigned(hole.type, refType))) {
                         holeSuggestions.push({suggestionType: 'slice', suggestion: {...struct, name: "&" + variable.name + "[??..??]", location: variable.location}});
                     }
 
@@ -1458,7 +1443,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         const nextVisited = new Set(visitedStructNames);
         nextVisited.add(structType.structName);
 
-        struct.methods.forEach((method: Function) => {
+        getAllMethods(struct).forEach((method: Function) => {
             // For reference receivers, skip methods that require an owned receiver (self by value)
             if (isReference && method.params.length > 0) {
                 if (method.params[0].type.valType !== ValType.REFERENCE) return;
@@ -1488,7 +1473,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         });
         
-        struct.methods.forEach((method: Function) => {
+        getAllMethods(struct).forEach((method: Function) => {
             // console.log("Checking method:", method.name)
             const methodRefType = new Type();
             Object.assign(methodRefType, variable.type);
@@ -1510,7 +1495,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             variables: this.variables.map(cloneVariable),
             functions: this.functions.map(cloneFunction),
             fields: struct.fields.map(cloneParam),
-            methods: struct.methods.map(cloneFunction)
+            methods: getAllMethods(struct).map(cloneFunction)
         };
         this.holes.push(hole);
     }
