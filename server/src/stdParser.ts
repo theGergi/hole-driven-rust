@@ -498,8 +498,13 @@ function parseImplEntry(
 	};
 
 	const primitiveFor = implEntry.for?.primitive;
+	// console.log(primitiveFor)
 	if (primitiveFor === 'str') {
 		structs.filter(s => s.name === 'str').forEach(applyTo);
+		return;
+	}
+	if (["i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64", "u128", "usize"].includes(primitiveFor as any)) {
+		structs.filter(s => s.name === 'i32').forEach(applyTo);
 		return;
 	}
 
@@ -561,6 +566,28 @@ export function parseStdJson(
 		fields: [],
 		methods: [],
 		path: ['str'],
+		impls: undefined,
+		prelude: true,
+		traits: [],
+	});
+
+	structs.push({
+		name: 'i32',
+		location: { line: 0, column: 0, length: 0 },
+		fields: [],
+		methods: [],
+		path: ['i32'],
+		impls: undefined,
+		prelude: true,
+		traits: [],
+	});
+
+	structs.push({
+		name: 'f32',
+		location: { line: 0, column: 0, length: 0 },
+		fields: [],
+		methods: [],
+		path: ['f32'],
 		impls: undefined,
 		prelude: true,
 		traits: [],

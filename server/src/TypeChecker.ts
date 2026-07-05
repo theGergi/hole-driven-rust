@@ -1552,6 +1552,22 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         });
 
+        // Order: local variables/functions first, then methods (and fields/indexing) on those
+        // variables, and only then associated functions (e.g. Struct::new()). Within a group,
+        // shorter suggestions (by displayed name) are favored as they tend to be more relevant.
+        const suggestionRank = (s: Suggestion): number => {
+            if (s.suggestionType === 'function') {
+                return (s.suggestion as Function).structName ? 2 : 0;
+            }
+            if (s.suggestionType === 'variable') return 0;
+            return 1;
+        };
+        holeSuggestions.sort((a, b) => {
+            const rankDiff = suggestionRank(a) - suggestionRank(b);
+            if (rankDiff !== 0) return rankDiff;
+            return (a.suggestionNameWithoutTypes?.length ?? 0) - (b.suggestionNameWithoutTypes?.length ?? 0);
+        });
+
         if (hole.type.valType === ValType.TRAIT) {
             const matchinStructs = [...this.structs, ...this.stdStructs].filter(s => s.traits.some(t => t.name === hole.type.structName))
             hole.subTypes = matchinStructs.map(s => toType({...hole.type, valType: ValType.STRUCT, structName: s.name}))

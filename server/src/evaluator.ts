@@ -11,6 +11,10 @@ import { execSync } from 'child_process';
 import { integer } from 'vscode-languageserver';
 import { parseStdJsonFile } from './stdParser';
 
+// Cap on how many suggestions get compiled per hole when --compile-suggestions is set,
+// since compiling every suggestion can be prohibitively slow.
+const MAX_SUGGESTIONS_TO_COMPILE = 5;
+
 type EvalCategory = 'failed_with_error' | 'found_type' | 'found_suggestions' | 'exact_match' | 'failed';
 
 interface TestCaseMeta {
@@ -36,6 +40,7 @@ interface EvalResult {
 	error?: string;
 	suggestion_count?: number;
 	suggestion_compile_results?: SuggestionCompileResult[];
+	any_suggestion_compiles?: boolean;
 	suggestions_with_holes?: string[];
 	hole_type?: string;
 	hole_type_compiles?: boolean;
@@ -193,8 +198,8 @@ const counts: Record<EvalCategory, number> = {
 	exact_match: 0,
 	failed: 0,
 };
-let totalSuggestionsTested = 0;
-let totalSuggestionsCompile = 0;
+let totalHolesWithSuggestionsTested = 0;
+let totalHolesWithValidSuggestion = 0;
 let totalSuggestionsWithHoles = 0;
 let totalHoleTypesTested = 0;
 let totalHoleTypesCompile = 0;
@@ -214,6 +219,7 @@ for (const tc of cases) {
 
 	let suggestion_count: number | undefined;
 	let suggestion_compile_results: SuggestionCompileResult[] | undefined;
+	let any_suggestion_compiles: boolean | undefined;
 	let suggestions_with_holes: string[] | undefined;
 	let hole_type_compiles: boolean | undefined;
 	let hole_type_compile_error: string | undefined;
@@ -226,14 +232,15 @@ for (const tc of cases) {
 		else totalSuggestionsWithHoles += suggestions_with_holes.length;
 
 		if (compileSuggestions) {
-			const compilable = suggestions.filter(name => !name.includes('??'));
+			const compilable = suggestions.filter(name => !name.includes('??')).slice(0, MAX_SUGGESTIONS_TO_COMPILE);
 			if (compilable.length > 0) {
 				suggestion_compile_results = compilable.map(name => {
 					const compiles = checkCompiles(rustCode, name);
-					totalSuggestionsTested++;
-					if (compiles) totalSuggestionsCompile++;
 					return { name, compiles };
 				});
+				any_suggestion_compiles = suggestion_compile_results.some(s => s.compiles);
+				totalHolesWithSuggestionsTested++;
+				if (any_suggestion_compiles) totalHolesWithValidSuggestion++;
 			}
 		}
 	}
@@ -263,6 +270,7 @@ for (const tc of cases) {
 		error,
 		suggestion_count,
 		suggestion_compile_results,
+		any_suggestion_compiles,
 		suggestions_with_holes,
 		hole_type: holeType,
 		hole_type_compiles,
@@ -305,11 +313,11 @@ console.log(`\nSuggestions with holes:  ${totalSuggestionsWithHoles}`);
 
 console.log("Compiling suggestions...")
 if (compileSuggestions) {
-	console.log(`Suggestions tested:      ${totalSuggestionsTested}`);
-	console.log(`Suggestions compile:     ${totalSuggestionsCompile}`);
-	if (totalSuggestionsTested > 0) {
-		const pct = ((totalSuggestionsCompile / totalSuggestionsTested) * 100).toFixed(1);
-		console.log(`Compile rate:            ${pct}%`);
+	console.log(`Holes with suggestions tested: ${totalHolesWithSuggestionsTested}`);
+	console.log(`Holes with a valid suggestion: ${totalHolesWithValidSuggestion}`);
+	if (totalHolesWithSuggestionsTested > 0) {
+		const pct = ((totalHolesWithValidSuggestion / totalHolesWithSuggestionsTested) * 100).toFixed(1);
+		console.log(`Valid-suggestion rate:         ${pct}%`);
 	}
 } else {
 	console.log(`\n(Run with --compile-suggestions to check suggestion compilation)`);
@@ -382,6 +390,8 @@ interface SuggestionCategoryStats {
 	withHoles: number;
 	tested: number;
 	compiled: number;
+	holesTested: number;
+	holesWithValid: number;
 }
 
 const suggestionCategoryTable: Record<string, SuggestionCategoryStats> = {};
@@ -391,14 +401,18 @@ for (const r of results) {
 	const withHoles = r.suggestions_with_holes?.length ?? 0;
 	const tested = r.suggestion_compile_results?.length ?? 0;
 	const compiled = r.suggestion_compile_results?.filter(s => s.compiles).length ?? 0;
+	const holesTested = r.suggestion_compile_results ? 1 : 0;
+	const holesWithValid = r.any_suggestion_compiles ? 1 : 0;
 	for (const cat of cats) {
 		if (!suggestionCategoryTable[cat]) {
-			suggestionCategoryTable[cat] = { total: 0, withHoles: 0, tested: 0, compiled: 0 };
+			suggestionCategoryTable[cat] = { total: 0, withHoles: 0, tested: 0, compiled: 0, holesTested: 0, holesWithValid: 0 };
 		}
 		suggestionCategoryTable[cat].total += total;
 		suggestionCategoryTable[cat].withHoles += withHoles;
 		suggestionCategoryTable[cat].tested += tested;
 		suggestionCategoryTable[cat].compiled += compiled;
+		suggestionCategoryTable[cat].holesTested += holesTested;
+		suggestionCategoryTable[cat].holesWithValid += holesWithValid;
 	}
 }
 // Print per-category table
@@ -414,20 +428,20 @@ for (const r of results) {
 }
 
 const evalCats: EvalCategory[] = ['exact_match', 'found_suggestions', 'found_type', 'failed', 'failed_with_error'];
-const colHeaders = ['category', 'exact_match', 'matched_type', 'compiled_suggestions', 'compiled_type', 'failed', 'failed_with_error', 'total'];
+const colHeaders = ['category', 'exact_match', 'matched_type', 'valid_suggestion', 'compiled_type', 'failed', 'failed_with_error', 'total'];
 const rows: string[][] = Object.entries(categoryTable)
 .sort(([a], [b]) => a.localeCompare(b))
 .map(([cat, c]) => {
 		const total = evalCats.reduce((s, k) => s + c[k], 0);
 		const matchedTypeStats = matchedTypeCategoryTable[cat] ?? { tested: 0, matched: 0 };
-		const suggestionStats = suggestionCategoryTable[cat] ?? { total: 0, withHoles: 0, tested: 0, compiled: 0 };
+		const suggestionStats = suggestionCategoryTable[cat] ?? { total: 0, withHoles: 0, tested: 0, compiled: 0, holesTested: 0, holesWithValid: 0 };
 		const holeTypeStats = holeTypeCategoryTable[cat] ?? { tested: 0, compiled: 0 };
 		return [
 			cat,
 			frac(c.exact_match, total),
 			frac(matchedTypeStats.matched, total),
-			frac(suggestionStats.compiled, suggestionStats.tested),
-			frac(holeTypeStats.compiled, holeTypeStats.tested),
+			frac(suggestionStats.holesWithValid, total),
+			frac(holeTypeStats.compiled, total),
 			frac(c.failed, total),
 			frac(c.failed_with_error, total),
 			String(total),
@@ -439,8 +453,8 @@ const totalRow = [
 	'TOTAL',
 	frac(counts.exact_match, grandTotal),
 	frac(totalTypesMatched, grandTotal),
-	frac(totalSuggestionsCompile, totalSuggestionsTested),
-	frac(totalHoleTypesCompile, totalHoleTypesTested),
+	frac(totalHolesWithValidSuggestion, grandTotal),
+	frac(totalHoleTypesCompile, grandTotal),
 	frac(counts.failed, grandTotal),
 	frac(counts.failed_with_error, grandTotal),
 	String(grandTotal),
@@ -461,13 +475,14 @@ const tableLines = [
 for (const line of tableLines) console.log(line);
 
 // Print per-category suggestion stats table
-const suggestionColHeaders = ['category', 'total_suggestions', 'suggestions_with_holes', 'suggestions_tested', 'suggestions_compiled'];
+const suggestionColHeaders = ['category', 'total_suggestions', 'suggestions_with_holes', 'suggestions_tested', 'suggestions_compiled', 'holes_with_valid_suggestion'];
 const suggestionRows: string[][] = Object.entries(suggestionCategoryTable)
 	.sort(([a], [b]) => a.localeCompare(b))
 	.map(([cat, s]) => {
 		const pctOfTotal = (x: integer) => s.total > 0 ? `${x} (${((x / s.total) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
 		const pctOfTested = (x: integer) => s.tested > 0 ? `${x} (${((x / s.tested) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
-		return [cat, String(s.total), pctOfTotal(s.withHoles), pctOfTotal(s.tested), pctOfTested(s.compiled)];
+		const pctOfHolesTested = (x: integer) => s.holesTested > 0 ? `${x} (${((x / s.holesTested) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
+		return [cat, String(s.total), pctOfTotal(s.withHoles), pctOfTotal(s.tested), pctOfTested(s.compiled), pctOfHolesTested(s.holesWithValid)];
 	});
 
 const suggestionColWidths = suggestionColHeaders.map((h, i) => Math.max(h.length, ...suggestionRows.map(r => r[i].length)));
