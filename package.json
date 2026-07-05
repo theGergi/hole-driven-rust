@@ -47,7 +47,8 @@
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "sh ./scripts/e2e.sh",
     "testAntlr": "npm run compile && node ./server/out/testInterpreter.js",
-    "evaluate": "npm run compile && node ./server/out/evaluator.js"
+    "evaluate": "npm run compile && node ./server/out/evaluator.js",
+    "evaluateRa": "tsc server/src/raEvaluator.ts --module NodeNext --moduleResolution NodeNext --target ES2024 --lib ES2024 --strict --skipLibCheck --outDir server/out && node ./server/out/raEvaluator.js",
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
