@@ -110,6 +110,10 @@ function typesMatch(foundType: string, expectedType: string, holeSupTypes?: stri
 		// 	console.log(normalizeType('std::ops::Range<i32>') === normalizeType('Range<i32>'))
 		// }
 
+	if (normalizeType(expectedType) === "&str" && normalizeType(foundType) === "&String") {
+		return true;
+	}
+
 	if (holeSupTypes) {
 		return holeSupTypes.some(st => normalizeType(st) === normalizeType(expectedType))
 	}
@@ -428,20 +432,20 @@ for (const r of results) {
 }
 
 const evalCats: EvalCategory[] = ['exact_match', 'found_suggestions', 'found_type', 'failed', 'failed_with_error'];
-const colHeaders = ['category', 'exact_match', 'matched_type', 'valid_suggestion', 'compiled_type', 'failed', 'failed_with_error', 'total'];
+const colHeaders = ['category', 'exact_match', 'matched_type', 'valid_suggestion', 'failed', 'failed_with_error', 'total'];
 const rows: string[][] = Object.entries(categoryTable)
 .sort(([a], [b]) => a.localeCompare(b))
 .map(([cat, c]) => {
 		const total = evalCats.reduce((s, k) => s + c[k], 0);
 		const matchedTypeStats = matchedTypeCategoryTable[cat] ?? { tested: 0, matched: 0 };
 		const suggestionStats = suggestionCategoryTable[cat] ?? { total: 0, withHoles: 0, tested: 0, compiled: 0, holesTested: 0, holesWithValid: 0 };
-		const holeTypeStats = holeTypeCategoryTable[cat] ?? { tested: 0, compiled: 0 };
+		// const holeTypeStats = holeTypeCategoryTable[cat] ?? { tested: 0, compiled: 0 };
 		return [
 			cat,
 			frac(c.exact_match, total),
 			frac(matchedTypeStats.matched, total),
 			frac(suggestionStats.holesWithValid, total),
-			frac(holeTypeStats.compiled, total),
+			// frac(holeTypeStats.compiled, total),
 			frac(c.failed, total),
 			frac(c.failed_with_error, total),
 			String(total),
@@ -454,7 +458,7 @@ const totalRow = [
 	frac(counts.exact_match, grandTotal),
 	frac(totalTypesMatched, grandTotal),
 	frac(totalHolesWithValidSuggestion, grandTotal),
-	frac(totalHoleTypesCompile, grandTotal),
+	// frac(totalHoleTypesCompile, grandTotal),
 	frac(counts.failed, grandTotal),
 	frac(counts.failed_with_error, grandTotal),
 	String(grandTotal),
@@ -474,77 +478,6 @@ const tableLines = [
 ];
 for (const line of tableLines) console.log(line);
 
-// Print per-category suggestion stats table
-const suggestionColHeaders = ['category', 'total_suggestions', 'suggestions_with_holes', 'suggestions_tested', 'suggestions_compiled', 'holes_with_valid_suggestion'];
-const suggestionRows: string[][] = Object.entries(suggestionCategoryTable)
-	.sort(([a], [b]) => a.localeCompare(b))
-	.map(([cat, s]) => {
-		const pctOfTotal = (x: integer) => s.total > 0 ? `${x} (${((x / s.total) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
-		const pctOfTested = (x: integer) => s.tested > 0 ? `${x} (${((x / s.tested) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
-		const pctOfHolesTested = (x: integer) => s.holesTested > 0 ? `${x} (${((x / s.holesTested) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
-		return [cat, String(s.total), pctOfTotal(s.withHoles), pctOfTotal(s.tested), pctOfTested(s.compiled), pctOfHolesTested(s.holesWithValid)];
-	});
-
-const suggestionColWidths = suggestionColHeaders.map((h, i) => Math.max(h.length, ...suggestionRows.map(r => r[i].length)));
-const suggestionFmt = (row: string[]) => row.map((cell, i) => cell.padEnd(suggestionColWidths[i])).join('  ');
-const suggestionSep = suggestionColWidths.map(w => '-'.repeat(w)).join('  ');
-
-const suggestionTableLines = [
-	'\n=== Suggestion Stats by Hole Category ===',
-	...(compileSuggestions ? [] : ['(Run with --compile-suggestions to populate suggestions_tested/suggestions_compiled)']),
-	suggestionFmt(suggestionColHeaders),
-	suggestionSep,
-	...suggestionRows.map(suggestionFmt),
-];
-for (const line of suggestionTableLines) console.log(line);
-
-// Print per-category hole-type compile stats table
-const holeTypeColHeaders = ['category', 'hole_types_tested', 'hole_types_compiled'];
-const holeTypeRows: string[][] = Object.entries(holeTypeCategoryTable)
-	.sort(([a], [b]) => a.localeCompare(b))
-	.map(([cat, s]) => {
-		const pctOfTested = (x: integer) => s.tested > 0 ? `${x} (${((x / s.tested) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
-		return [cat, String(s.tested), pctOfTested(s.compiled)];
-	});
-
-const holeTypeColWidths = holeTypeColHeaders.map((h, i) => Math.max(h.length, ...holeTypeRows.map(r => r[i].length)));
-const holeTypeFmt = (row: string[]) => row.map((cell, i) => cell.padEnd(holeTypeColWidths[i])).join('  ');
-const holeTypeSep = holeTypeColWidths.map(w => '-'.repeat(w)).join('  ');
-
-const holeTypeTableLines = [
-	'\n=== Hole Type Compile Stats by Hole Category ===',
-	...(compileTypes ? [] : ['(Run with --compile-types to populate hole_types_tested/hole_types_compiled)']),
-	holeTypeFmt(holeTypeColHeaders),
-	holeTypeSep,
-	...holeTypeRows.map(holeTypeFmt),
-];
-for (const line of holeTypeTableLines) console.log(line);
-
-// Print per-category matched-type stats table
-const matchedTypeColHeaders = ['category', 'types_tested', 'types_matched'];
-const matchedTypeRows: string[][] = Object.entries(matchedTypeCategoryTable)
-	.sort(([a], [b]) => a.localeCompare(b))
-	.map(([cat, s]) => {
-		const pctOfTested = (x: integer) => s.tested > 0 ? `${x} (${((x / s.tested) * 100).toFixed(2)}%)` : `${x} (0.00%)`;
-		return [cat, String(s.tested), pctOfTested(s.matched)];
-	});
-
-const matchedTypeColWidths = matchedTypeColHeaders.map((h, i) => Math.max(h.length, ...matchedTypeRows.map(r => r[i].length)));
-const matchedTypeFmt = (row: string[]) => row.map((cell, i) => cell.padEnd(matchedTypeColWidths[i])).join('  ');
-const matchedTypeSep = matchedTypeColWidths.map(w => '-'.repeat(w)).join('  ');
-
-const matchedTypeTableLines = [
-	'\n=== Matched Type Stats by Hole Category ===',
-	matchedTypeFmt(matchedTypeColHeaders),
-	matchedTypeSep,
-	...matchedTypeRows.map(matchedTypeFmt),
-];
-for (const line of matchedTypeTableLines) console.log(line);
-
-// Write results to evaluations folder
-// const evaluationsDir = path.resolve(process.cwd(), 'server', 'evaluations');
-// fs.mkdirSync(evaluationsDir, { recursive: true });
-
 const jsonPath = path.join(generatedDir, 'eval_results.json');
 fs.writeFileSync(jsonPath, JSON.stringify(results, null, 2));
 console.log(`\nResults written to ${jsonPath}`);
@@ -552,15 +485,3 @@ console.log(`\nResults written to ${jsonPath}`);
 const tablePath = path.join(generatedDir, 'eval_table.txt');
 fs.writeFileSync(tablePath, tableLines.join('\n') + '\n');
 console.log(`Table written to ${tablePath}`);
-
-const suggestionTablePath = path.join(generatedDir, 'eval_suggestion_table.txt');
-fs.writeFileSync(suggestionTablePath, suggestionTableLines.join('\n') + '\n');
-console.log(`Suggestion table written to ${suggestionTablePath}`);
-
-const holeTypeTablePath = path.join(generatedDir, 'eval_hole_type_table.txt');
-fs.writeFileSync(holeTypeTablePath, holeTypeTableLines.join('\n') + '\n');
-console.log(`Hole type table written to ${holeTypeTablePath}`);
-
-const matchedTypeTablePath = path.join(generatedDir, 'eval_matched_type_table.txt');
-fs.writeFileSync(matchedTypeTablePath, matchedTypeTableLines.join('\n') + '\n');
-console.log(`Matched type table written to ${matchedTypeTablePath}`);

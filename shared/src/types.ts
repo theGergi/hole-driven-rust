@@ -30,7 +30,7 @@ export class Type {
 	borrows!: Borrow;
 	owner?: Variable;
 	structName?: string; // For struct types
-	methodCall?: Boolean; // Hack for case of x.keys() where keys(&self)
+	methodCall?: boolean; // Hack for case of x.keys() where keys(&self)
 
 	traits: Trait[] = [];
 

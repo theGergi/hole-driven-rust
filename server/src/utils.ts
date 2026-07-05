@@ -30,6 +30,7 @@ export function toType(overrides: Partial<Type> & { valType: ValType }, variable
 	type.mutable = false;
 	type.consumed = false;
 	type.borrows = Borrow.BFree;
+	type.structName = overrides.valType;
 	Object.assign(type, overrides);
 	return type;
 }

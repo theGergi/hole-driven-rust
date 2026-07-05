@@ -22,6 +22,10 @@ export interface StdParseResult {
 	traits: Trait[];
 }
 
+interface InternalParseStdJsonResult extends StdParseResult {
+	blanketImpls: BlanketImpl[];
+}
+
 const ZERO_LOCATION: SourceLocation = { line: 0, column: 0, length: 0 };
 
 function createType(overrides: Partial<Type>): Type {
@@ -129,6 +133,23 @@ function buildGenericBounds(generics: any): Record<string, string> {
 	}
 
 	return bounds;
+}
+function getRequiredBoundTraits(generics: any, paramName: string): string[] {
+	const params = generics?.params;
+	if (!Array.isArray(params)) return [];
+
+	const param = params.find((p: any) => p?.name === paramName);
+	const traitBounds = param?.kind?.type?.bounds;
+	if (!Array.isArray(traitBounds)) return [];
+
+	const names: string[] = [];
+	for (const bound of traitBounds) {
+		const traitBound = bound?.trait_bound;
+		if (!traitBound || traitBound.modifier === 'maybe') continue;
+		const traitPath = traitBound.trait?.path;
+		if (typeof traitPath === 'string') names.push(normalizePathName(traitPath));
+	}
+	return names;
 }
 
 function parseTypeDesc(typeDesc: any, genericBounds?: Record<string, string>): Type {
@@ -358,6 +379,14 @@ interface TraitDefinition {
 	defaultMethods: Map<string, any>;
 }
 
+interface BlanketImpl {
+	traitName: string;
+	boundTraits: string[];
+	location: SourceLocation;
+	path: string[];
+	methods: SharedFunction[];
+}
+
 function buildTraitDefinitions(index: Record<string, any>, paths: Record<string, any>): Map<string, TraitDefinition> {
 	const result = new Map<string, TraitDefinition>();
 	for (const [id, entry] of Object.entries(index)) {
@@ -457,7 +486,8 @@ function parseImplEntry(
 	index: Record<string, any>,
 	structs: SharedStruct[],
 	functions: SharedFunction[],
-	traitDefinitions: Map<string, TraitDefinition>
+	traitDefinitions: Map<string, TraitDefinition>,
+	blanketImpls: BlanketImpl[]
 ) {
 	const implEntry = entry?.inner?.impl;
 	if (!implEntry || !Array.isArray(implEntry.items)) {
@@ -465,6 +495,37 @@ function parseImplEntry(
 	}
 
 	const traitName = implEntry.trait != null ? normalizePathName(implEntry.trait?.path ?? '') : null;
+
+	const forGenericName = implEntry.for?.generic;
+	if (traitName && typeof forGenericName === 'string' &&
+		Array.isArray(implEntry.generics?.params) &&
+		implEntry.generics.params.some((p: any) => p?.name === forGenericName)) {
+
+		const boundTraits = getRequiredBoundTraits(implEntry.generics, forGenericName);
+		if (boundTraits.length > 0) {
+			const traitDef = traitDefinitions.get(traitName);
+			const methods: SharedFunction[] = [];
+			implEntry.items.forEach((itemId: any) => {
+				const method = buildFunctionCore(index[String(itemId)]);
+				if (method) methods.push(method);
+			});
+			traitDef?.defaultMethods.forEach((itemEntry, methodName) => {
+				if (!methods.some(m => m.name === methodName)) {
+					const method = buildFunctionCore(itemEntry);
+					if (method) methods.push(method);
+				}
+			});
+
+			blanketImpls.push({
+				traitName,
+				boundTraits,
+				location: traitDef?.location ?? ZERO_LOCATION,
+				path: traitDef?.path ?? [],
+				methods
+			});
+		}
+		return;
+	}
 
 	const applyTo = (s: SharedStruct) => {
 		if (!traitName) {
@@ -529,12 +590,13 @@ export function parseStdJson(
 	stdJson: any,
 	externalPreludeNames?: Set<string>,
 	traitDefinitions: Map<string, TraitDefinition> = new Map()
-): StdParseResult {
+): InternalParseStdJsonResult {
 	const index = stdJson?.index ?? {};
 	const paths = stdJson?.paths ?? {};
 
 	const structs: SharedStruct[] = [];
 	const functions: SharedFunction[] = [];
+	const blanketImpls: BlanketImpl[] = [];
 
 	const preludeNames = externalPreludeNames ?? buildPreludeNames(index, paths);
 
@@ -607,7 +669,7 @@ export function parseStdJson(
 		if (!implItemIds.has(id)) {
 			parseFunctionEntry(entry as any, null, null, functions, { id, paths }, preludeNames);
 		}
-		parseImplEntry(entry, index, structs, functions, traitDefinitions);
+		parseImplEntry(entry, index, structs, functions, traitDefinitions, blanketImpls);
 	}
 
 	const traits = buildStdTraits(index, paths, preludeNames);
@@ -615,7 +677,8 @@ export function parseStdJson(
 	return {
 		functions,
 		structs,
-		traits
+		traits,
+		blanketImpls
 	};
 }
 
@@ -689,6 +752,49 @@ function mergeTraitsByName(traitLists: Trait[][]): Trait[] {
 	return [...byName.values()];
 }
 
+function mergeBlanketImpls(blanketImplLists: BlanketImpl[][]): BlanketImpl[] {
+	const byName = new Map<string, BlanketImpl>();
+
+	for (const list of blanketImplLists) {
+		for (const b of list) {
+			const existing = byName.get(b.traitName);
+			if (!existing) {
+				byName.set(b.traitName, { ...b, boundTraits: [...b.boundTraits], methods: [...b.methods] });
+				continue;
+			}
+
+			for (const boundTrait of b.boundTraits) {
+				if (!existing.boundTraits.includes(boundTrait)) existing.boundTraits.push(boundTrait);
+			}
+			const existingMethodNames = new Set(existing.methods.map(m => m.name));
+			for (const method of b.methods) {
+				if (!existingMethodNames.has(method.name)) {
+					existing.methods.push(method);
+					existingMethodNames.add(method.name);
+				}
+			}
+		}
+	}
+
+	return [...byName.values()];
+}
+
+function applyBlanketImpls(structs: SharedStruct[], blanketImpls: BlanketImpl[]): void {
+	for (const blanket of blanketImpls) {
+		for (const s of structs) {
+			if (s.traits.some(t => t.name === blanket.traitName)) continue;
+			if (!blanket.boundTraits.some(boundTrait => s.traits.some(t => t.name === boundTrait))) continue;
+
+			s.traits.push({
+				name: blanket.traitName,
+				location: blanket.location,
+				path: blanket.path,
+				methods: blanket.methods.map(m => ({ ...m, structName: s.name }))
+			});
+		}
+	}
+}
+
 let cachedStdParseResult: StdParseResult | null = null;
 
 export function parseStdJsonFile(): StdParseResult {
@@ -719,6 +825,9 @@ export function parseStdJsonFile(): StdParseResult {
 	const structs = mergeStructsByName([std.structs, alloc.structs, core.structs]);
 	const functions = [...std.functions, ...alloc.functions, ...core.functions];
 	const traits = mergeTraitsByName([std.traits, alloc.traits, core.traits]);
+
+	const blanketImpls = mergeBlanketImpls([std.blanketImpls, alloc.blanketImpls, core.blanketImpls]);
+	applyBlanketImpls(structs, blanketImpls);
 
 	const sliceStruct = structs.find(s => s.name === 'slice');
 	const vecStruct = structs.find(s => s.name === 'Vec');

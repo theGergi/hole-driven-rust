@@ -799,10 +799,12 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     visitMethodCallExpression = (ctx: any): ReturnType | null => {
         console.log("MethodCallExpression");
-
+        
         const receiver = ctx.expression();
         const methodSegment = ctx.pathExprSegment();
         const methodName = methodSegment?.pathIdentSegment()?.identifier()?.getText();
+
+        console.log("Method name: ", methodName)
 
         this.visit(methodSegment?.pathIdentSegment()?.identifier())
 
@@ -831,10 +833,14 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         let receiverType = toType({valType: ValType.UNKNOWN});
+
+        console.log(this.currentParentType)
         if (receiver) {
             receiverType = this.visit(receiver)?.type || receiverType;
         }
         this.typeStack.pop();
+        
+        console.log(receiverType)
 
         const structName = receiverType?.structName;
         if (!methodName) {
@@ -1262,7 +1268,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             left = this.visit(leftChild) as ReturnType;
         } else {
             left = this.visit(leftChild) as ReturnType;
-            this.typeStack.push(left.type || toType({valType: ValType.UNKNOWN}));
+            if (left.type?.structName === 'String') {
+                this.typeStack.push(toType({valType: ValType.REFERENCE, elementType: left.type}) || toType({valType: ValType.UNKNOWN}));
+            } else {
+                this.typeStack.push(left.type || toType({valType: ValType.UNKNOWN}));
+            }
             right = this.visit(rightChild) as ReturnType;
         }
 
@@ -1436,13 +1446,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             methods: []
         };
 
-        // console.log("Hole hey")
+        console.log("Hole hey")
         // this.functions.forEach((f) =>
         // {console.log(f.name)})
-        // this.variables.forEach((f) =>
-        // {console.log(f.name)
-        //     console.log(f.type)
-        // })
+        this.variables.forEach((f) =>
+        {console.log(f.name)
+            console.log(f.type)
+        })
         // console.log("Variables:")
         // console.log(variables)
 
@@ -1468,22 +1478,25 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 }
             }
             if (hole.type.valType === ValType.REFERENCE && this.canBeAssigned(hole.type.elementType!, variable.type, variable, false) && !variable.type.consumed) {
+                console.log("checking references")
+                console.log(variable.type.methodCall)
+                console.log(hole.type.methodCall)
                 if (hole.type.mutableReference) {
                     if (variable.type.mutable) {
                         if (variable.type.borrows === Borrow.BFree) {
-                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: variable.type.methodCall ? "&mut " : "" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
+                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: (hole.type.methodCall ? "" : "&mut ") + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                         } else {
                             if (this.checkBorrows(variable, hole.location, variable.name)) {
-                                holeSuggestions.push({suggestionType: 'variable', suggestion: {name: variable.type.methodCall ? "&mut " : "" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
+                                holeSuggestions.push({suggestionType: 'variable', suggestion: {name: (hole.type.methodCall ? "" : "&mut ") + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                             }
                         }
                     }
                 } else {
                     if (variable.type.borrows === Borrow.BFree || variable.type.borrows === Borrow.BImmut) {
-                        holeSuggestions.push({suggestionType: 'variable', suggestion: {name: variable.type.methodCall ? "&" : "" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName}), location: variable.location}});
+                        holeSuggestions.push({suggestionType: 'variable', suggestion: {name: (hole.type.methodCall ? "" : "&") + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName}), location: variable.location}});
                     } else {
                         if (this.checkBorrows(variable, hole.location, variable.name)) {
-                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: variable.type.methodCall ? "&mut " : "" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
+                            holeSuggestions.push({suggestionType: 'variable', suggestion: {name: (hole.type.methodCall ? "" : "&") + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName, mutableReference: true}), location: variable.location}});
                         }
                     }
                 }
