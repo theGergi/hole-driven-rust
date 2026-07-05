@@ -105,13 +105,38 @@ function parsePrimitiveType(name: string): Type {
 	return createType({ valType: ValType.UNKNOWN, primitive: false });
 }
 
-function parseTypeDesc(typeDesc: any): Type {
+// Maps a function's own generic type parameter names (e.g. "T") to the name of the first
+// trait bounding them (e.g. "Ord" for `fn max<T: Ord>(...)`), so an unresolved generic can be
+// typed as that trait rather than falling back to UNKNOWN.
+function buildGenericBounds(generics: any): Record<string, string> {
+	const bounds: Record<string, string> = {};
+	const params = generics?.params;
+	if (!Array.isArray(params)) return bounds;
+
+	for (const param of params) {
+		const name = param?.name;
+		const traitBounds = param?.kind?.type?.bounds;
+		if (typeof name !== 'string' || !Array.isArray(traitBounds)) continue;
+
+		for (const bound of traitBounds) {
+			const traitPath = bound?.trait_bound?.trait?.path;
+			if (typeof traitPath === 'string') {
+				bounds[name] = normalizePathName(traitPath);
+				break;
+			}
+		}
+	}
+
+	return bounds;
+}
+
+function parseTypeDesc(typeDesc: any, genericBounds?: Record<string, string>): Type {
 	if (!typeDesc || typeof typeDesc !== 'object') {
 		return createType({ valType: ValType.UNKNOWN });
 	}
 
 	if ('type' in typeDesc && typeof typeDesc.type === 'object') {
-		return parseTypeDesc(typeDesc.type);
+		return parseTypeDesc(typeDesc.type, genericBounds);
 	}
 
 	if ('primitive' in typeDesc && typeof typeDesc.primitive === 'string') {
@@ -122,11 +147,15 @@ function parseTypeDesc(typeDesc: any): Type {
 		if (typeDesc.generic === 'Self') {
 			return createType({ valType: ValType.STRUCT, structName: 'Self' });
 		}
+		const boundTrait = genericBounds?.[typeDesc.generic];
+		if (boundTrait) {
+			return createType({ valType: ValType.TRAIT, structName: boundTrait });
+		}
 		return createType({ valType: ValType.UNKNOWN });
 	}
 
 	if ('borrowed_ref' in typeDesc && typeof typeDesc.borrowed_ref === 'object') {
-		const inner = parseTypeDesc(typeDesc.borrowed_ref.type);
+		const inner = parseTypeDesc(typeDesc.borrowed_ref.type, genericBounds);
 		return createType({
 			valType: ValType.REFERENCE,
 			mutableReference: Boolean(typeDesc.borrowed_ref.is_mutable),
@@ -136,7 +165,7 @@ function parseTypeDesc(typeDesc: any): Type {
 	}
 
 	if ('slice' in typeDesc && typeof typeDesc.slice === 'object') {
-		const element = parseTypeDesc(typeDesc.slice);
+		const element = parseTypeDesc(typeDesc.slice, genericBounds);
 		return createType({
 			valType: ValType.VECTOR,
 			elementType: element,
@@ -145,7 +174,7 @@ function parseTypeDesc(typeDesc: any): Type {
 	}
 
 	if ('array' in typeDesc && typeof typeDesc.array === 'object') {
-		const element = parseTypeDesc(typeDesc.array.type);
+		const element = parseTypeDesc(typeDesc.array.type, genericBounds);
 		return createType({
 			valType: ValType.VECTOR,
 			elementType: element,
@@ -162,7 +191,7 @@ function parseTypeDesc(typeDesc: any): Type {
 			return createType({ valType: ValType.STRUCT, structName: 'str', primitive: false });
 		}
 
-		const inner = angleArgs.length > 0 ? parseTypeDesc(angleArgs[0].type ?? angleArgs[0]) : undefined;
+		const inner = angleArgs.length > 0 ? parseTypeDesc(angleArgs[0].type ?? angleArgs[0], genericBounds) : undefined;
 		return createType({
 			valType: ValType.STRUCT,
 			structName: pathName,
@@ -171,7 +200,7 @@ function parseTypeDesc(typeDesc: any): Type {
 	}
 
 	if ('qualified_path' in typeDesc && typeof typeDesc.qualified_path === 'object') {
-		return parseTypeDesc(typeDesc.qualified_path);
+		return parseTypeDesc(typeDesc.qualified_path, genericBounds);
 	}
 
 	if ('raw_pointer' in typeDesc) {
@@ -183,17 +212,17 @@ function parseTypeDesc(typeDesc: any): Type {
 	}
 
 	if ('lifetime' in typeDesc && 'type' in typeDesc) {
-		return parseTypeDesc(typeDesc.type);
+		return parseTypeDesc(typeDesc.type, genericBounds);
 	}
 
 	return createType({ valType: ValType.UNKNOWN });
 }
 
-function parseParam([name, typeDesc]: [string, any]): Param {
+function parseParam([name, typeDesc]: [string, any], genericBounds?: Record<string, string>): Param {
 	return {
 		name,
 		location: ZERO_LOCATION,
-		type: parseTypeDesc(typeDesc)
+		type: parseTypeDesc(typeDesc, genericBounds)
 	};
 }
 
@@ -208,17 +237,25 @@ function isSelfParam(param: Param): boolean {
 // `methodsTarget` is where this item lands when it's a self-method (e.g. a struct's own
 // `methods` array, or a `Trait`'s `methods` array when the item comes from a trait impl).
 // Associated functions (no self param) always go into the flat `functions` list instead.
-function parseFunctionEntry(entry: any, structName: string | null, methodsTarget: SharedFunction[] | null, functions: SharedFunction[]) {
+function parseFunctionEntry(
+	entry: any,
+	structName: string | null,
+	methodsTarget: SharedFunction[] | null,
+	functions: SharedFunction[],
+	pathInfo?: { id: string; paths: Record<string, any> }
+) {
 	const fn = entry?.inner?.function;
 	if (!fn) {
 		return null;
 	}
 
+	const genericBounds = buildGenericBounds(fn.generics);
+
 	const parsed: SharedFunction = {
 		name: typeof entry.name === 'string' ? entry.name : 'unknown',
 		location: parseSourceLocation(entry.span),
-		type: fn.sig?.output ? parseTypeDesc(fn.sig.output) : createType({ valType: ValType.VOID }),
-		params: Array.isArray(fn.sig?.inputs) ? fn.sig.inputs.map(parseParam) : []
+		type: fn.sig?.output ? parseTypeDesc(fn.sig.output, genericBounds) : createType({ valType: ValType.VOID }),
+		params: Array.isArray(fn.sig?.inputs) ? fn.sig.inputs.map((p: [string, any]) => parseParam(p, genericBounds)) : []
 	};
 
 	if (structName) {
@@ -231,6 +268,11 @@ function parseFunctionEntry(entry: any, structName: string | null, methodsTarget
 		parsed.structName = structName;
 		if (parsed.type?.valType === ValType.STRUCT && parsed.type.structName === 'Self') {
 			parsed.type.structName = structName;
+		}
+	} else if (pathInfo) {
+		const pathEntry = pathInfo.paths[pathInfo.id];
+		if (Array.isArray(pathEntry?.path)) {
+			parsed.path = pathEntry.path;
 		}
 	}
 
@@ -504,7 +546,7 @@ export function parseStdJson(
 	for (const [id, entry] of Object.entries(index)) {
 		// Only scan free functions (those not owned by an impl block)
 		if (!implItemIds.has(id)) {
-			parseFunctionEntry(entry as any, null, null, functions);
+			parseFunctionEntry(entry as any, null, null, functions, { id, paths });
 		}
 		parseImplEntry(entry, index, structs, functions, traitDefinitions);
 	}

@@ -84,6 +84,7 @@ export interface Function {
 	type?: Type;
 	params: Param[];
 	structName?: string;
+	path?: string[]; // Full path for matching against user imports, e.g., ["core", "cmp", "max"]. Only set for free functions.
 }
 
 export interface Struct {

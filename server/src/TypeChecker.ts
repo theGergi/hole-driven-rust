@@ -99,6 +99,16 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         return undefined;
     }
 
+    findFunctionFromUserImport(userImportPathString: string): Function | undefined {
+        const userSegments = userImportPathString.split('::');
+        const importedName = userSegments[userSegments.length - 1];
+
+        return this.stdFunctions.find(f => {
+            if (f.name !== importedName || !f.path || f.path.length === 0) return false;
+            return this.isPathMatch(userSegments, f.path);
+        });
+    }
+
     isPathMatch(userPath: string[], registryPath: string[]): boolean {
         // A secure base validation rule: if item name matches, check context
         const userTypeName = userPath[userPath.length - 1];
@@ -118,36 +128,78 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         return registryPath.includes(commonModule);
     }
 
-    visitUseDeclaration = (ctx: any): ReturnType | null => {
-        const pathText: string | undefined = ctx.useTree()?.simplePath()?.getText();
-        if (!pathText) return null;
+    // A useTree is either a leaf (optional path + optional 'as' rename), a glob ('path::*'),
+    // or a group ('path::{ useTree, useTree, ... }'). Groups nest arbitrarily
+    // (e.g. `std::{cmp::{max, self}, mem::replace}`), so this walks the whole tree and returns
+    // the full "::"-joined path of every leaf import, prefixed by the path segments of its
+    // enclosing groups.
+    private collectUseTreeLeaves(tree: any, prefix: string): string[] {
+        if (!tree) return [];
 
-        const normalizedPath = pathText.startsWith('::') ? pathText.slice(2) : pathText;
-        const found = this.findStructFromUserImport(normalizedPath);
+        const segmentText: string = tree.simplePath()?.getText() ?? '';
+        const currentPrefix = prefix && segmentText ? `${prefix}::${segmentText}` : (segmentText || prefix);
 
-        console.log(`User import: ${normalizedPath} -> Found struct: ${found ? found.name : 'None'}`);
-
-        if (!found) return null;
-
-        if (!this.structs.some(s => s.name === found.name)) {
-            this.structs.push({
-                name: found.name,
-                location: found.location,
-                fields: [...found.fields],
-                methods: [...found.methods],
-                path: found.path ?? [],
-                traits: found.traits.map(t => ({ ...t, methods: [...t.methods] })),
-            });
+        if (tree.STAR()) {
+            return []; // glob imports don't name individual structs/functions to resolve
         }
 
-        // Add static/associated functions (no self param) for this struct as callable functions
-        this.stdFunctions
-            .filter(f => f.structName === found.name)
-            .forEach(f => {
-                if (!this.functions.some(existing => existing.name === f.name && existing.structName === f.structName)) {
-                    this.functions.push(f);
-                }
-            });
+        const nestedTrees = tree.useTree();
+        if (tree.LCURLYBRACE() && Array.isArray(nestedTrees) && nestedTrees.length > 0) {
+            return nestedTrees.flatMap((child: any) => this.collectUseTreeLeaves(child, currentPrefix));
+        }
+
+        return currentPrefix ? [currentPrefix] : [];
+    }
+
+    private importUserPath(normalizedPath: string) {
+        const foundStruct = this.findStructFromUserImport(normalizedPath);
+
+        if (foundStruct) {
+            console.log(`User import: ${normalizedPath} -> Found struct: ${foundStruct.name}`);
+
+            if (!this.structs.some(s => s.name === foundStruct.name)) {
+                this.structs.push({
+                    name: foundStruct.name,
+                    location: foundStruct.location,
+                    fields: [...foundStruct.fields],
+                    methods: [...foundStruct.methods],
+                    path: foundStruct.path ?? [],
+                    traits: foundStruct.traits.map(t => ({ ...t, methods: [...t.methods] })),
+                });
+            }
+
+            // Add static/associated functions (no self param) for this struct as callable functions
+            this.stdFunctions
+                .filter(f => f.structName === foundStruct.name)
+                .forEach(f => {
+                    if (!this.functions.some(existing => existing.name === f.name && existing.structName === f.structName)) {
+                        this.functions.push(f);
+                    }
+                });
+            return;
+        }
+
+        const foundFunction = this.findFunctionFromUserImport(normalizedPath);
+        if (foundFunction) {
+            console.log(`User import: ${normalizedPath} -> Found function: ${foundFunction.name}`);
+
+            if (!this.functions.some(existing => existing.name === foundFunction.name && existing.structName === foundFunction.structName)) {
+                this.functions.push(foundFunction);
+            }
+            return;
+        }
+
+        console.log(`User import: ${normalizedPath} -> Found nothing`);
+    }
+
+    visitUseDeclaration = (ctx: any): ReturnType | null => {
+        const topTree = ctx.useTree();
+        if (!topTree) return null;
+
+        this.collectUseTreeLeaves(topTree, '').forEach(rawPath => {
+            const normalizedPath = rawPath.startsWith('::') ? rawPath.slice(2) : rawPath;
+            this.importUserPath(normalizedPath);
+        });
 
         return null;
     }
