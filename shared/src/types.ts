@@ -85,6 +85,7 @@ export interface Function {
 	params: Param[];
 	structName?: string;
 	path?: string[]; // Full path for matching against user imports, e.g., ["core", "cmp", "max"]. Only set for free functions.
+	prelude?: boolean; // True if automatically imported via the Rust prelude
 }
 
 export interface Struct {
@@ -101,6 +102,7 @@ export interface Trait {
 	location: SourceLocation;
 	methods: Function[];
 	path: string[]; // Full path for matching against user imports, e.g., ["std", "collections", "HashSet"]
+	prelude?: boolean; // True if automatically imported via the Rust prelude
 }
 
 export interface Param {

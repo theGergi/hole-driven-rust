@@ -2,7 +2,7 @@ import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext, CompoundAssignmentExpressionContext, DereferenceExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
-import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct, getAllMethods } from '../../shared/out/types.js';
+import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct, Trait, getAllMethods } from '../../shared/out/types.js';
 import { toType, getSourceLocationKey, getLocation, cloneVariable, cloneFunction, cloneParam } from './utils';
 import { parseStdJsonFile, StdParseResult } from './stdParser';
 
@@ -23,6 +23,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     private structs: Struct[] = [];
     private stdFunctions: Function[] = [];
     private stdStructs: SharedStruct[] = [];
+    private stdTraits: Trait[] = [];
+    private traits: Trait[] = [];
     private holes: Hole[] = [];
 
     private static readonly MAX_METHOD_CHAIN_DEPTH = 1;
@@ -42,9 +44,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     }
 
     private loadStdLibrary(stdParseResult?: StdParseResult) {
-        const { functions, structs } = stdParseResult ?? parseStdJsonFile();
+        const { functions, structs, traits } = stdParseResult ?? parseStdJsonFile();
         this.stdFunctions = functions;
         this.stdStructs = structs;
+        this.stdTraits = traits;
         this.loadPrelude()
     }
 
@@ -56,27 +59,49 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             console.log("Prelude Struct: ", struct.name)
 
             if (!this.structs.some(s => s.name === struct.name)) {
-            this.structs.push({
-                name: struct.name,
-                location: struct.location,
-                fields: [...struct.fields],
-                methods: [...struct.methods],
-                path: struct.path ?? [],
-                traits: struct.traits.map(t => ({ ...t, methods: [...t.methods] })),
-            });
-        }
-        
-        // Add static/associated functions (no self param) for this struct as callable functions
-        this.stdFunctions
-            .filter(f => f.structName === struct.name)
-            .forEach(f => {
-                if (!this.functions.some(existing => existing.name === f.name && existing.structName === f.structName)) {
-                        this.functions.push(f);
-                    }
+                this.structs.push({
+                    name: struct.name,
+                    location: struct.location,
+                    fields: [...struct.fields],
+                    methods: [...struct.methods],
+                    path: struct.path ?? [],
+                    traits: struct.traits.map(t => ({ ...t, methods: [...t.methods] })),
                 });
+            }
 
-        return null;
+            // Add static/associated functions (no self param) for this struct as callable functions
+            this.stdFunctions
+                .filter(f => f.structName === struct.name)
+                .forEach(f => {
+                    if (!this.functions.some(existing => existing.name === f.name && existing.structName === f.structName)) {
+                            this.functions.push(f);
+                        }
+                    });
+
+            return null;
         })
+
+        // Free functions brought into scope by the prelude (e.g. `drop`, `size_of`), as opposed
+        // to a struct's own static/associated functions handled above.
+        this.stdFunctions
+            .filter(f => f.prelude)
+            .forEach((f) => {
+                console.log("Prelude Function: ", f.name)
+                if (!this.functions.some(existing => existing.name === f.name && existing.structName === f.structName)) {
+                    this.functions.push(f);
+                }
+            });
+
+        // Traits brought into scope by the prelude (e.g. Clone, Copy, Iterator), independent
+        // of any struct that implements them.
+        this.stdTraits
+            .filter(t => t.prelude)
+            .forEach((trait) => {
+                console.log("Prelude Trait: ", trait.name)
+                if (!this.traits.some(existing => existing.name === trait.name)) {
+                    this.traits.push({ ...trait, methods: [...trait.methods] });
+                }
+            });
     }
 
     // ============================================= UTIL METHODS =============================================
@@ -548,7 +573,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     visitAssignmentExpression = (ctx: any): ReturnType | null => {
         console.log("Assignment expression")
-        console.log(ctx.getText())
         const leftHandExpression = ctx.expression(0);
         const rightHandExpression = ctx.expression(1);
 
@@ -744,8 +768,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         console.log("Function call:", functionName, "Struct:", structName)
         let func = this.getBoundFunction(functionName, structName);
 
-        console.log(func)
-
         let matchedTraitName: string | null = null; // TODO Should go in bound function
         if (!func && structName) {
             const implementors = this.structs.filter(s => s.traits.some(t => t.name === structName));
@@ -781,14 +803,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         const receiver = ctx.expression();
         const methodSegment = ctx.pathExprSegment();
         const methodName = methodSegment?.pathIdentSegment()?.identifier()?.getText();
-        console.log("Method name:", methodName)
 
         this.visit(methodSegment?.pathIdentSegment()?.identifier())
 
         let struct = this.structs.filter(s => getAllMethods(s).some(m => m.name === methodName))[0];
-        if (!struct) {
-            struct = this.stdStructs.filter(s => getAllMethods(s).some(m => m.name === methodName))[0] as Struct;
-        }
 
         if (struct) {
             const method = getAllMethods(struct).filter(m => m.name === methodName)[0]; // TODO separate traits and structs
@@ -987,7 +1005,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             const variable = this.getBoundVariable(ctx.getText());
             console.log("Variable:", variable?.name)
             const type = variable ? variable.type : toType({valType: ValType.UNKNOWN})
-            console.log("hey")
             return { type: type, location: getLocation(ctx) };
         }
     }
@@ -1031,7 +1048,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     visitComparisonExpression = (ctx: any): ReturnType => {
         console.log("Comparison expression")
 
-        console.log(ctx.getText())
         const leftChild = ctx.expression(0);
         const rightChild = ctx.expression(1);
 
@@ -1043,11 +1059,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         let right: ReturnType;
 
         if (leftChild.getText() === '??') {
-            console.log("here here")
             right = this.visit(rightChild) as ReturnType;
-            console.log(right)
-            console.log(rightChild.getText())
-            console.log("Right type:", right.type)
             this.typeStack.push(right.type || toType({valType: ValType.UNKNOWN}));
             left = this.visit(leftChild) as ReturnType;
         } else {
@@ -1456,9 +1468,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 }
             }
             if (hole.type.valType === ValType.REFERENCE && this.canBeAssigned(hole.type.elementType!, variable.type, variable, false) && !variable.type.consumed) {
-                console.log("opaaaa")
-                console.log(hole.type)
-                console.log(variable.type)
                 if (hole.type.mutableReference) {
                     if (variable.type.mutable) {
                         if (variable.type.borrows === Borrow.BFree) {
@@ -1471,7 +1480,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                     }
                 } else {
                     if (variable.type.borrows === Borrow.BFree || variable.type.borrows === Borrow.BImmut) {
-                        console.log("here here")
                         holeSuggestions.push({suggestionType: 'variable', suggestion: {name: variable.type.methodCall ? "&" : "" + variable.name, type: toType({valType: ValType.REFERENCE, elementType: variable.type, structName: variable.type.structName}), location: variable.location}});
                     } else {
                         if (this.checkBorrows(variable, hole.location, variable.name)) {
@@ -1547,8 +1555,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (hole.type.valType === ValType.TRAIT) {
             const matchinStructs = [...this.structs, ...this.stdStructs].filter(s => s.traits.some(t => t.name === hole.type.structName))
             hole.subTypes = matchinStructs.map(s => toType({...hole.type, valType: ValType.STRUCT, structName: s.name}))
-            console.log("Big hey")
-            console.log(hole.subTypes.map(s => s.toTypeString()))
         }
 
 

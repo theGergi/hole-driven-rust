@@ -353,8 +353,9 @@ for (const r of results) {
 		matchedTypeCategoryTable[cat].matched += matched;
 	}
 }
-const stringifyMatchedType = (s: MatchedTypeCategoryStats) =>
-	s.tested > 0 ? `${s.matched}/${s.tested} (${((s.matched / s.tested) * 100).toFixed(2)}%)` : `0/0 (0.00%)`;
+// Generic "number/total (percent)" formatter used across the main results table
+const frac = (x: integer, total: integer) =>
+	total > 0 ? `${x}/${total} (${((x / total) * 100).toFixed(2)}%)` : `${x}/${total} (0.00%)`;
 
 // Per-category hole-type compile stats (computed here so it can feed the main results table below)
 interface HoleTypeCategoryStats {
@@ -375,54 +376,7 @@ for (const r of results) {
 		holeTypeCategoryTable[cat].compiled += compiled;
 	}
 }
-const stringifyHoleTypeCompiles = (s: HoleTypeCategoryStats) =>
-	s.tested > 0 ? `${s.compiled}/${s.tested} (${((s.compiled / s.tested) * 100).toFixed(2)}%)` : `0/0 (0.00%)`;
-
-// Print per-category table
-const categoryTable: Record<string, Record<EvalCategory, number>> = {};
-for (const r of results) {
-	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
-	for (const cat of cats) {
-		if (!categoryTable[cat]) {
-			categoryTable[cat] = { failed_with_error: 0, failed: 0, found_type: 0, found_suggestions: 0, exact_match: 0 };
-		}
-		categoryTable[cat][r.category]++;
-	}
-}
-
-const evalCats: EvalCategory[] = ['exact_match', 'found_suggestions', 'found_type', 'failed', 'failed_with_error'];
-const colHeaders = ['category', 'exact', 'suggestions', 'type', 'failed', 'failed_with_error', 'total', 'matched_type', 'hole_type_compiles'];
-const rows: string[][] = Object.entries(categoryTable)
-.sort(([a], [b]) => a.localeCompare(b))
-.map(([cat, c]) => {
-		const total = evalCats.reduce((s, k) => s + c[k], 0);
-		const stringify = (x: integer) => `${x} (${((x / total) * 100).toFixed(2)}%)`
-		const matchedTypeStats = matchedTypeCategoryTable[cat] ?? { tested: 0, matched: 0 };
-		const holeTypeStats = holeTypeCategoryTable[cat] ?? { tested: 0, compiled: 0 };
-		return [cat, stringify(c.exact_match), stringify(c.found_suggestions), stringify(c.found_type), stringify(c.failed), stringify(c.failed_with_error), String(total), stringifyMatchedType(matchedTypeStats), stringifyHoleTypeCompiles(holeTypeStats)];
-	});
-
-const grandTotal = results.length;
-const stringifyTotal = (x: integer) => `${x} (${((x / grandTotal) * 100).toFixed(2)}%)`;
-const totalMatchedTypeStats: MatchedTypeCategoryStats = { tested: totalTypesTested, matched: totalTypesMatched };
-const totalHoleTypeStats: HoleTypeCategoryStats = { tested: totalHoleTypesTested, compiled: totalHoleTypesCompile };
-const totalRow = ['TOTAL', stringifyTotal(counts.exact_match), stringifyTotal(counts.found_suggestions), stringifyTotal(counts.found_type), stringifyTotal(counts.failed), stringifyTotal(counts.failed_with_error), String(grandTotal), stringifyMatchedType(totalMatchedTypeStats), stringifyHoleTypeCompiles(totalHoleTypeStats)];
-
-const colWidths = colHeaders.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length), totalRow[i].length));
-const fmt = (row: string[]) => row.map((cell, i) => cell.padEnd(colWidths[i])).join('  ');
-const sep = colWidths.map(w => '-'.repeat(w)).join('  ');
-
-const tableLines = [
-	'\n=== Results by Hole Category ===',
-	fmt(colHeaders),
-	sep,
-	...rows.map(fmt),
-	sep,
-	fmt(totalRow),
-];
-for (const line of tableLines) console.log(line);
-
-// Print per-category suggestion stats table
+// Per-category suggestion compile stats (computed here so it can feed the main results table below)
 interface SuggestionCategoryStats {
 	total: number;
 	withHoles: number;
@@ -447,7 +401,66 @@ for (const r of results) {
 		suggestionCategoryTable[cat].compiled += compiled;
 	}
 }
+// Print per-category table
+const categoryTable: Record<string, Record<EvalCategory, number>> = {};
+for (const r of results) {
+	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
+	for (const cat of cats) {
+		if (!categoryTable[cat]) {
+			categoryTable[cat] = { failed_with_error: 0, failed: 0, found_type: 0, found_suggestions: 0, exact_match: 0 };
+		}
+		categoryTable[cat][r.category]++;
+	}
+}
 
+const evalCats: EvalCategory[] = ['exact_match', 'found_suggestions', 'found_type', 'failed', 'failed_with_error'];
+const colHeaders = ['category', 'exact_match', 'matched_type', 'compiled_suggestions', 'compiled_type', 'failed', 'failed_with_error', 'total'];
+const rows: string[][] = Object.entries(categoryTable)
+.sort(([a], [b]) => a.localeCompare(b))
+.map(([cat, c]) => {
+		const total = evalCats.reduce((s, k) => s + c[k], 0);
+		const matchedTypeStats = matchedTypeCategoryTable[cat] ?? { tested: 0, matched: 0 };
+		const suggestionStats = suggestionCategoryTable[cat] ?? { total: 0, withHoles: 0, tested: 0, compiled: 0 };
+		const holeTypeStats = holeTypeCategoryTable[cat] ?? { tested: 0, compiled: 0 };
+		return [
+			cat,
+			frac(c.exact_match, total),
+			frac(matchedTypeStats.matched, total),
+			frac(suggestionStats.compiled, suggestionStats.tested),
+			frac(holeTypeStats.compiled, holeTypeStats.tested),
+			frac(c.failed, total),
+			frac(c.failed_with_error, total),
+			String(total),
+		];
+	});
+
+const grandTotal = results.length;
+const totalRow = [
+	'TOTAL',
+	frac(counts.exact_match, grandTotal),
+	frac(totalTypesMatched, grandTotal),
+	frac(totalSuggestionsCompile, totalSuggestionsTested),
+	frac(totalHoleTypesCompile, totalHoleTypesTested),
+	frac(counts.failed, grandTotal),
+	frac(counts.failed_with_error, grandTotal),
+	String(grandTotal),
+];
+
+const colWidths = colHeaders.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length), totalRow[i].length));
+const fmt = (row: string[]) => row.map((cell, i) => cell.padEnd(colWidths[i])).join('  ');
+const sep = colWidths.map(w => '-'.repeat(w)).join('  ');
+
+const tableLines = [
+	'\n=== Results by Hole Category ===',
+	fmt(colHeaders),
+	sep,
+	...rows.map(fmt),
+	sep,
+	fmt(totalRow),
+];
+for (const line of tableLines) console.log(line);
+
+// Print per-category suggestion stats table
 const suggestionColHeaders = ['category', 'total_suggestions', 'suggestions_with_holes', 'suggestions_tested', 'suggestions_compiled'];
 const suggestionRows: string[][] = Object.entries(suggestionCategoryTable)
 	.sort(([a], [b]) => a.localeCompare(b))

@@ -19,6 +19,7 @@ const coreJsonPath  = path.resolve(__dirname, '..', 'src', 'assets', 'core.json'
 export interface StdParseResult {
 	functions: SharedFunction[];
 	structs: SharedStruct[];
+	traits: Trait[];
 }
 
 const ZERO_LOCATION: SourceLocation = { line: 0, column: 0, length: 0 };
@@ -234,16 +235,7 @@ function isSelfParam(param: Param): boolean {
 	return false;
 }
 
-// `methodsTarget` is where this item lands when it's a self-method (e.g. a struct's own
-// `methods` array, or a `Trait`'s `methods` array when the item comes from a trait impl).
-// Associated functions (no self param) always go into the flat `functions` list instead.
-function parseFunctionEntry(
-	entry: any,
-	structName: string | null,
-	methodsTarget: SharedFunction[] | null,
-	functions: SharedFunction[],
-	pathInfo?: { id: string; paths: Record<string, any> }
-) {
+function buildFunctionCore(entry: any): SharedFunction | null {
 	const fn = entry?.inner?.function;
 	if (!fn) {
 		return null;
@@ -251,12 +243,26 @@ function parseFunctionEntry(
 
 	const genericBounds = buildGenericBounds(fn.generics);
 
-	const parsed: SharedFunction = {
+	return {
 		name: typeof entry.name === 'string' ? entry.name : 'unknown',
 		location: parseSourceLocation(entry.span),
 		type: fn.sig?.output ? parseTypeDesc(fn.sig.output, genericBounds) : createType({ valType: ValType.VOID }),
 		params: Array.isArray(fn.sig?.inputs) ? fn.sig.inputs.map((p: [string, any]) => parseParam(p, genericBounds)) : []
 	};
+}
+
+function parseFunctionEntry(
+	entry: any,
+	structName: string | null,
+	methodsTarget: SharedFunction[] | null,
+	functions: SharedFunction[],
+	pathInfo?: { id: string; paths: Record<string, any> },
+	preludeNames?: Set<string>
+) {
+	const parsed = buildFunctionCore(entry);
+	if (!parsed) {
+		return null;
+	}
 
 	if (structName) {
 		if (parsed.params.length > 0 && isSelfParam(parsed.params[0])) {
@@ -273,6 +279,9 @@ function parseFunctionEntry(
 		const pathEntry = pathInfo.paths[pathInfo.id];
 		if (Array.isArray(pathEntry?.path)) {
 			parsed.path = pathEntry.path;
+		}
+		if (preludeNames?.has(parsed.name)) {
+			parsed.prelude = true;
 		}
 	}
 
@@ -396,6 +405,29 @@ function mergeTraitDefinitions(defsList: Map<string, TraitDefinition>[]): Map<st
 		}
 	}
 	return merged;
+}
+
+function buildStdTraits(index: Record<string, any>, paths: Record<string, any>, preludeNames: Set<string>): Trait[] {
+	const traitDefs = buildTraitDefinitions(index, paths);
+	const traits: Trait[] = [];
+
+	for (const [name, def] of traitDefs) {
+		const methods: SharedFunction[] = [];
+		def.defaultMethods.forEach((itemEntry) => {
+			const method = buildFunctionCore(itemEntry);
+			if (method) methods.push(method);
+		});
+
+		traits.push({
+			name,
+			location: def.location,
+			path: def.path,
+			methods,
+			prelude: preludeNames.has(name) ? true : undefined
+		});
+	}
+
+	return traits;
 }
 
 function parseStructEntry(entry: any, index: Record<string, any>, id: string, paths: Record<string, any>, preludeNames: Set<string>): SharedStruct | null {
@@ -546,14 +578,17 @@ export function parseStdJson(
 	for (const [id, entry] of Object.entries(index)) {
 		// Only scan free functions (those not owned by an impl block)
 		if (!implItemIds.has(id)) {
-			parseFunctionEntry(entry as any, null, null, functions, { id, paths });
+			parseFunctionEntry(entry as any, null, null, functions, { id, paths }, preludeNames);
 		}
 		parseImplEntry(entry, index, structs, functions, traitDefinitions);
 	}
 
+	const traits = buildStdTraits(index, paths, preludeNames);
+
 	return {
 		functions,
-		structs
+		structs,
+		traits
 	};
 }
 
@@ -599,6 +634,34 @@ function mergeStructsByName(structLists: SharedStruct[][]): SharedStruct[] {
 	return [...byName.values()];
 }
 
+function mergeTraitsByName(traitLists: Trait[][]): Trait[] {
+	const byName = new Map<string, Trait>();
+
+	for (const list of traitLists) {
+		for (const t of list) {
+			const existing = byName.get(t.name);
+			if (!existing) {
+				byName.set(t.name, { ...t, methods: [...t.methods] });
+				continue;
+			}
+
+			const existingMethodNames = new Set(existing.methods.map(m => m.name));
+			for (const method of t.methods) {
+				if (!existingMethodNames.has(method.name)) {
+					existing.methods.push(method);
+					existingMethodNames.add(method.name);
+				}
+			}
+			if (existing.path.length === 0 && t.path.length > 0) {
+				existing.path = t.path;
+			}
+			existing.prelude = existing.prelude ?? t.prelude;
+		}
+	}
+
+	return [...byName.values()];
+}
+
 let cachedStdParseResult: StdParseResult | null = null;
 
 export function parseStdJsonFile(): StdParseResult {
@@ -628,6 +691,7 @@ export function parseStdJsonFile(): StdParseResult {
 
 	const structs = mergeStructsByName([std.structs, alloc.structs, core.structs]);
 	const functions = [...std.functions, ...alloc.functions, ...core.functions];
+	const traits = mergeTraitsByName([std.traits, alloc.traits, core.traits]);
 
 	const sliceStruct = structs.find(s => s.name === 'slice');
 	const vecStruct = structs.find(s => s.name === 'Vec');
@@ -641,7 +705,7 @@ export function parseStdJsonFile(): StdParseResult {
 		}
 	}
 
-	cachedStdParseResult = { functions, structs };
+	cachedStdParseResult = { functions, structs, traits };
 	return cachedStdParseResult;
 }
 
