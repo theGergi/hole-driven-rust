@@ -5,23 +5,8 @@
 		"suggestionNames": ["MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()", "pattern.len()", "text.len()"]
 	},
 	{
-		"line": 93,
-		"type": { "valType": "i32" },
-		"suggestionNames": ["i", "MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()", "result.len()", "rolling_hash", "pattern.len()", "text.len()"]
-	},
-	{
 		"line": 94,
 		"type": { "valType": "reference" },
 		"suggestionNames": ["text", "pattern", "&text[??..??]", "&pattern[??..??]"]
-	},
-	{
-		"line": 95,
-		"type": { "valType": "i32" },
-		"suggestionNames": ["i", "MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()", "result.len()", "rolling_hash", "pattern.len()", "text.len()"]
-	},
-	{
-		"line": 95,
-		"type": { "valType": "i32" },
-		"suggestionNames": ["i", "MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()", "result.len()", "rolling_hash", "pattern.len()", "text.len()"]
 	}
 ]

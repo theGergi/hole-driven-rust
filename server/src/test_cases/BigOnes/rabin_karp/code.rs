@@ -90,9 +90,9 @@ pub fn rabin_karp(text: &String, pattern: &String) -> Vec<i32> {
     for i in 0..=text.len() - pattern.len() {
         rolling_hash = if i == 0 {
             // compute_hash(&text[0..pattern.len()])
-            ??;
-            compute_hash(??); // correct: &text[0..pattern.len()]; possible &text, &pattern, etc.
-            compute_hash(&text[??..??]) // correct: &text[0..pattern.len()]; possible &text, &pattern, etc.
+            // ??
+            compute_hash(??) // correct: &text[0..pattern.len()]; possible &text, &pattern, etc.
+            // compute_hash(&text[??..??]) // correct: &text[0..pattern.len()]; possible &text, &pattern, etc.
             // Step 1: ??   // correct compute_hash; possible radix_pow, rolling_hash, pattern.len(), update_hash
             // Step 2: compute_hash(??: &str) // correct &text[0..pattern.len()]
 			// Step 3: compute_hash(&text[??..??]: &str) // should suggest: &text, &text[??..??], &pattern, &pattern[??..??]

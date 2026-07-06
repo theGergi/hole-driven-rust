@@ -420,8 +420,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         return true;
     }
 
-    canBeAssigned(assignee: Type, assigned: Type, owner: Variable | null = null, checkMutability: boolean = true): boolean {
-        
+    canBeAssigned(assignee: Type, assigned: Type, owner: Variable | null = null, checkMutability: boolean = true, debug: boolean = false): boolean {
+        if (!assignee) {
+            return false;
+        }
+
         if (assignee.valType === 'trait') {
             const matchinStructs = [...this.structs, ...this.stdStructs].filter(s => s.traits.some(t => t.name === assignee.structName))
             return matchinStructs.some(s => this.canBeAssigned(toType({...assignee, valType: ValType.STRUCT, structName: s.name}), assigned, owner, checkMutability))
@@ -429,11 +432,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (checkMutability && assignee.mutable && !assigned.mutable) {
             return false;
         }
-
+        
         if (assigned.primitive && (assignee.valType === assigned.valType)) {
             return true;
         }
-
+        
         if (assigned.borrows === Borrow.BMut) {
             if (owner && !this.checkBorrows(owner, owner.location)) {
                 return false;
@@ -447,7 +450,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (assignee.valType === ValType.UNKNOWN) {
             return true;
         }
-
+        
         if (assignee.valType === assigned.valType) {
             if (assignee.valType === ValType.VECTOR ) {
                 return typesEqual(assignee.elementType, assigned.elementType);
@@ -834,13 +837,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         let receiverType = toType({valType: ValType.UNKNOWN});
 
-        console.log(this.currentParentType)
         if (receiver) {
             receiverType = this.visit(receiver)?.type || receiverType;
         }
         this.typeStack.pop();
-        
-        console.log(receiverType)
 
         const structName = receiverType?.structName;
         if (!methodName) {
@@ -1015,6 +1015,17 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
     }
 
+    // Expressions within statements should have a void type by default
+    visitExpressionStatement = (ctx: any): null => {
+        console.log("Expression statement")
+
+        this.typeStack.push(toType({valType: ValType.VOID}))
+        const expr = ctx.expression() ?? ctx.expressionWithBlock()
+        this.visit(expr)
+        this.typeStack.pop()
+        return null;
+    }
+
     visitIfExpression = (ctx: any): ReturnType => {
         console.log("If expression")
 
@@ -1026,7 +1037,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
         this.typeStack.pop();
         
-        this.typeStack.push(toType({valType: ValType.VOID}))
+        // this.typeStack.push(toType({valType: ValType.VOID}))
 
         this.loadState(currentState);
         this.visit(ctx.blockExpression(0));
@@ -1043,7 +1054,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         }
 
-        this.typeStack.pop()
+        // this.typeStack.pop()
 
         return {
             type: this.currentParentType,
@@ -1379,11 +1390,27 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         console.log("Range Expression")
 
         const type = toType({valType: ValType.UNKNOWN});
-        const start = ctx.expression(0) ? this.visit(ctx.expression(0)) : null;
-        const end = ctx.expression(1) ? this.visit(ctx.expression(1)) : null;
 
-        const startIsInt = start?.type?.valType === ValType.INT;
-        const endIsInt = end?.type?.valType === ValType.INT;
+        const start = ctx.expression(0);
+        const end = ctx.expression(1);
+
+        let startParsed;
+        let endParsed;
+
+        if (start?.getText() === '??') {
+            endParsed = start ? this.visit(end) as ReturnType : null;
+            this.typeStack.push(endParsed?.type || toType({valType: ValType.UNKNOWN}));
+            startParsed = start ? this.visit(start) as ReturnType : null;
+        } else {
+            startParsed = start ? this.visit(start) as ReturnType : null;
+            this.typeStack.push(startParsed?.type || toType({valType: ValType.UNKNOWN}));
+            endParsed = end ? this.visit(end) as ReturnType : null;
+        }
+
+        this.typeStack.pop()
+
+        const startIsInt = startParsed?.type?.valType === ValType.INT;
+        const endIsInt = endParsed?.type?.valType === ValType.INT;
         if (startIsInt || endIsInt) {
             type.valType = ValType.RANGE;
             type.elementType = toType({valType: ValType.INT});
@@ -1405,7 +1432,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (ctx.getText() === "??") {
             const location = getLocation(ctx)
             const type = this.currentParentType;
-            // console.log("Alleged type:", type)
             const hole = {location: location, type: type, suggestions: []}
             return {
                 type: toType({valType: ValType.HOLE}),
@@ -1423,7 +1449,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         const location = getLocation(ctx)
         const type = this.currentParentType;
-        console.log("Alleged type:", type)
+        // console.log("Alleged type:", type)
         // console.log("Location:", location)
         const hole = {location:location, type: type, suggestions: []}
         this.generateHole(hole)
@@ -1446,7 +1472,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             methods: []
         };
 
-        console.log("Hole hey")
+            console.log("Hole hey")
         // this.functions.forEach((f) =>
         // {console.log(f.name)})
         this.variables.forEach((f) =>
@@ -1466,18 +1492,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         variables.forEach((variable: Variable) => {
-            if (variable.name == 'dict') {
-
-                console.log("Checking dict")
-                // console.log(variable.type)
-            }
             // console.log("Checking variable:", variable.name, "of type", variable.type)
             if (variable.type && this.canBeAssigned(hole.type, variable.type, variable, false) && !variable.type.consumed) {
                 if (this.checkBorrows(variable.type.owner!, hole.location, variable.name)) {
                     holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
                 }
             }
-            if (hole.type.valType === ValType.REFERENCE && this.canBeAssigned(hole.type.elementType!, variable.type, variable, false) && !variable.type.consumed) {
+            if (hole.type.valType === ValType.REFERENCE && this.canBeAssigned(hole.type.elementType!, variable.type, null, false) && !variable.type.consumed) {
                 if (hole.type.mutableReference) {
                     if (variable.type.mutable) {
                         if (variable.type.borrows === Borrow.BFree) {
@@ -1562,9 +1583,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         });
 
-        // Order: local variables/functions first, then methods (and fields/indexing) on those
-        // variables, and only then associated functions (e.g. Struct::new()). Within a group,
-        // shorter suggestions (by displayed name) are favored as they tend to be more relevant.
+        // Local scope first, then the rest
         const suggestionRank = (s: Suggestion): number => {
             if (s.suggestionType === 'function') {
                 return (s.suggestion as Function).structName ? 2 : 0;
@@ -1575,7 +1594,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         holeSuggestions.sort((a, b) => {
             const rankDiff = suggestionRank(a) - suggestionRank(b);
             if (rankDiff !== 0) return rankDiff;
-            return (a.suggestionNameWithoutTypes?.length ?? 0) - (b.suggestionNameWithoutTypes?.length ?? 0);
+            return (a.suggestionNameWithoutTypes?.length ?? 0) - (b.suggestionNameWithoutTypes?.length ?? 0); // rank by size
         });
 
         if (hole.type.valType === ValType.TRAIT) {
@@ -1592,11 +1611,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         this.holes.push(hole);
     }
 
-    // Recursively collects method-call suggestions for a hole, chaining off the return type
-    // of each method (e.g. a.b().c()) up to `depth` levels deep. `visitedStructNames` prevents
-    // re-entering a struct type already seen in this chain (e.g. Vec::recycle() -> Vec again) —
-    // without it, structs with many self-returning methods (real-world Vec has ~200) blow up
-    // combinatorially across depth levels into hundreds of near-duplicate suggestions.
     private collectMethodChainSuggestions(hole: Hole, receiverType: Type, receiverName: string, receiverLocation: SourceLocation, holeSuggestions: Suggestion[], depth: number, visitedStructNames: Set<string> = new Set()) {
         if (depth <= 0 || !receiverType) return;
 

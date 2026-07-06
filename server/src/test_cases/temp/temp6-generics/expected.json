@@ -2,12 +2,9 @@
 	{
 		"line": 21,
 		"type": {
-			"valType": "reference",
-			"elementType": { 
-				"valType": "struct",
-				"structName": "HashMap"
-				} 
-			},
+			"valType": "struct",
+			"structName": "HashMap"
+		},
 		"suggestionNames": ["dict"]
 	}
 ]

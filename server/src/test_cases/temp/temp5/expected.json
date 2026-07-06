@@ -1,7 +1,7 @@
 [
 	{
 		"line": 20,
-		"type": { "valType": "struct", "structName": "Rev" },
-		"suggestionNames": ["nstr.chars().rev()"]
+		"type": { "valType": "trait", "structName": "Iterator" },
+		"suggestionNames": []
 	}
 ]

@@ -5,21 +5,12 @@ use regex::Regex;
 use md5;
 use std::any::{Any, TypeId};
 
-fn rolling_max(numbers:Vec<i32>) -> Vec<i32>{
+fn rolling_max(numbers:Vec<i32>) {
 
-    let mut running_max :Option<i32> = None;
-    let mut result:Vec<i32> = vec![];
-
-    for n in numbers{
-        if running_max == None {
-            running_max = Some(n);
-
-        }else{
-            running_max = max(??, Some(n));
-        }
-
-        result.push(running_max.unwrap());
+    let mut running_max = if (true) {
+        1;
+    } else {
+        2;
     }
-    return result;
 
 }

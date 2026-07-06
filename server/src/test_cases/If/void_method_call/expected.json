@@ -1,0 +1,7 @@
+[
+	{
+		"line": 12,
+		"type": { "valType": "()" },
+		"suggestionNames": ["a.push()", "add_if_positive()"]
+	}
+]
