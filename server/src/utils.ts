@@ -21,7 +21,7 @@ export function getLocation(ctx: ParserRuleContext): SourceLocation {
 export function toType(overrides: Partial<Type> & { valType: ValType }, variable?: Variable): Type {
 	let primitive = false;
 	
-	if (overrides.valType === ValType.INT || overrides.valType === ValType.FLOAT) {
+	if (overrides?.valType === ValType.INT || overrides?.valType === ValType.FLOAT) {
 		primitive = true;
 	}
 

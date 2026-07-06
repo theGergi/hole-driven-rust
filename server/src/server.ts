@@ -28,7 +28,50 @@ import { UsageGraphListener } from './UsageListener';
 import { getSourceLocationKey } from './utils.js';
 import { parseStdJsonFile } from './stdParser';
 
+const MAX_SUGGESTIONS = 20;
+
 const stdParseResult = parseStdJsonFile();
+
+function safeStringify(value: any): string {
+    const seen = new WeakSet();
+    return JSON.stringify(value, (key, val) => {
+        if (key === 'owner') return undefined;
+        if (val !== null && typeof val === 'object') {
+            if (seen.has(val)) return undefined;
+            seen.add(val);
+        }
+        return val;
+    });
+}
+
+function buildCommandUri(command: string, args: any): string {
+    const encoded = encodeURIComponent(safeStringify(args))
+        .replace(/\(/g, '%28')
+        .replace(/\)/g, '%29');
+    return `command:${command}?${encoded}`;
+}
+
+const HOLE_TRIGGER = '??';
+
+function buildHoleInfo(hole: any, uri: string, range: Range) {
+    return {
+        typeString: hole.type.toTypeString(),
+        variables: hole.context?.variables ?? [],
+        functions: hole.context?.functions ?? [],
+        suggestions: hole.suggestions ?? [],
+        range,
+        uri
+    };
+}
+
+function findHoleAt(uri: string, line: number, character: number) {
+    const document = documents.get(uri);
+    if (!document) return null;
+
+    const results = parseDocument(document.getText());
+    const key = getSourceLocationKey({ line: line + 1, column: character, length: HOLE_TRIGGER.length });
+    return results.get(key) ?? null;
+}
 
 function parseDocument(code: string) {
     const inputStream = CharStream.fromString(code);
@@ -127,56 +170,26 @@ connection.onHover((params: HoverParams): Hover | null => {
             };
             const key = getSourceLocationKey({line: position.line + 1, column: startIndex, length: triggerSequence.length});
             const hole = results.get(key)
-            console.log(key)
-            console.log(hole)
-            const suggestions = hole.suggestions;
+
+            if (!hole) {
+                return null;
+            }
+
+            const suggestions = hole.suggestions.slice(0, MAX_SUGGESTIONS) ?? [];
             const type = hole.type;
 
             const typeString = type.toTypeString();
 
-            const holeArgs = [
-                hole,
-
-                typeString,
-                textDocument.uri
-            ];
-            const holeCommandUri = `command:myExtension.showHoleInfo?${encodeURIComponent(JSON.stringify(holeArgs))}`;
+            const holeCommandUri = buildCommandUri('myExtension.showHoleInfo', [{
+                uri: textDocument.uri,
+                line: position.line,
+                character: startIndex
+            }]);
 
             console.log("Suggestions:", suggestions);
 
             const validSuggestions = suggestions.map((suggestion: any) => {
-                console.log("hey")
-                // console.log(suggestion)
-                // let replacementWithTypes = ''
-                // let replacementWithoutTypes = ''
-                // if (suggestion.suggestionType === 'variable') {
-                //     replacementWithTypes = suggestion.suggestion.name
-                //     replacementWithoutTypes = suggestion.suggestion.name
-                // } else if (suggestion.suggestionType === 'function'){
-                //     let paramStringWithTypes = suggestion.suggestion.params.map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
-                //     let paramStringWithoutTypes = suggestion.suggestion.params.map(() => `??`).join(', ')
-                //     let name = suggestion.suggestion.name.slice(0, -2)
-                //     if (suggestion.suggestion.structName) {
-                //         name = `${suggestion.suggestion.structName}::${name}`
-                //     }
-                //     replacementWithTypes = `${name}(${paramStringWithTypes})`
-                //     replacementWithoutTypes = `${name}(${paramStringWithoutTypes})`
-                // } else if (suggestion.suggestionType === 'method') {
-                //     let paramStringWithTypes = suggestion.suggestion.params.slice(1).map((param: any) => `??: ${param.type.toTypeString()}`).join(', ')
-                //     let paramStringWithoutTypes = suggestion.suggestion.params.slice(1).map(() => `??`).join(', ')
-                //     replacementWithTypes = `${suggestion.suggestion.name.slice(0, -2)}(${paramStringWithTypes})`
-                //     replacementWithoutTypes = `${suggestion.suggestion.name.slice(0, -2)}(${paramStringWithoutTypes})`
-                // } else if (suggestion.suggestionType === 'field') {
-                //     replacementWithTypes = suggestion.suggestion.name
-                //     replacementWithoutTypes = suggestion.suggestion.name
-                // } else if (suggestion.suggestionType === 'slice') {
-                //     replacementWithTypes = suggestion.suggestion.name
-                //     replacementWithoutTypes = suggestion.suggestion.name
-                // } else if (suggestion.suggestionType === 'index') {
-                //     replacementWithTypes = suggestion.suggestion.name
-                //     replacementWithoutTypes = suggestion.suggestion.name
-                // }
-
+                
                 const replacementWithTypes = suggestion.suggestionNameWithTypes;
                 const replacementWithoutTypes = suggestion.suggestionNameWithoutTypes;
 
@@ -185,7 +198,7 @@ connection.onHover((params: HoverParams): Hover | null => {
                     replaceRange,
                     replacementWithoutTypes
                 ];
-                const commandUri = `command:myExtension.applySuggestion?${encodeURIComponent(JSON.stringify(args))}`;
+                const commandUri = buildCommandUri('myExtension.applySuggestion', args);
                 return ` - [Replace](${commandUri}) with\`${replacementWithTypes}\``;
             });
             console.log("Hey")
@@ -195,7 +208,7 @@ connection.onHover((params: HoverParams): Hover | null => {
             if (validSuggestions.length > 0) {
                 hoverContent = "Type: " + typeString + "\n\n**Valid Fits:**\n\n" + validSuggestions.join('\n\n') + `\n\n[Show Full Context](${holeCommandUri})`;
             } else {
-                hoverContent = "Type: " + typeString + "\n\nNo suggestions\n\n[Show Full Context](${holeCommandUri})";
+                hoverContent = "Type: " + typeString + "\n\nNo suggestions\n\n" + `[Show Full Context](${holeCommandUri})`;
             }
 
             return {
@@ -210,6 +223,24 @@ connection.onHover((params: HoverParams): Hover | null => {
     }
 
     return null;
+});
+
+interface HoleInfoRequest {
+    uri: string;
+    line: number;
+    character: number;
+}
+
+connection.onRequest('toy/getHoleInfo', (params: HoleInfoRequest) => {
+    const hole = findHoleAt(params.uri, params.line, params.character);
+    if (!hole) return null;
+
+    const range: Range = {
+        start: { line: params.line, character: params.character },
+        end: { line: params.line, character: params.character + HOLE_TRIGGER.length }
+    };
+
+    return JSON.parse(safeStringify(buildHoleInfo(hole, params.uri, range)));
 });
 
 // Listen for text document synchronization messages

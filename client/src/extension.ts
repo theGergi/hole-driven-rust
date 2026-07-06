@@ -32,16 +32,20 @@ export function activate(context: ExtensionContext) {
 	);
 
 	context.subscriptions.push(
-		commands.registerCommand('myExtension.showHoleInfo', async (hole: any, typeString: String, uri: string) => {
+		commands.registerCommand('myExtension.showHoleInfo', async (location: { uri: string; line: number; character: number }) => {
+			const holeInfo: any = await client.sendRequest('toy/getHoleInfo', location);
+			if (!holeInfo) {
+				window.showInformationMessage('No hole information available at this position.');
+				return;
+			}
+
 			const result = {
-				typeString: typeString,
-				type: hole.type,
-				variables: hole.context.variables,
-				functions: hole.context.functions,
-				possibleValues: hole.suggestions.map((s: any) => s.suggestion),
-				suggestions: hole.suggestions,
-				range: { start: { line: 0, character: 0 }, end: { line: 0, character: 2 } },
-				uri: uri
+				typeString: holeInfo.typeString,
+				variables: holeInfo.variables ?? [],
+				functions: holeInfo.functions ?? [],
+				suggestions: holeInfo.suggestions ?? [],
+				range: holeInfo.range,
+				uri: holeInfo.uri
 			};
 
 			const panel = window.createWebviewPanel(

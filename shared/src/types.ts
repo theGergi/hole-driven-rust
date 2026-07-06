@@ -20,6 +20,13 @@ export enum Borrow {
 	BImmut
 }
 
+export enum FunctionOrigin {
+	Local = "local",             // defined in the user's own source
+	StdImport = "std_import",    // brought in by a `use` that resolves to the standard library
+	OtherImport = "other_import",// brought in by a `use` that resolves elsewhere
+	Prelude = "prelude"          // automatically in scope via the Rust prelude
+}
+
 export class Type {
 	elementType?: Type; // For vectors and references
 	valType!: ValType;
@@ -86,6 +93,7 @@ export interface Function {
 	structName?: string;
 	path?: string[]; // Full path for matching against user imports, e.g., ["core", "cmp", "max"]. Only set for free functions.
 	prelude?: boolean; // True if automatically imported via the Rust prelude
+	origin?: FunctionOrigin; // Where the function came from
 }
 
 export interface Struct {
