@@ -329,7 +329,7 @@ function newCatStats(): CatStats {
 	};
 }
 
-function buildTable(results: RaResult[]): string[] {
+function buildTable(results: RaResult[]): { txt: string[]; md: string[] } {
 	const byCat: Record<string, CatStats> = {};
 	const total = newCatStats();
 
@@ -379,7 +379,7 @@ function buildTable(results: RaResult[]): string[] {
 	const fmt = (row: string[]) => row.map((cell, i) => cell.padEnd(widths[i])).join('  ');
 	const sep = widths.map((w) => '-'.repeat(w)).join('  ');
 
-	return [
+	const txt = [
 		'\n=== rust-analyzer baseline: completion hit-rate by hole category ===',
 		`(hit@K = correct item within rust-analyzer's top-K; @any = anywhere in list)`,
 		fmt(headers),
@@ -388,6 +388,21 @@ function buildTable(results: RaResult[]): string[] {
 		sep,
 		fmt(totalRow),
 	];
+
+	const mdRow = (cells: string[]) => `| ${cells.join(' | ')} |`;
+	const md = [
+		'### rust-analyzer baseline: completion hit-rate by hole category',
+		'',
+		"(hit@K = correct item within rust-analyzer's top-K; @any = anywhere in list)",
+		'',
+		mdRow(headers),
+		mdRow(headers.map(() => '---')),
+		...rows.map(mdRow),
+		mdRow(totalRow.map((c) => `**${c}**`)),
+		'',
+	];
+
+	return { txt, md };
 }
 
 // ---------------------------------------------------------------------------
@@ -480,14 +495,18 @@ async function main() {
 	const jsonPath = path.join(generatedDir, 'ra_eval_results.json');
 	fs.writeFileSync(jsonPath, JSON.stringify(results, null, 2));
 
-	const tableLines = buildTable(results);
-	for (const line of tableLines) console.log(line);
+	const { txt, md } = buildTable(results);
+	for (const line of txt) console.log(line);
 
 	const tablePath = path.join(generatedDir, 'ra_eval_table.txt');
-	fs.writeFileSync(tablePath, tableLines.join('\n') + '\n');
+	fs.writeFileSync(tablePath, txt.join('\n') + '\n');
+
+	const mdPath = path.join(generatedDir, 'ra_eval_table.md');
+	fs.writeFileSync(mdPath, md.join('\n') + '\n');
 
 	console.log(`\nResults written to ${jsonPath}`);
 	console.log(`Table written to ${tablePath}`);
+	console.log(`Markdown table written to ${mdPath}`);
 }
 
 main().catch((e) => {

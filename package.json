@@ -49,6 +49,7 @@
     "testAntlr": "npm run compile && node ./server/out/testInterpreter.js",
     "evaluate": "npm run compile && node ./server/out/evaluator.js",
     "evaluateRa": "tsc server/src/raEvaluator.ts --module NodeNext --moduleResolution NodeNext --target ES2024 --lib ES2024 --strict --skipLibCheck --outDir server/out && node ./server/out/raEvaluator.js",
+    "compareEval": "tsc server/src/compareEval.ts --module NodeNext --moduleResolution NodeNext --target ES2024 --lib ES2024 --strict --skipLibCheck --outDir server/out && node ./server/out/compareEval.js",
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

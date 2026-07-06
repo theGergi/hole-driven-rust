@@ -47,6 +47,9 @@ interface EvalResult {
 	hole_type_compile_error?: string;
 	expected_type?: string;
 	matched_type?: boolean;
+	// 0-indexed position of the ground-truth `original` in the tool's ordered
+	// suggestion list, or null if it is not suggested. Enables exact_match@K.
+	exact_match_rank?: number | null;
 }
 
 const evalCargoDir = path.resolve(process.cwd(), 'server', 'eval_cargo');
@@ -257,6 +260,13 @@ for (const tc of cases) {
 		if (hole_type_compiles) totalHoleTypesCompile++;
 	}
 
+	// Rank of the exact ground-truth match within the tool's ordered suggestions.
+	let exact_match_rank: number | null = null;
+	if (suggestions && suggestions.length > 0) {
+		const idx = suggestions.findIndex(name => name === meta.original);
+		exact_match_rank = idx >= 0 ? idx : null;
+	}
+
 	let matched_type: boolean | undefined;
 	if (meta.type && holeType) {
 		console.log = origLog;
@@ -281,6 +291,7 @@ for (const tc of cases) {
 		hole_type_compile_error,
 		expected_type: meta.type,
 		matched_type,
+		exact_match_rank,
 	});
 	counts[category]++;
 }
@@ -365,6 +376,10 @@ for (const r of results) {
 		matchedTypeCategoryTable[cat].matched += matched;
 	}
 }
+// Generic "number/total (percent)" formatter used across the main results tables
+const frac = (x: integer, total: integer) =>
+	total > 0 ? `${x}/${total} (${((x / total) * 100).toFixed(1)}%)` : `${x}/${total} (0.00%)`;
+
 // Per-category hole-type compile stats (computed here so it can feed the main results table below)
 interface HoleTypeCategoryStats {
 	tested: number;
@@ -426,14 +441,28 @@ function buildTable(title: string, headers: string[], rows: string[][], totalRow
 	return [title, fmt(headers), sep, ...rows.map(fmt), sep, fmt(totalRow)];
 }
 
+function buildMarkdown(title: string, headers: string[], rows: string[][], totalRow: string[]): string[] {
+	const mdRow = (cells: string[]) => `| ${cells.join(' | ')} |`;
+	const cleanTitle = title.replace(/^\s*=+\s*/, '').replace(/\s*=+\s*$/, '').trim();
+	return [
+		`### ${cleanTitle}`,
+		'',
+		mdRow(headers),
+		mdRow(headers.map(() => '---')),
+		...rows.map(mdRow),
+		mdRow(totalRow.map((c, i) => (i === 0 ? `**${c}**` : `**${c}**`))),
+		'',
+	];
+}
+
 const table1Headers = ['category', 'failed_with_error', 'failed', 'fit_incorrect', 'fit_correct', 'total'];
 const table1Rows: string[][] = Object.entries(fitCategoryTable)
 	.sort(([a], [b]) => a.localeCompare(b))
 	.map(([cat, c]) => {
 		const total = fitBuckets.reduce((s, k) => s + c[k], 0);
-		return [cat, String(c.failed_with_error), String(c.failed), String(c.fit_incorrect), String(c.fit_correct), String(total)];
+		return [cat, frac(c.failed_with_error, total), frac(c.failed, total), frac(c.fit_incorrect, total), frac(c.fit_correct, total), String(total)];
 	});
-const table1TotalRow = ['TOTAL', String(counts.failed_with_error), String(counts.failed), String(totalFitIncorrect), String(totalFitCorrect), String(grandTotal)];
+const table1TotalRow = ['Total', frac(counts.failed_with_error, grandTotal), frac(counts.failed, grandTotal), frac(totalFitIncorrect, grandTotal), frac(totalFitCorrect, grandTotal), String(grandTotal)];
 
 const table2Headers = ['category', 'exact_match', 'matched_type', 'valid_suggestion'];
 const table2Rows: string[][] = Object.entries(fitCategoryTable)
@@ -443,7 +472,7 @@ const table2Rows: string[][] = Object.entries(fitCategoryTable)
 		const matchedTypeStats = matchedTypeCategoryTable[cat] ?? { tested: 0, matched: 0 };
 		return [cat, frac(exactMatchCategoryTable[cat] ?? 0, total), frac(matchedTypeStats.matched, total), frac(validSuggestionCategoryTable[cat] ?? 0, total)];
 	});
-const table2TotalRow = ['TOTAL', frac(counts.exact_match, grandTotal), frac(totalTypesMatched, grandTotal), frac(totalValidSuggestion, grandTotal)];
+const table2TotalRow = ['Total', frac(counts.exact_match, grandTotal), frac(totalTypesMatched, grandTotal), frac(totalHolesWithValidSuggestion, grandTotal)];
 
 const table1Lines = buildTable('\n=== Results by Hole Category (failed / fit correctness) ===', table1Headers, table1Rows, table1TotalRow);
 const table2Lines = buildTable('\n=== Results by Hole Category (match quality) ===', table2Headers, table2Rows, table2TotalRow);
@@ -457,3 +486,11 @@ console.log(`\nResults written to ${jsonPath}`);
 const tablePath = path.join(generatedDir, 'eval_table.txt');
 fs.writeFileSync(tablePath, tableLines.join('\n') + '\n');
 console.log(`Table written to ${tablePath}`);
+
+const mdLines = [
+	...buildMarkdown('Results by Hole Category (failed / fit correctness)', table1Headers, table1Rows, table1TotalRow),
+	...buildMarkdown('Results by Hole Category (match quality)', table2Headers, table2Rows, table2TotalRow),
+];
+const mdPath = path.join(generatedDir, 'eval_table.md');
+fs.writeFileSync(mdPath, mdLines.join('\n') + '\n');
+console.log(`Markdown table written to ${mdPath}`);
