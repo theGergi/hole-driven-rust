@@ -149,12 +149,12 @@ function evaluateHole(
 
 	const typeKnown = hole.type && hole.type.valType !== 'HOLE' && hole.type.valType !== 'UNKNOWN';
 	const holeType = typeKnown ? hole.type.toTypeString() : undefined;
-	const holeSubTypes = typeKnown && hole.subTypes ? hole.subTypes.map(st => st.toTypeString()) : undefined;
+	const holeSubTypes = typeKnown && hole.subTypes && hole.subTypes.length > 0 ? hole.subTypes.map(st => st.toTypeString()) : undefined;
 	const hasSuggestions = hole.suggestions && hole.suggestions.length > 0;
 	const exactMatch = hasSuggestions && hole.suggestions.some(s => s.suggestionNameNoParams === meta.original);
 
 	const suggestionNames = hasSuggestions
-		? hole.suggestions.map((s: any) => s.suggestionNameNoParams as string).filter(Boolean)
+		? hole.suggestions.map((s: any) => s.suggestionNameNoParams as string)
 		: [];
 
 	if (exactMatch) return { category: 'exact_match', suggestions: suggestionNames, holeType, holeSubTypes };
@@ -403,16 +403,22 @@ for (const r of results) {
 type FitBucket = 'failed_with_error' | 'failed' | 'fit_incorrect' | 'fit_correct';
 const fitBuckets: FitBucket[] = ['failed_with_error', 'failed', 'fit_incorrect', 'fit_correct'];
 
+function isFitCorrect(r: EvalResult): boolean {
+	return r.category === 'exact_match' || r.matched_type === true || r.any_suggestion_compiles === true;
+}
+
+function fitBucketOf(r: EvalResult): FitBucket {
+	if (r.category === 'failed_with_error') return 'failed_with_error';
+	if (r.category === 'failed') return 'failed';
+	return isFitCorrect(r) ? 'fit_correct' : 'fit_incorrect';
+}
+
 const fitCategoryTable: Record<string, Record<FitBucket, number>> = {};
 const exactMatchCategoryTable: Record<string, number> = {};
 const validSuggestionCategoryTable: Record<string, number> = {};
 for (const r of results) {
 	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
-	const hasSuggestions = r.category === 'exact_match' || r.category === 'found_suggestions';
-	let bucket: FitBucket;
-	if (r.category === 'failed_with_error') bucket = 'failed_with_error';
-	else if (r.category === 'failed') bucket = 'failed';
-	else bucket = (hasSuggestions || r.matched_type === true) ? 'fit_correct' : 'fit_incorrect';
+	const bucket = fitBucketOf(r);
 
 	const hasValidSuggestion = r.suggestion_compile_results?.some(s => s.compiles) ?? false;
 
@@ -427,12 +433,8 @@ for (const r of results) {
 }
 
 const grandTotal = results.length;
-const totalFitIncorrect = results.filter(r => r.category === 'found_type' && r.matched_type !== true).length;
-const totalFitCorrect = grandTotal - counts.failed_with_error - counts.failed - totalFitIncorrect;
-const totalValidSuggestion = results.filter(r => r.suggestion_compile_results?.some(s => s.compiles)).length;
-
-const frac = (x: integer, total: integer) =>
-	total > 0 ? `${x}/${total} (${((x / total) * 100).toFixed(2)}%)` : `${x}/${total} (0.00%)`;
+const totalFitCorrect = results.filter(r => fitBucketOf(r) === 'fit_correct').length;
+const totalFitIncorrect = results.filter(r => fitBucketOf(r) === 'fit_incorrect').length;
 
 function buildTable(title: string, headers: string[], rows: string[][], totalRow: string[]): string[] {
 	const colWidths = headers.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length), totalRow[i].length));

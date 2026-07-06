@@ -1478,9 +1478,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 }
             }
             if (hole.type.valType === ValType.REFERENCE && this.canBeAssigned(hole.type.elementType!, variable.type, variable, false) && !variable.type.consumed) {
-                console.log("checking references")
-                console.log(variable.type.methodCall)
-                console.log(hole.type.methodCall)
                 if (hole.type.mutableReference) {
                     if (variable.type.mutable) {
                         if (variable.type.borrows === Borrow.BFree) {
@@ -1586,6 +1583,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             hole.subTypes = matchinStructs.map(s => toType({...hole.type, valType: ValType.STRUCT, structName: s.name}))
         }
 
+        if (hole.type.methodCall && hole.type.valType === ValType.REFERENCE && hole.type.elementType) {
+            hole.type = hole.type.elementType;
+        }
 
         hole.suggestions = holeSuggestions;
 
