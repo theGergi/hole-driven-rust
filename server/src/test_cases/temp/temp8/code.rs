@@ -5,12 +5,10 @@ use regex::Regex;
 use md5;
 use std::any::{Any, TypeId};
 
-fn rolling_max(numbers:Vec<i32>) {
+fn common(l1:Vec<i32>, l2:Vec<i32>) -> Vec<i32>{
 
-    let mut running_max = if (true) {
-        1;
-    } else {
-        2;
-    }
 
+let mut res:Vec<i32> = l1.into_iter().filter(|n:&i32| l2.contains(n)).collect();
+??;
+return res;
 }

@@ -3,24 +3,19 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
-
-/**
- * rust-analyzer baseline evaluator.
- *
- * For every hole in a dataset we ask rust-analyzer for the completions it would
- * offer at the hole position and compare them against the ground-truth
- * expression (`original` in the hole metadata). This is the rust-analyzer
- * counterpart to `evaluator.ts`, so the two can be compared on the same holes.
- *
- * rust-analyzer only ever completes a single token at the cursor (an in-scope
- * identifier, a method after `.`, a field, ...), whereas `original` may be a
- * whole expression such as `distance.abs()`. We record an exact-match per hole:
- * some completion inserts the full `original` verbatim.
- *
- * rust-analyzer returns a large, sorted list (in-scope names + stdlib), so we
- * store the rank (0-indexed, in sortText display order) of the best matching
- * item and later report hit@1 / hit@5 / hit@10 / hit@any.
- */
+import {
+	TestCaseMeta,
+	collectTestCases,
+	resolveDataset,
+	evalCargoDir,
+	evalLibPath,
+	frac,
+	hitAtK,
+	hitAny,
+	categoriesOf,
+	renderTextTable,
+	renderMarkdownTable,
+} from './evalShared';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -35,34 +30,16 @@ const RA_BIN = process.env.RA_BIN || DEFAULT_RA_BIN;
 // K cutoffs reported in the summary tables.
 const K_CUTOFFS = [1, 5, 10];
 
-// The scratch cargo project rust-analyzer analyses. We reuse the same one the
-// tool's evaluator compiles against so the dependency set (rand/regex/md5) and
-// stdlib resolution match.
-const evalCargoDir = path.resolve(process.cwd(), 'server', 'eval_cargo');
-const evalLibPath = path.join(evalCargoDir, 'src', 'lib.rs');
 const evalLibUri = pathToFileURL(evalLibPath).toString();
 
-const datasetArg = process.argv.find((arg) => arg.startsWith('--dataset='));
-const dataset = datasetArg ? datasetArg.slice('--dataset='.length) : 'assignments_no_types';
+const { dataset, datasetDir: generatedDir } = resolveDataset('assignments_no_types');
 
 const limitArg = process.argv.find((arg) => arg.startsWith('--limit='));
 const limit = limitArg ? parseInt(limitArg.slice('--limit='.length), 10) : Infinity;
 
-const generatedDir = path.resolve(process.cwd(), 'server', 'src', 'datasets', dataset);
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-interface TestCaseMeta {
-	line: number;
-	column_start: number;
-	column_end: number;
-	original: string;
-	categories: string[];
-	imports: string[];
-	type?: string;
-}
 
 interface RaResult {
 	task: string;
@@ -77,7 +54,7 @@ interface RaResult {
 }
 
 // ---------------------------------------------------------------------------
-// Minimal stdio LSP client (Content-Length framed JSON-RPC)
+// Minimal stdio LSP client
 // ---------------------------------------------------------------------------
 
 class LspClient {
@@ -181,48 +158,16 @@ function delay(ms: number): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Dataset walking (same shape as evaluator.ts collectTestCases)
-// ---------------------------------------------------------------------------
-
-function collectTestCases(
-	dir: string,
-	rootDir: string = dir
-): Array<{ task: string; hole: string; rsFile: string; jsonFile: string }> {
-	const cases: Array<{ task: string; hole: string; rsFile: string; jsonFile: string }> = [];
-	const entries = fs.readdirSync(dir, { withFileTypes: true });
-	const files = entries.filter((e) => e.isFile()).map((e) => e.name);
-	const rsFile = files.find((f) => f.endsWith('.rs'));
-	const jsonFile = files.find((f) => f.endsWith('.json'));
-
-	if (rsFile && jsonFile) {
-		cases.push({
-			task: path.relative(rootDir, path.dirname(dir)) || path.basename(dir),
-			hole: path.basename(dir),
-			rsFile: path.join(dir, rsFile),
-			jsonFile: path.join(dir, jsonFile),
-		});
-	}
-	for (const entry of entries) {
-		if (entry.isDirectory()) cases.push(...collectTestCases(path.join(dir, entry.name), rootDir));
-	}
-	return cases;
-}
-
-// ---------------------------------------------------------------------------
 // Matching helpers
 // ---------------------------------------------------------------------------
 
-/** Text rust-analyzer would actually insert for a completion item. */
+// Text rust-analyzer would actually insert for a completion item.
 function insertionOf(item: any): string {
 	if (typeof item.insertText === 'string') return item.insertText;
 	if (item.textEdit && typeof item.textEdit.newText === 'string') return item.textEdit.newText;
 	return item.label ?? '';
 }
 
-/**
- * Given rust-analyzer's items (sorted into display order) return the best
- * (lowest) rank at which `predicate` holds, or null.
- */
 function bestRank(items: any[], predicate: (insertion: string, label: string) => boolean): number | null {
 	for (let i = 0; i < items.length; i++) {
 		const insertion = insertionOf(items[i]);
@@ -257,8 +202,6 @@ async function evalHoleWithRa(
 	const pos = holePositionAndText(rustCode);
 	if (!pos) return { error: 'no ?? marker in source', count: 0, items: [], line: 0, character: 0 };
 
-	// #![allow(warnings)] mirrors the tool's cargo-check setup and keeps the file
-	// as a lib root; the leading line shifts positions by one, so add 1 to line.
 	const header = '#![allow(warnings)]\n';
 	const text = header + pos.text;
 	const line = pos.line + 1;
@@ -272,8 +215,6 @@ async function evalHoleWithRa(
 	let result: any;
 	let items: any[] = [];
 	try {
-		// rust-analyzer computes completions from the current overlay; retry a few
-		// times in case analysis of the just-opened document hasn't settled.
 		for (let attempt = 0; attempt < 4; attempt++) {
 			result = await client.request('textDocument/completion', {
 				textDocument: { uri: evalLibUri },
@@ -291,8 +232,6 @@ async function evalHoleWithRa(
 
 	client.notify('textDocument/didClose', { textDocument: { uri: evalLibUri } });
 
-	// Display order is by sortText (falling back to label), which is what the
-	// user sees in the completion popup.
 	items = [...items].sort((a, b) => {
 		const sa = a.sortText ?? a.label ?? '';
 		const sb = b.sortText ?? b.label ?? '';
@@ -305,16 +244,6 @@ async function evalHoleWithRa(
 // ---------------------------------------------------------------------------
 // Reporting
 // ---------------------------------------------------------------------------
-
-const frac = (x: number, total: number) =>
-	total > 0 ? `${x}/${total} (${((x / total) * 100).toFixed(2)}%)` : `${x}/${total} (0.00%)`;
-
-function hitAtK(rank: number | null, k: number): boolean {
-	return rank !== null && rank < k;
-}
-function hitAny(rank: number | null): boolean {
-	return rank !== null;
-}
 
 interface CatStats {
 	total: number;
@@ -344,29 +273,20 @@ function buildTable(results: RaResult[]): { txt: string[]; md: string[] } {
 
 	for (const r of results) {
 		accumulate(total, r);
-		const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
-		for (const cat of cats) {
+		for (const cat of categoriesOf(r.holeCategories)) {
 			if (!byCat[cat]) byCat[cat] = newCatStats();
 			accumulate(byCat[cat], r);
 		}
 	}
 
-	const headers = [
-		'category',
-		'exact@1',
-		'exact@5',
-		'exact@10',
-		'exact@any',
-		'errors',
-		'total',
-	];
+	const headers = ['category', 'exact@1', 'exact@5', 'exact@10', 'exact@any', 'errors', 'total'];
 	const rowFor = (name: string, s: CatStats): string[] => [
 		name,
-		frac(s.exact.k[1], s.total),
-		frac(s.exact.k[5], s.total),
-		frac(s.exact.k[10], s.total),
-		frac(s.exact.any, s.total),
-		frac(s.errors, s.total),
+		frac(s.exact.k[1], s.total, 2),
+		frac(s.exact.k[5], s.total, 2),
+		frac(s.exact.k[10], s.total, 2),
+		frac(s.exact.any, s.total, 2),
+		frac(s.errors, s.total, 2),
 		String(s.total),
 	];
 
@@ -375,30 +295,18 @@ function buildTable(results: RaResult[]): { txt: string[]; md: string[] } {
 		.map(([cat, s]) => rowFor(cat, s));
 	const totalRow = rowFor('TOTAL', total);
 
-	const widths = headers.map((h, i) => Math.max(h.length, ...rows.map((r) => r[i].length), totalRow[i].length));
-	const fmt = (row: string[]) => row.map((cell, i) => cell.padEnd(widths[i])).join('  ');
-	const sep = widths.map((w) => '-'.repeat(w)).join('  ');
-
+	const subtitle = `(hit@K = correct item within rust-analyzer's top-K; @any = anywhere in list)`;
 	const txt = [
 		'\n=== rust-analyzer baseline: completion hit-rate by hole category ===',
-		`(hit@K = correct item within rust-analyzer's top-K; @any = anywhere in list)`,
-		fmt(headers),
-		sep,
-		...rows.map(fmt),
-		sep,
-		fmt(totalRow),
+		subtitle,
+		...renderTextTable(headers, rows, totalRow),
 	];
-
-	const mdRow = (cells: string[]) => `| ${cells.join(' | ')} |`;
 	const md = [
 		'### rust-analyzer baseline: completion hit-rate by hole category',
 		'',
-		"(hit@K = correct item within rust-analyzer's top-K; @any = anywhere in list)",
+		subtitle,
 		'',
-		mdRow(headers),
-		mdRow(headers.map(() => '---')),
-		...rows.map(mdRow),
-		mdRow(totalRow.map((c) => `**${c}**`)),
+		...renderMarkdownTable(headers, rows, totalRow.map((c) => `**${c}**`)),
 		'',
 	];
 

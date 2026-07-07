@@ -1,3 +1,9 @@
 [
-
+	{
+		"line": 12,
+		"type": {
+			"valType": "()"
+			},
+		"suggestionNames": ["l2.drop()", "res.drop()"]
+	}
 ]

@@ -8,24 +8,22 @@ import { UsageGraphListener } from './UsageListener';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { integer } from 'vscode-languageserver';
 import { parseStdJsonFile } from './stdParser';
+import {
+	TestCaseMeta,
+	collectTestCases,
+	resolveDataset,
+	evalCargoDir,
+	evalLibPath,
+	frac,
+	categoriesOf,
+	renderTextTable,
+	renderMarkdownTable,
+} from './evalShared';
 
-// Cap on how many suggestions get compiled per hole when --compile-suggestions is set,
-// since compiling every suggestion can be prohibitively slow.
 const MAX_SUGGESTIONS_TO_COMPILE = 5;
 
 type EvalCategory = 'failed_with_error' | 'found_type' | 'found_suggestions' | 'exact_match' | 'failed';
-
-interface TestCaseMeta {
-	line: number;
-	column_start: number;
-	column_end: number;
-	original: string;
-	categories: string[];
-	imports: string[];
-	type?: string;
-}
 
 interface SuggestionCompileResult {
 	name: string;
@@ -47,13 +45,8 @@ interface EvalResult {
 	hole_type_compile_error?: string;
 	expected_type?: string;
 	matched_type?: boolean;
-	// 0-indexed position of the ground-truth `original` in the tool's ordered
-	// suggestion list, or null if it is not suggested. Enables exact_match@K.
 	exact_match_rank?: number | null;
 }
-
-const evalCargoDir = path.resolve(process.cwd(), 'server', 'eval_cargo');
-const evalLibPath = path.join(evalCargoDir, 'src', 'lib.rs');
 
 const stdParseResult = parseStdJsonFile();
 
@@ -105,24 +98,12 @@ function normalizeType(type: string): string {
 }
 
 function typesMatch(foundType: string, expectedType: string, holeSupTypes?: string[]): boolean {
-	
-	// if (foundType === 'trait') {
-		// 	console.log("Checking trait")
-		// 	console.log(expectedType)
-		// 	console.log(holeSupTypes)
-		// 	console.log(normalizeType('std::ops::Range<i32>') === normalizeType('Range<i32>'))
-		// }
-
 	if (normalizeType(expectedType) === "&str" && normalizeType(foundType) === "&String") {
 		return true;
 	}
 
 	if (holeSupTypes) {
-		return holeSupTypes.some(st => normalizeType(st) === normalizeType(expectedType))
-	}
-	
-	if (normalizeType(foundType) !== normalizeType(expectedType)) {
-		console.log(`Type mismatch: found "${normalizeType(foundType)}", expected "${normalizeType(expectedType)}"`);
+		return holeSupTypes.some(st => normalizeType(st) === normalizeType(expectedType));
 	}
 
 	return normalizeType(foundType) === normalizeType(expectedType);
@@ -163,38 +144,10 @@ function evaluateHole(
 	return { category: 'failed', error: 'No type or suggestions found' };
 }
 
-function collectTestCases(dir: string, rootDir: string = dir): Array<{ task: string; hole: string; rsFile: string; jsonFile: string }> {
-	const cases: Array<{ task: string; hole: string; rsFile: string; jsonFile: string }> = [];
-	const entries = fs.readdirSync(dir, { withFileTypes: true });
-	const files = entries.filter(e => e.isFile()).map(e => e.name);
-	const rsFile = files.find(f => f.endsWith('.rs'));
-	const jsonFile = files.find(f => f.endsWith('.json'));
-
-	if (rsFile && jsonFile) {
-		cases.push({
-			task: path.relative(rootDir, path.dirname(dir)) || path.basename(dir),
-			hole: path.basename(dir),
-			rsFile: path.join(dir, rsFile),
-			jsonFile: path.join(dir, jsonFile),
-		});
-	}
-
-	for (const entry of entries) {
-		if (entry.isDirectory()) {
-			cases.push(...collectTestCases(path.join(dir, entry.name), rootDir));
-		}
-	}
-
-	return cases;
-}
-
 const compileSuggestions = process.argv.includes('--compile-suggestions');
 const compileTypes = process.argv.includes('--compile-types');
 
-const datasetArg = process.argv.find((arg) => arg.startsWith('--dataset='));
-const dataset = datasetArg ? datasetArg.slice('--dataset='.length) : 'strategy1';
-
-const generatedDir = path.resolve(process.cwd(), 'server', 'src', 'datasets', dataset);
+const { dataset, datasetDir: generatedDir } = resolveDataset('strategy1');
 const cases = collectTestCases(generatedDir);
 
 const results: EvalResult[] = [];
@@ -269,9 +222,7 @@ for (const tc of cases) {
 
 	let matched_type: boolean | undefined;
 	if (meta.type && holeType) {
-		console.log = origLog;
 		matched_type = typesMatch(holeType, meta.type, holeSubTypes);
-		console.log = () => {};
 		totalTypesTested++;
 		if (matched_type) totalTypesMatched++;
 	}
@@ -357,49 +308,6 @@ if (totalTypesTested > 0) {
 	console.log(`Match rate:                    ${pct}%`);
 }
 
-// Per-category matched-type stats (computed here so it can feed the main results table below)
-interface MatchedTypeCategoryStats {
-	tested: number;
-	matched: number;
-}
-
-const matchedTypeCategoryTable: Record<string, MatchedTypeCategoryStats> = {};
-for (const r of results) {
-	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
-	const tested = r.matched_type !== undefined ? 1 : 0;
-	const matched = r.matched_type ? 1 : 0;
-	for (const cat of cats) {
-		if (!matchedTypeCategoryTable[cat]) {
-			matchedTypeCategoryTable[cat] = { tested: 0, matched: 0 };
-		}
-		matchedTypeCategoryTable[cat].tested += tested;
-		matchedTypeCategoryTable[cat].matched += matched;
-	}
-}
-// Generic "number/total (percent)" formatter used across the main results tables
-const frac = (x: integer, total: integer) =>
-	total > 0 ? `${x}/${total} (${((x / total) * 100).toFixed(1)}%)` : `${x}/${total} (0.00%)`;
-
-// Per-category hole-type compile stats (computed here so it can feed the main results table below)
-interface HoleTypeCategoryStats {
-	tested: number;
-	compiled: number;
-}
-
-const holeTypeCategoryTable: Record<string, HoleTypeCategoryStats> = {};
-for (const r of results) {
-	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
-	const tested = r.hole_type_compiles !== undefined ? 1 : 0;
-	const compiled = r.hole_type_compiles ? 1 : 0;
-	for (const cat of cats) {
-		if (!holeTypeCategoryTable[cat]) {
-			holeTypeCategoryTable[cat] = { tested: 0, compiled: 0 };
-		}
-		holeTypeCategoryTable[cat].tested += tested;
-		holeTypeCategoryTable[cat].compiled += compiled;
-	}
-}
-// Print per-category tables: (1) exhaustive failed/fit-correctness buckets, (2) match-quality fractions
 type FitBucket = 'failed_with_error' | 'failed' | 'fit_incorrect' | 'fit_correct';
 const fitBuckets: FitBucket[] = ['failed_with_error', 'failed', 'fit_incorrect', 'fit_correct'];
 
@@ -413,22 +321,25 @@ function fitBucketOf(r: EvalResult): FitBucket {
 	return isFitCorrect(r) ? 'fit_correct' : 'fit_incorrect';
 }
 
-const fitCategoryTable: Record<string, Record<FitBucket, number>> = {};
-const exactMatchCategoryTable: Record<string, number> = {};
-const validSuggestionCategoryTable: Record<string, number> = {};
+interface CategoryStats extends Record<FitBucket, number> {
+	exactMatch: number;
+	matchedType: number;
+	validSuggestion: number;
+}
+const newCategoryStats = (): CategoryStats => ({
+	failed_with_error: 0, failed: 0, fit_incorrect: 0, fit_correct: 0,
+	exactMatch: 0, matchedType: 0, validSuggestion: 0,
+});
+
+const categoryTable: Record<string, CategoryStats> = {};
 for (const r of results) {
-	const cats = r.holeCategories.length > 0 ? r.holeCategories : ['(none)'];
 	const bucket = fitBucketOf(r);
-
-	const hasValidSuggestion = r.suggestion_compile_results?.some(s => s.compiles) ?? false;
-
-	for (const cat of cats) {
-		if (!fitCategoryTable[cat]) {
-			fitCategoryTable[cat] = { failed_with_error: 0, failed: 0, fit_incorrect: 0, fit_correct: 0 };
-		}
-		fitCategoryTable[cat][bucket]++;
-		if (r.category === 'exact_match') exactMatchCategoryTable[cat] = (exactMatchCategoryTable[cat] ?? 0) + 1;
-		if (hasValidSuggestion) validSuggestionCategoryTable[cat] = (validSuggestionCategoryTable[cat] ?? 0) + 1;
+	for (const cat of categoriesOf(r.holeCategories)) {
+		const s = (categoryTable[cat] ??= newCategoryStats());
+		s[bucket]++;
+		if (r.category === 'exact_match') s.exactMatch++;
+		if (r.matched_type) s.matchedType++;
+		if (r.any_suggestion_compiles) s.validSuggestion++;
 	}
 }
 
@@ -436,48 +347,25 @@ const grandTotal = results.length;
 const totalFitCorrect = results.filter(r => fitBucketOf(r) === 'fit_correct').length;
 const totalFitIncorrect = results.filter(r => fitBucketOf(r) === 'fit_incorrect').length;
 
-function buildTable(title: string, headers: string[], rows: string[][], totalRow: string[]): string[] {
-	const colWidths = headers.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length), totalRow[i].length));
-	const fmt = (row: string[]) => row.map((cell, i) => cell.padEnd(colWidths[i])).join('  ');
-	const sep = colWidths.map(w => '-'.repeat(w)).join('  ');
-	return [title, fmt(headers), sep, ...rows.map(fmt), sep, fmt(totalRow)];
-}
-
-function buildMarkdown(title: string, headers: string[], rows: string[][], totalRow: string[]): string[] {
-	const mdRow = (cells: string[]) => `| ${cells.join(' | ')} |`;
-	const cleanTitle = title.replace(/^\s*=+\s*/, '').replace(/\s*=+\s*$/, '').trim();
-	return [
-		`### ${cleanTitle}`,
-		'',
-		mdRow(headers),
-		mdRow(headers.map(() => '---')),
-		...rows.map(mdRow),
-		mdRow(totalRow.map((c, i) => (i === 0 ? `**${c}**` : `**${c}**`))),
-		'',
-	];
-}
+const catTotal = (s: CategoryStats) => fitBuckets.reduce((sum, k) => sum + s[k], 0);
+const sortedCategories = Object.entries(categoryTable).sort(([a], [b]) => a.localeCompare(b));
 
 const table1Headers = ['category', 'failed_with_error', 'failed', 'fit_incorrect', 'fit_correct', 'total'];
-const table1Rows: string[][] = Object.entries(fitCategoryTable)
-	.sort(([a], [b]) => a.localeCompare(b))
-	.map(([cat, c]) => {
-		const total = fitBuckets.reduce((s, k) => s + c[k], 0);
-		return [cat, frac(c.failed_with_error, total), frac(c.failed, total), frac(c.fit_incorrect, total), frac(c.fit_correct, total), String(total)];
-	});
+const table1Rows: string[][] = sortedCategories.map(([cat, s]) => {
+	const total = catTotal(s);
+	return [cat, frac(s.failed_with_error, total), frac(s.failed, total), frac(s.fit_incorrect, total), frac(s.fit_correct, total), String(total)];
+});
 const table1TotalRow = ['Total', frac(counts.failed_with_error, grandTotal), frac(counts.failed, grandTotal), frac(totalFitIncorrect, grandTotal), frac(totalFitCorrect, grandTotal), String(grandTotal)];
 
 const table2Headers = ['category', 'exact_match', 'matched_type', 'valid_suggestion'];
-const table2Rows: string[][] = Object.entries(fitCategoryTable)
-	.sort(([a], [b]) => a.localeCompare(b))
-	.map(([cat, c]) => {
-		const total = fitBuckets.reduce((s, k) => s + c[k], 0);
-		const matchedTypeStats = matchedTypeCategoryTable[cat] ?? { tested: 0, matched: 0 };
-		return [cat, frac(exactMatchCategoryTable[cat] ?? 0, total), frac(matchedTypeStats.matched, total), frac(validSuggestionCategoryTable[cat] ?? 0, total)];
-	});
+const table2Rows: string[][] = sortedCategories.map(([cat, s]) => {
+	const total = catTotal(s);
+	return [cat, frac(s.exactMatch, total), frac(s.matchedType, total), frac(s.validSuggestion, total)];
+});
 const table2TotalRow = ['Total', frac(counts.exact_match, grandTotal), frac(totalTypesMatched, grandTotal), frac(totalHolesWithValidSuggestion, grandTotal)];
 
-const table1Lines = buildTable('\n=== Results by Hole Category (failed / fit correctness) ===', table1Headers, table1Rows, table1TotalRow);
-const table2Lines = buildTable('\n=== Results by Hole Category (match quality) ===', table2Headers, table2Rows, table2TotalRow);
+const table1Lines = ['\n=== Results by Hole Category (failed / fit correctness) ===', ...renderTextTable(table1Headers, table1Rows, table1TotalRow)];
+const table2Lines = ['\n=== Results by Hole Category (match quality) ===', ...renderTextTable(table2Headers, table2Rows, table2TotalRow)];
 const tableLines = [...table1Lines, ...table2Lines];
 for (const line of tableLines) console.log(line);
 
@@ -489,9 +377,11 @@ const tablePath = path.join(generatedDir, 'eval_table.txt');
 fs.writeFileSync(tablePath, tableLines.join('\n') + '\n');
 console.log(`Table written to ${tablePath}`);
 
+const markdownSection = (title: string, headers: string[], rows: string[][], totalRow: string[]): string[] =>
+	[`### ${title}`, '', ...renderMarkdownTable(headers, rows, totalRow.map(c => `**${c}**`)), ''];
 const mdLines = [
-	...buildMarkdown('Results by Hole Category (failed / fit correctness)', table1Headers, table1Rows, table1TotalRow),
-	...buildMarkdown('Results by Hole Category (match quality)', table2Headers, table2Rows, table2TotalRow),
+	...markdownSection('Results by Hole Category (failed / fit correctness)', table1Headers, table1Rows, table1TotalRow),
+	...markdownSection('Results by Hole Category (match quality)', table2Headers, table2Rows, table2TotalRow),
 ];
 const mdPath = path.join(generatedDir, 'eval_table.md');
 fs.writeFileSync(mdPath, mdLines.join('\n') + '\n');
