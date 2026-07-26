@@ -1,9 +1,9 @@
 [
 	{
-		"line": 12,
+		"line": 21,
 		"type": {
-			"valType": "()"
+			"valType": "struct", "structName": "String"
 			},
-		"suggestionNames": ["l2.drop()", "res.drop()"]
+		"suggestionNames": ["str.to_string()"]
 	}
 ]

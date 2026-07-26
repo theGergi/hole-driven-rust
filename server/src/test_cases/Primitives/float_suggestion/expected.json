@@ -1,7 +1,7 @@
 [
 	{
-		"line": 11,
+		"line": 8,
 		"type": { "valType": "struct", "structName": "f64" },
-		"suggestionNames": []
+		"suggestionNames": ["a", "b"]
 	}
 ]

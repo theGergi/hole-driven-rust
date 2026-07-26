@@ -2,8 +2,8 @@ import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext, CompoundAssignmentExpressionContext, DereferenceExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
-import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct, Trait, getAllMethods, FunctionOrigin } from '../../shared/out/types.js';
-import { toType, getSourceLocationKey, getLocation, cloneVariable, cloneFunction, cloneParam } from './utils';
+import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct, Trait, getAllMethods, FunctionOrigin, INTEGER_TYPE_NAMES, structNamesCompatible } from '../../shared/out/types.js';
+import { toType, primitiveType, getSourceLocationKey, getLocation, cloneVariable, cloneFunction, cloneParam } from './utils';
 import { parseStdJsonFile, StdParseResult } from './stdParser';
 
 
@@ -12,8 +12,12 @@ function typesEqual(a: Type | undefined, b: Type | undefined): boolean {
     if (!a || !b) return true;
     if (a.valType === ValType.UNKNOWN || b.valType === ValType.UNKNOWN) return true;
     if (a.valType !== b.valType) return false;
-    if (a.structName !== b.structName) return false;
+    if (!structNamesCompatible(a.structName, b.structName)) return false;
     return typesEqual(a.elementType, b.elementType);
+}
+
+function isIntegerType(type: Type | undefined): boolean {
+    return type?.valType === ValType.STRUCT && INTEGER_TYPE_NAMES.includes(type.structName ?? '');
 }
 
 export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
@@ -31,6 +35,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     private blockStack: string[] = ['global']; // Stack to track nested blocks
     private blockCounter: number = 0;          // Counter to generate unique block IDs
+
+    // Return type of the function currently being visited (a stack to support nested functions).
+    // Used so that `return ??` resolves the hole against the declared return type.
+    private functionReturnTypeStack: Type[] = [];
 
     private currentImplType: string | null = null;
 
@@ -356,20 +364,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         }
 
-        if (["i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64", "u128", "usize"].includes(typeString as any)) {
-            return toType({valType: ValType.INT});
-        }
-        if (typeString === 'f32' || typeString === 'f64') {
-            return toType({valType: ValType.FLOAT});
-        }
-        if (typeString === 'str') {
-            if (this.structs.find(s => s.name === "str")) {
-                return toType({valType: ValType.STRUCT, structName: "str"});
-            }
-            return toType({valType: ValType.STRING});
-        }
-
-        
         if (genericArgs) {
             let elementType : Type | undefined = this.parseStringType(genericArgs);
             elementType = elementType.valType === ValType.UNKNOWN ? undefined : elementType
@@ -384,7 +378,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return toType({valType: ValType.REFERENCE, elementType: elementType, mutableReference: mutableReference, structName: elementType.structName});
         }
 
-        // Check if it's a struct type
+        // Check if it's a struct type. Primitives ("i32", "f32", "bool", "str", ...) land here too:
+        // they are registered as prelude structs, so they need no separate branch.
         if (this.structs.some(s => s.name === typeString)) {
             return toType({valType: ValType.STRUCT, structName: typeString});
         }
@@ -421,7 +416,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return false;
         }
         
-        if (assigned.primitive && (assignee.valType === assigned.valType)) {
+        // Primitives are Copy, so they can never be blocked by the borrow/move checks below.
+        if (assigned.primitive && typesEqual(assignee, assigned)) {
             return true;
         }
         
@@ -439,22 +435,34 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return true;
         }
         
-        if (assignee.valType === assigned.valType) {
+        if (assignee.valType === assigned.valType 
+                || (assigned.structName === 'String' && assignee.structName === 'str')
+                || (assignee.valType === ValType.REFERENCE && assignee.methodCall)
+            ) {    // TODO hacky string coercion
             if (assignee.valType === ValType.VECTOR ) {
                 return typesEqual(assignee.elementType, assigned.elementType);
             } else if (assignee.valType === ValType.REFERENCE) {
                 if (assignee.mutableReference && !assigned.mutableReference) {
                     return false;
                 }
-                return typesEqual(assignee.elementType, assigned.elementType);
+                return typesEqual(assignee.elementType, assigned.elementType)
+                    || (assigned.structName === 'str' && assignee.structName === 'String')    // TODO hacky string coercion;
             } else if (assignee.valType === ValType.STRUCT) {
-                if (assignee.structName !== assigned.structName) return false;
+                if (!structNamesCompatible(assignee.structName, assigned.structName)) return false;
                 return typesEqual(assignee.elementType, assigned.elementType); // TODO: check if elementType exists
             }
             return true;
         }
 
         return false;
+    }
+
+    // Try to find type from parent context
+    private numericLiteralType(defaultName: string): Type {
+        const expected = this.currentParentType;
+        const contextual = expected.valType === ValType.STRUCT &&
+            structNamesCompatible(defaultName, expected.structName);
+        return primitiveType(contextual ? expected.structName! : defaultName);
     }
 
     // ============================================= VISIT METHODS =============================================
@@ -464,25 +472,24 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         
         if (ctx.FLOAT_LITERAL()) {
             return {
-                type: toType({valType: ValType.FLOAT}),
+                type: this.numericLiteralType('f64'),
                 location: getLocation(ctx)
             };
         }
 
         if (ctx.INTEGER_LITERAL()) {
             return {
-                type: toType({valType: ValType.INT}),
+                type: this.numericLiteralType('i32'),
                 location: getLocation(ctx)
             };
         }
 
         if (ctx.STRING_LITERAL() || ctx.RAW_STRING_LITERAL()) {
-            const strStruct = this.structs.find(s => s.name === "str");
             return {
                 type: toType({
                     valType: ValType.REFERENCE,
-                    elementType: strStruct ? toType({valType: ValType.STRUCT, structName: "str"}) : toType({valType: ValType.STRING}),
-                    structName: strStruct ? "str" : undefined
+                    elementType: primitiveType('str'),
+                    structName: 'str'
                 }),
                 location: getLocation(ctx)
             };
@@ -490,7 +497,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         if (ctx.KW_TRUE() || ctx.KW_FALSE()) {
             return {
-                type: toType({valType: ValType.BOOL}),
+                type: primitiveType('bool'),
                 location: getLocation(ctx)
             };
         }
@@ -657,27 +664,12 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         this.typeStack.pop();
         // console.log("Inferred type: ", inferedType, "Declared type: ", declaredType)
         
-        if (inferedType.valType === ValType.UNKNOWN && declaredType.valType === ValType.UNKNOWN) {
-            // throw new Error("No type");
-        } else if (inferedType.valType === ValType.HOLE && declaredType.valType !== ValType.UNKNOWN) {
+        if (declaredType.valType !== ValType.UNKNOWN &&
+            (inferedType.valType === ValType.HOLE || inferedType.elementType?.valType === ValType.HOLE)) {
             inferedType = declaredType;
-        } else if (inferedType.valType !== ValType.UNKNOWN && declaredType.valType !== ValType.UNKNOWN) {
-            if (declaredType.valType !== inferedType.valType) {
-                throw new Error("Declared type is different from infered type: " + declaredType.valType + " vs " + inferedType.valType);
-            }
-            if (declaredType.valType === ValType.VECTOR || declaredType.valType === ValType.REFERENCE) {
-                if (inferedType.elementType?.valType === ValType.UNKNOWN && declaredType.elementType?.valType === ValType.UNKNOWN) {
-                    // throw new Error("No type");
-                } else if (inferedType.elementType?.valType === ValType.HOLE && declaredType.elementType !== undefined) {
-                    inferedType = declaredType;
-                } else if (inferedType.elementType !== undefined && declaredType.elementType !== undefined) {
-                    if (!typesEqual(declaredType.elementType, inferedType.elementType)) {
-                        throw new Error("Declared subtype is different from infered type");
-                    }
-                }
-            }
-            
-            
+        } else if (!typesEqual(declaredType, inferedType)) {
+            throw new Error("Declared type is different from infered type: "
+                + declaredType.toTypeString() + " vs " + inferedType.toTypeString());
         }
 
         if (recordVar) {
@@ -1023,7 +1015,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         const currentState = this.saveState();
 
-        this.typeStack.push(toType({valType: ValType.BOOL}));
+        this.typeStack.push(primitiveType('bool'));
         if (ctx.expression()) {
             this.visit(ctx.expression());
         }
@@ -1048,6 +1040,46 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             type: this.currentParentType,
             location: getLocation(ctx)
         }
+    }
+
+    visitReturnExpression = (ctx: any): ReturnType => {
+        console.log("Return expression")
+
+        const returnType = this.functionReturnTypeStack[this.functionReturnTypeStack.length - 1]
+            ?? toType({valType: ValType.VOID});
+
+        const expr = ctx.expression();
+        if (expr) {
+            this.typeStack.push(returnType);
+            this.visit(expr);
+            this.typeStack.pop();
+        }
+
+        return {
+            type: toType({valType: ValType.VOID}),
+            location: getLocation(ctx)
+        };
+    }
+
+    visitPredicateLoopExpression = (ctx: any): ReturnType => {
+        console.log("PredicateLoopExpression")
+
+        // Conditions i a boolean
+        this.typeStack.push(primitiveType('bool'));
+        if (ctx.expression()) {
+            this.visit(ctx.expression());
+        }
+        this.typeStack.pop();
+
+        // Body has no type, so void
+        this.typeStack.push(toType({valType: ValType.VOID}));
+        this.visit(ctx.blockExpression());
+        this.typeStack.pop();
+
+        return {
+            type: toType({valType: ValType.UNKNOWN}),
+            location: getLocation(ctx)
+        };
     }
 
     visitComparisonExpression = (ctx: any): ReturnType => {
@@ -1075,7 +1107,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         this.typeStack.pop();
 
-        return { type: toType({valType: ValType.BOOL}), location: getLocation(ctx) };
+        return { type: primitiveType('bool'), location: getLocation(ctx) };
     }
 
 
@@ -1092,6 +1124,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         this.typeStack.push(type);
+        this.functionReturnTypeStack.push(type);
         
         // The identifier rule is a child of the function rule
         const name = ctx.identifier().getText();
@@ -1169,6 +1202,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
         
         this.typeStack.pop()
+        this.functionReturnTypeStack.pop();
         
         this.variables = []; // Clear variables after function scope ends
 
@@ -1232,15 +1266,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         console.log("Type Cast Expression")
         
         const type = this.parseType(ctx.typeNoBounds());
-            
-        const currentType = this.currentParentType;
 
-        // this.typeStack.push(toType({...currentType, valType: ValType.FLOAT})); // TODO: TOO Restrictive
-        
-        const expr = this.visit(ctx.expression());
+        this.visit(ctx.expression());
 
-        // this.typeStack.pop();
-        
         return {
             type: type,
             location: getLocation(ctx)
@@ -1262,7 +1290,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         if (leftChild.getText() === '??') {
             right = this.visit(rightChild) as ReturnType;
-            this.typeStack.push(right.type || toType({valType: ValType.UNKNOWN}));
+            if (right.type?.valType === ValType.REFERENCE && right?.type?.elementType && ['String', 'str'].includes(right.type?.elementType?.structName || '')) {
+                this.typeStack.push(right.type.elementType);
+            } else {
+                this.typeStack.push(right.type || toType({valType: ValType.UNKNOWN}));
+            }
             left = this.visit(leftChild) as ReturnType;
         } else {
             left = this.visit(leftChild) as ReturnType;
@@ -1309,7 +1341,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         const array = this.visit(ctx.expression(0)!);
 
-        this.typeStack.push(toType({valType: ValType.INT}));
+        this.typeStack.push(primitiveType('usize'));
 
         const index = this.visit(ctx.expression(1)!);
 
@@ -1396,11 +1428,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         this.typeStack.pop()
 
-        const startIsInt = startParsed?.type?.valType === ValType.INT;
-        const endIsInt = endParsed?.type?.valType === ValType.INT;
-        if (startIsInt || endIsInt) {
+        const integerBound = [startParsed?.type, endParsed?.type].find(isIntegerType);
+        if (integerBound) {
             type.valType = ValType.RANGE;
-            type.elementType = toType({valType: ValType.INT});
+            type.elementType = primitiveType(integerBound.structName!);
         }
 
         return {

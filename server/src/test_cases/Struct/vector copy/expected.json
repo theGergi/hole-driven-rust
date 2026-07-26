@@ -1,7 +1,7 @@
 [
 	{
 		"line": 17,
-		"type": { "valType": "i32" },
+		"type": { "valType": "struct", "structName": "i32" },
 		"suggestionNames": ["cap", "len", "len_func()"]
 	}
 ]

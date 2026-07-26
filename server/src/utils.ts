@@ -1,5 +1,5 @@
 import { ParserRuleContext } from 'antlr4ng';
-import { Borrow, Hole, Param, SourceLocation, Type, ValType, Variable, Function, constructTypeString } from '../../shared/out/types';
+import { Borrow, Hole, Param, SourceLocation, Type, ValType, Variable, Function, constructTypeString, isPrimitiveTypeName } from '../../shared/out/types';
 
 
 
@@ -19,20 +19,18 @@ export function getLocation(ctx: ParserRuleContext): SourceLocation {
 }
 
 export function toType(overrides: Partial<Type> & { valType: ValType }, variable?: Variable): Type {
-	let primitive = false;
-	
-	if (overrides?.valType === ValType.INT || overrides?.valType === ValType.FLOAT) {
-		primitive = true;
-	}
-
 	const type = new Type();
-	type.primitive = primitive;
 	type.mutable = false;
 	type.consumed = false;
 	type.borrows = Borrow.BFree;
 	type.structName = overrides.valType;
 	Object.assign(type, overrides);
+	type.primitive = overrides.primitive ?? isPrimitiveTypeName(type.structName);
 	return type;
+}
+
+export function primitiveType(name: string): Type {
+	return toType({ valType: ValType.STRUCT, structName: name });
 }
 
 
@@ -69,13 +67,8 @@ export function formatType (type?: Type): string {
 	if (!type) {
 		return 'unknown';
 	}
-	const base = type.valType === ValType.VECTOR
-		? `Vec<${type.elementType ? constructTypeString(type.elementType) : 'unknown'}>`
-		: type.valType === ValType.REFERENCE
-			? `&${type.mutableReference ? 'mut ' : ''}${type.elementType ? constructTypeString(type.elementType) : 'unknown'}`
-			: type.valType;
 	const mut = type.mutable === true ? 'mut ' : '';
-	return `${mut}${base}`;
+	return `${mut}${constructTypeString(type)}`;
 };
 
 export function printHoleSuggestionContext(hole: Hole): void {

@@ -1,9 +1,8 @@
+// Primitives are not ValTypes of their own: they are STRUCT types named after themselves
+// (structName "i32", "f32", "bool", ...), so every struct-shaped code path — method lookup,
+// hole suggestions, field/trait resolution — applies to them without special casing.
 export enum ValType {
 	ROOT = "ROOT",
-	BOOL = "bool",
-	INT = "i32",
-	FLOAT = "f32",
-	STRING = "str",
 	HOLE = "HOLE",
 	UNKNOWN = "UNKNOWN",
 	VECTOR = "Vec",
@@ -12,6 +11,29 @@ export enum ValType {
 	TRAIT = "trait",
 	RANGE = "range",
 	VOID = "()"
+}
+
+// Built in types for std parsing
+export const INTEGER_TYPE_NAMES = ["i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64", "u128", "usize"];
+export const FLOAT_TYPE_NAMES = ["f16", "f32", "f64", "f128"];
+export const PRIMITIVE_TYPE_NAMES: ReadonlySet<string> = new Set([...INTEGER_TYPE_NAMES, ...FLOAT_TYPE_NAMES, "bool", "char"]);
+export const BUILTIN_TYPE_NAMES: ReadonlySet<string> = new Set([...PRIMITIVE_TYPE_NAMES, "str"]);
+
+export function isPrimitiveTypeName(name?: string): boolean {
+	return name !== undefined && PRIMITIVE_TYPE_NAMES.has(name);
+}
+
+function primitiveGroup(name?: string): string | undefined {
+	if (name === undefined) return undefined;
+	if (INTEGER_TYPE_NAMES.includes(name)) return "integer";
+	if (FLOAT_TYPE_NAMES.includes(name)) return "float";
+	return undefined;
+}
+
+export function structNamesCompatible(a?: string, b?: string): boolean {
+	if (a === b) return true;
+	const group = primitiveGroup(a);
+	return group !== undefined && group === primitiveGroup(b);
 }
 
 export enum Borrow {

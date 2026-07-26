@@ -1,0 +1,7 @@
+[
+	{
+		"line": 18,
+		"type": { "valType": "struct", "structName": "Widget" },
+		"suggestionNames": ["b", "Widget::new()"]
+	}
+]

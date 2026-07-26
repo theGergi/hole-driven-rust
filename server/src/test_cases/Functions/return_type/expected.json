@@ -1,7 +1,7 @@
 [
 	{
-		"line": 21,
+		"line": 7,
 		"type": { "valType": "struct", "structName": "i32" },
-		"suggestionNames": []
+		"suggestionNames": ["a", "b", "pick()"]
 	}
 ]

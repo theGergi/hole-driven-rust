@@ -5,10 +5,22 @@ use regex::Regex;
 use md5;
 use std::any::{Any, TypeId};
 
-fn common(l1:Vec<i32>, l2:Vec<i32>) -> Vec<i32>{
+fn is_palindrome_10(str: &str) -> bool {
 
-
-let mut res:Vec<i32> = l1.into_iter().filter(|n:&i32| l2.contains(n)).collect();
-??;
-return res;
-}
+        let s: String = str.chars().rev().collect();
+        return s==str;
+    }
+    
+    fn make_palindrome(str: &str) -> String {
+        let mut i: usize = 0;
+        for i in 0..str.len() {
+            let rstr: &str = &str[i..];
+            if is_palindrome_10(rstr) {
+                let nstr: &str = &str[0..i];
+                let n2str: String = nstr.chars().rev().collect();
+                return ??+&n2str;
+            }
+        }
+        let n2str: String = str.chars().rev().collect();
+        return str.to_string()+&n2str;
+    }

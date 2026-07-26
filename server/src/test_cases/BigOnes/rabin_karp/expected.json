@@ -1,7 +1,7 @@
 [
 	{
 		"line": 85,
-		"type": { "valType": "i32" },
+		"type": { "valType": "struct", "structName": "i32" },
 		"suggestionNames": ["MOD", "RADIX", "pat_hash", "radix_pow", "update_hash()", "compute_hash()", "pattern.len()", "text.len()"]
 	},
 	{

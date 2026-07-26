@@ -8,7 +8,9 @@ import {
 	Trait,
 	Type,
 	ValType,
-	Function as SharedFunction
+	Function as SharedFunction,
+	BUILTIN_TYPE_NAMES,
+	isPrimitiveTypeName
 } from '../../shared/out/types.js';
 
 
@@ -32,7 +34,7 @@ function createType(overrides: Partial<Type>): Type {
 	const type = new Type();
 	type.valType = overrides.valType ?? ValType.UNKNOWN;
 	type.elementType = overrides.elementType;
-	type.primitive = overrides.primitive ?? false;
+	type.primitive = overrides.primitive ?? isPrimitiveTypeName(overrides.structName);
 	type.mutable = overrides.mutable ?? false;
 	type.mutableReference = overrides.mutableReference ?? false;
 	type.consumed = overrides.consumed ?? false;
@@ -85,29 +87,11 @@ function parsePathName(value: any): string | null {
 
 
 function parsePrimitiveType(name: string): Type {
-	if (name === 'str') {
-		return createType({ valType: ValType.STRUCT, structName: 'str', primitive: false });
-	}
-
-	if (name === 'f32' || name === 'f64') {
-		return createType({ valType: ValType.FLOAT, primitive: true });
-	}
-
-	if (
-		name === 'bool' ||
-		/^u?\d+$/.test(name) ||
-		name === 'usize' ||
-		name === 'isize' ||
-		name === 'char'
-	) {
-		return createType({ valType: ValType.INT, primitive: true });
-	}
-
 	if (name === '()') {
-		return createType({ valType: ValType.VOID, primitive: false });
+		return createType({ valType: ValType.VOID });
 	}
 
-	return createType({ valType: ValType.UNKNOWN, primitive: false });
+	return createType({ valType: ValType.STRUCT, structName: name });
 }
 
 // Maps a function's own generic type parameter names (e.g. "T") to the name of the first
@@ -208,10 +192,6 @@ function parseTypeDesc(typeDesc: any, genericBounds?: Record<string, string>): T
 		const resolved = typeDesc.resolved_path;
 		const pathName = normalizePathName(resolved.path ?? '');
 		const angleArgs = resolved.args?.angle_bracketed?.args ?? [];
-
-		if (pathName === 'str') {
-			return createType({ valType: ValType.STRUCT, structName: 'str', primitive: false });
-		}
 
 		const inner = angleArgs.length > 0 ? parseTypeDesc(angleArgs[0].type ?? angleArgs[0], genericBounds) : undefined;
 		return createType({
@@ -558,14 +538,11 @@ function parseImplEntry(
 		s.traits.push(trait);
 	};
 
+	// `impl f32 { ... }`, `impl str { ... }`, `impl Ord for u8 { ... }`, ... — attached to the
+	// struct registered for that primitive by registerPrimitiveStructs.
 	const primitiveFor = implEntry.for?.primitive;
-	// console.log(primitiveFor)
-	if (primitiveFor === 'str') {
-		structs.filter(s => s.name === 'str').forEach(applyTo);
-		return;
-	}
-	if (["i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64", "u128", "usize"].includes(primitiveFor as any)) {
-		structs.filter(s => s.name === 'i32').forEach(applyTo);
+	if (typeof primitiveFor === 'string') {
+		structs.filter(s => s.name === primitiveFor).forEach(applyTo);
 		return;
 	}
 
@@ -586,6 +563,39 @@ function parseImplEntry(
 	structs.filter(s => s.name === ownerName && s.impls).forEach(applyTo);
 }
 
+// Primitives are dealt with as normal structs
+function registerPrimitiveStructs(index: Record<string, any>, structs: SharedStruct[]): void {
+	const implsByName = new Map<string, any[]>();
+
+	for (const entry of Object.values(index)) {
+		const primitive = (entry as any)?.inner?.primitive;
+		if (typeof primitive?.name === 'string') {
+			implsByName.set(primitive.name, Array.isArray(primitive.impls) ? primitive.impls : []);
+			continue;
+		}
+
+		const implTarget = (entry as any)?.inner?.impl?.for?.primitive;
+		if (typeof implTarget === 'string' && !implsByName.has(implTarget)) {
+			implsByName.set(implTarget, []);
+		}
+	}
+
+	for (const [name, impls] of implsByName) {
+		if (structs.some(s => s.name === name)) continue;
+
+		structs.push({
+			name,
+			location: ZERO_LOCATION,
+			fields: [],
+			methods: [],
+			path: [name],
+			impls,
+			prelude: BUILTIN_TYPE_NAMES.has(name) || undefined,
+			traits: [],
+		});
+	}
+}
+
 export function parseStdJson(
 	stdJson: any,
 	externalPreludeNames?: Set<string>,
@@ -604,56 +614,10 @@ export function parseStdJson(
 		const parsedStruct = parseStructEntry(entry, index, id, paths, preludeNames);
 		if (parsedStruct) {
 			structs.push(parsedStruct);
-			continue;
-		}
-
-		const primitive = (entry as any)?.inner?.primitive;
-		if (primitive && primitive.name === 'slice') {
-			structs.push({
-				name: 'slice',
-				location: ZERO_LOCATION,
-				fields: [],
-				methods: [],
-				path: ['slice'],
-				impls: Array.isArray(primitive.impls) ? primitive.impls : [],
-				prelude: undefined,
-				traits: [],
-			});
 		}
 	}
 
-	structs.push({
-		name: 'str',
-		location: { line: 0, column: 0, length: 0 },
-		fields: [],
-		methods: [],
-		path: ['str'],
-		impls: undefined,
-		prelude: true,
-		traits: [],
-	});
-
-	structs.push({
-		name: 'i32',
-		location: { line: 0, column: 0, length: 0 },
-		fields: [],
-		methods: [],
-		path: ['i32'],
-		impls: undefined,
-		prelude: true,
-		traits: [],
-	});
-
-	structs.push({
-		name: 'f32',
-		location: { line: 0, column: 0, length: 0 },
-		fields: [],
-		methods: [],
-		path: ['f32'],
-		impls: undefined,
-		prelude: true,
-		traits: [],
-	});
+	registerPrimitiveStructs(index, structs);
 
 	// Build the set of IDs that belong to impl blocks so we don't process them twice
 	const implItemIds = new Set<string>();

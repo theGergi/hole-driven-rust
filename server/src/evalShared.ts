@@ -85,6 +85,33 @@ export function categoriesOf(holeCategories: string[]): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// Exact-match comparison
+// ---------------------------------------------------------------------------
+
+const IDENT_PATH = /^[A-Za-z_][A-Za-z0-9_]*(?:(?:::|\.)[A-Za-z_][A-Za-z0-9_]*)*$/;
+
+export function callShape(expr: string): string | undefined {
+	if (!expr.includes('(')) return undefined;
+
+	let out = '';
+	let depth = 0;
+	for (const ch of expr) {
+		if (ch === '(') { depth++; continue; }
+		if (ch === ')') { depth = Math.max(0, depth - 1); continue; }
+		if (depth === 0) out += ch;
+	}
+
+	const shape = out.replace(/\s+/g, '');
+	return IDENT_PATH.test(shape) ? shape : undefined;
+}
+
+export function isExactMatch(suggestion: string, original: string): boolean {
+	if (suggestion === original) return true;
+	const suggestionShape = callShape(suggestion);
+	return suggestionShape !== undefined && suggestionShape === callShape(original);
+}
+
+// ---------------------------------------------------------------------------
 // Table rendering
 // ---------------------------------------------------------------------------
 

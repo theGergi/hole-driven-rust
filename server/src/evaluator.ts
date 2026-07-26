@@ -17,6 +17,7 @@ import {
 	evalLibPath,
 	frac,
 	categoriesOf,
+	isExactMatch,
 	renderTextTable,
 	renderMarkdownTable,
 } from './evalShared';
@@ -132,7 +133,7 @@ function evaluateHole(
 	const holeType = typeKnown ? hole.type.toTypeString() : undefined;
 	const holeSubTypes = typeKnown && hole.subTypes && hole.subTypes.length > 0 ? hole.subTypes.map(st => st.toTypeString()) : undefined;
 	const hasSuggestions = hole.suggestions && hole.suggestions.length > 0;
-	const exactMatch = hasSuggestions && hole.suggestions.some(s => s.suggestionNameNoParams === meta.original);
+	const exactMatch = hasSuggestions && hole.suggestions.some(s => isExactMatch(s.suggestionNameNoParams ?? '', meta.original));
 
 	const suggestionNames = hasSuggestions
 		? hole.suggestions.map((s: any) => s.suggestionNameNoParams as string)
@@ -216,7 +217,7 @@ for (const tc of cases) {
 	// Rank of the exact ground-truth match within the tool's ordered suggestions.
 	let exact_match_rank: number | null = null;
 	if (suggestions && suggestions.length > 0) {
-		const idx = suggestions.findIndex(name => name === meta.original);
+		const idx = suggestions.findIndex(name => isExactMatch(name, meta.original));
 		exact_match_rank = idx >= 0 ? idx : null;
 	}
 

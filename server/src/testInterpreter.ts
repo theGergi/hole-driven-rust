@@ -151,13 +151,36 @@ if (casesToRun.length === 0) {
     process.exit(0);
 }
 
-// Run the tests
+// Run the tests. Each case is isolated so one failure doesn't abort the whole run.
+const failures: Array<{ name: string; error: string }> = [];
+
 for (const testCaseDef of casesToRun) {
-    const rustCode = fs.readFileSync(testCaseDef.rustFile, 'utf8');
-    const expectedHoles = JSON.parse(fs.readFileSync(testCaseDef.expectedFile, 'utf8')) as any;
     console.log(`Running test for ${testCaseDef.name}`);
-    runTest({ rustCode, expectedHoles });
+    try {
+        const rustCode = fs.readFileSync(testCaseDef.rustFile, 'utf8');
+        const expectedHoles = JSON.parse(fs.readFileSync(testCaseDef.expectedFile, 'utf8')) as any;
+        runTest({ rustCode, expectedHoles });
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`Test failed for ${testCaseDef.name}: ${message}`);
+        failures.push({ name: testCaseDef.name, error: message });
+    }
 }
+
+// Summary
+const passed = casesToRun.length - failures.length;
+console.log(`\n================ TEST SUMMARY ================`);
+console.log(`${passed}/${casesToRun.length} passed, ${failures.length} failed`);
+if (failures.length > 0) {
+    console.log(`\nFailing tests:`);
+    for (const failure of failures) {
+        console.log(`  ✗ ${failure.name}`);
+        console.log(`      ${failure.error}`);
+    }
+}
+console.log(`=============================================`);
+
+process.exit(failures.length > 0 ? 1 : 0);
 
 // async function main() {
 //     const result = await parseStdJsonFile();

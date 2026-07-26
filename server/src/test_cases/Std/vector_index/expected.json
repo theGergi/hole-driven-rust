@@ -1,7 +1,7 @@
 [
 	{
 		"line": 5,
-		"type": { "valType": "i32" },
-		"suggestionNames": ["x.capacity()", "x.is_empty()", "x.len()", "x[??]", "x.contains()", "x.is_sorted()"]
+		"type": { "valType": "struct", "structName": "i32" },
+		"suggestionNames": ["x.capacity()", "x.len()", "x[??]"]
 	}
 ]

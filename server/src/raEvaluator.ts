@@ -13,6 +13,7 @@ import {
 	hitAtK,
 	hitAny,
 	categoriesOf,
+	isExactMatch,
 	renderTextTable,
 	renderMarkdownTable,
 } from './evalShared';
@@ -23,7 +24,7 @@ import {
 
 const DEFAULT_RA_BIN = path.join(
 	os.homedir(),
-	'.vscode/extensions/rust-lang.rust-analyzer-0.3.2955-linux-x64/server/rust-analyzer'
+	'.vscode/extensions/rust-lang.rust-analyzer-0.3.2981-linux-x64/server/rust-analyzer'
 );
 const RA_BIN = process.env.RA_BIN || DEFAULT_RA_BIN;
 
@@ -161,10 +162,19 @@ function delay(ms: number): Promise<void> {
 // Matching helpers
 // ---------------------------------------------------------------------------
 
+// Strip LSP snippet
+function stripSnippet(text: string): string {
+	return text
+		.replace(/\$\{\d+:([^{}]*)\}/g, '$1') // ${1:name} -> name
+		.replace(/\$\{\d+\}/g, '')            // ${1}      -> ''
+		.replace(/\$\d+/g, '')                // $0        -> ''
+		.replace(/\\\$/g, '$');               // unescape literal $
+}
+
 // Text rust-analyzer would actually insert for a completion item.
 function insertionOf(item: any): string {
-	if (typeof item.insertText === 'string') return item.insertText;
-	if (item.textEdit && typeof item.textEdit.newText === 'string') return item.textEdit.newText;
+	if (typeof item.insertText === 'string') return stripSnippet(item.insertText);
+	if (item.textEdit && typeof item.textEdit.newText === 'string') return stripSnippet(item.textEdit.newText);
 	return item.label ?? '';
 }
 
@@ -343,7 +353,7 @@ async function main() {
 		capabilities: {
 			textDocument: {
 				completion: {
-					completionItem: { snippetSupport: false },
+					completionItem: { snippetSupport: true },
 					contextSupport: true,
 				},
 			},
@@ -353,7 +363,10 @@ async function main() {
 			cargo: { buildScripts: { enable: true } },
 			procMacro: { enable: true },
 			checkOnSave: false,
-			completion: { autoimport: { enable: false } },
+			completion: {
+				autoimport: { enable: false },
+				termSearch: { enable: true, fuel: 1000 },
+			},
 		},
 	});
 	client.notify('initialized', {});
@@ -376,7 +389,7 @@ async function main() {
 		if (!error) {
 			const original = meta.original.trim();
 			exact_rank = bestRank(items, (insertion, label) => {
-				return insertion.trim() === original || (label ?? '').trim() === original;
+				return isExactMatch(insertion.trim(), original) || isExactMatch((label ?? '').trim(), original);
 			});
 		}
 

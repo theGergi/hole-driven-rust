@@ -5,15 +5,7 @@
 		"suggestionNames": ["HashSet::new()", "HashSet::new_in()", "s", "HashSet::with_capacity()", "HashSet::with_capacity_and_hasher()", "HashSet::with_capacity_and_hasher_in()", "HashSet::with_capacity_in()", "HashSet::with_hasher()", "HashSet::with_hasher_in()"]
 	},{
 		"line": 5,
-		"type": { "valType": "i32" },
-		"suggestionNames": ["s.capacity()",    "s.contains()",
-    "s.insert()",      "s.is_disjoint()",
-    "s.is_empty()",    "s.is_subset()",
-    "s.is_superset()", "s.len()",
-    "s.remove()",      "x.capacity()",
-    "x.contains()",    "x.insert()",
-    "x.is_disjoint()", "x.is_empty()",
-    "x.is_subset()",   "x.is_superset()",
-    "x.len()",         "x.remove()"]
+		"type": { "valType": "struct", "structName": "i32" },
+		"suggestionNames": ["s.capacity()", "s.len()", "x.capacity()", "x.len()"]
 	}
 ]

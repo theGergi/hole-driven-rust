@@ -1,7 +1,7 @@
 [
 	{
 		"line": 10,
-		"type": { "valType": "f32" },
+		"type": { "valType": "struct", "structName": "f32" },
 		"suggestionNames": ["numbers[??]", "threshold"]
 	}
 ]
