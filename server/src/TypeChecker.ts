@@ -2,7 +2,7 @@ import { RustParserVisitor } from './parser/RustParserVisitor';
 import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext, CompoundAssignmentExpressionContext, DereferenceExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
-import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct, Trait, getAllMethods, FunctionOrigin, INTEGER_TYPE_NAMES, structNamesCompatible } from '../../shared/out/types.js';
+import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct, Trait, getAllMethods, FunctionOrigin, INTEGER_TYPE_NAMES, FLOAT_TYPE_NAMES, structNamesCompatible } from '../../shared/out/types.js';
 import { toType, primitiveType, getSourceLocationKey, getLocation, cloneVariable, cloneFunction, cloneParam } from './utils';
 import { parseStdJsonFile, StdParseResult } from './stdParser';
 
@@ -19,6 +19,34 @@ function typesEqual(a: Type | undefined, b: Type | undefined): boolean {
 function isIntegerType(type: Type | undefined): boolean {
     return type?.valType === ValType.STRUCT && INTEGER_TYPE_NAMES.includes(type.structName ?? '');
 }
+
+// Primitive groups for as casts
+type PrimGroup = 'integer' | 'float' | 'bool' | 'char';
+
+function primGroupOf(name?: string): PrimGroup | undefined {
+    if (!name) return undefined;
+    if (INTEGER_TYPE_NAMES.includes(name)) return 'integer';
+    if (FLOAT_TYPE_NAMES.includes(name)) return 'float';
+    if (name === 'bool') return 'bool';
+    if (name === 'char') return 'char';
+    return undefined;
+}
+
+// Representative for primitive type groups
+const GROUP_REPRESENTATIVE: Record<PrimGroup, string> = {
+    integer: 'i32',
+    float: 'f64',
+    bool: 'bool',
+    char: 'char',
+};
+
+// Casting map
+const CAST_MAP: Record<PrimGroup, PrimGroup[]> = {
+    integer: ['integer', 'float', 'bool', 'char'],
+    float: ['integer', 'float'],
+    char: ['integer', 'char'],
+    bool: ['bool'],
+};
 
 export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     private typeStack: Type[] = [toType({valType: ValType.ROOT})];
@@ -74,6 +102,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                     methods: [...struct.methods],
                     path: struct.path ?? [],
                     traits: struct.traits.map(t => ({ ...t, methods: [...t.methods] })),
+                    iteratorItem: struct.iteratorItem,
                 });
             }
 
@@ -186,6 +215,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                     methods: [...foundStruct.methods],
                     path: foundStruct.path ?? [],
                     traits: foundStruct.traits.map(t => ({ ...t, methods: [...t.methods] })),
+                    iteratorItem: foundStruct.iteratorItem,
                 });
             }
 
@@ -907,6 +937,12 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 elementType = iteratorType.elementType ?? toType({valType: ValType.UNKNOWN});
             } else if (iteratorType.valType === ValType.REFERENCE && iteratorType.elementType?.valType === ValType.VECTOR) {
                 elementType = iteratorType.elementType ?? toType({valType: ValType.UNKNOWN});
+            } else if (iteratorType.valType === ValType.STRUCT && iteratorType.structName) {
+                const struct = this.structs.find(s => s.name === iteratorType.structName)
+                            ?? this.stdStructs.find(s => s.name === iteratorType.structName);
+                if (struct?.iteratorItem) {
+                    elementType = struct.iteratorItem;
+            }
             }
 
             const loopVariable: Variable = {
@@ -1266,13 +1302,44 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         console.log("Type Cast Expression")
         
         const type = this.parseType(ctx.typeNoBounds());
+        const operand = ctx.expression();
 
-        this.visit(ctx.expression());
+        if (operand.getText() === '??') {
+            const location = getLocation(operand);
+            const merged: Hole = { location: location, type: type, suggestions: [] };
+            const seen = new Set<string>();
+            for (const sourceType of this.castableSourceTypes(type)) {
+                const partial: Hole = { location: location, type: sourceType, suggestions: [] };
+                this.computeHoleSuggestions(partial);
+                if (!merged.context) {
+                    merged.context = partial.context;
+                }
+                for (const suggestion of partial.suggestions) {
+                    const key = `${suggestion.suggestionType}:${suggestion.suggestionNameWithTypes ?? suggestion.suggestion.name}`;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        merged.suggestions.push(suggestion);
+                    }
+                }
+            }
+            this.holes.push(merged);
+        } else {
+            this.visit(operand);
+        }
 
         return {
             type: type,
             location: getLocation(ctx)
         };
+    }
+
+    // Castable primitives
+    private castableSourceTypes(target: Type): Type[] {
+        const targetGroup = primGroupOf(target.structName);
+        if (!targetGroup) {
+            return [target];
+        }
+        return CAST_MAP[targetGroup].map(group => primitiveType(GROUP_REPRESENTATIVE[group]));
     }
 
     visitArithmeticOrLogicalExpression = (ctx: ArithmeticOrLogicalExpressionContext): ReturnType => {
@@ -1479,6 +1546,12 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     }
 
     public generateHole(hole: Hole) {
+        console.log("beep beep Im a sheep")
+        this.computeHoleSuggestions(hole);
+        this.holes.push(hole);
+    }
+
+    private computeHoleSuggestions(hole: Hole) {
         const variables = this.variables;
         const functions = this.functions;
 
@@ -1505,7 +1578,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         let holeSuggestions = [] as Suggestion[];
         
         if (hole.type.valType === ValType.UNKNOWN) {
-            this.holes.push(hole);
             return;
         }
 
@@ -1625,8 +1697,6 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         hole.suggestions = holeSuggestions;
-
-        this.holes.push(hole);
     }
 
     private collectMethodChainSuggestions(hole: Hole, receiverType: Type, receiverName: string, receiverLocation: SourceLocation, holeSuggestions: Suggestion[], depth: number, visitedStructNames: Set<string> = new Set()) {

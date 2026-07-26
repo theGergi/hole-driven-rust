@@ -529,6 +529,18 @@ function parseImplEntry(
 			parseFunctionEntry(itemEntry, s.name, trait.methods, functions);
 		});
 
+		// Record iterator item type
+		if (traitName === 'Iterator') {
+			for (const itemId of implEntry.items) {
+				const itemEntry = index[String(itemId)];
+				const assoc = itemEntry?.inner?.assoc_type;
+				if (itemEntry?.name === 'Item' && assoc?.type) {
+					s.iteratorItem = parseTypeDesc(assoc.type);
+					break;
+				}
+			}
+		}
+
 		traitDef?.defaultMethods.forEach((itemEntry, methodName) => {
 			if (!trait.methods.some(m => m.name === methodName)) {
 				parseFunctionEntry(itemEntry, s.name, trait.methods, functions);
@@ -682,6 +694,7 @@ function mergeStructsByName(structLists: SharedStruct[][]): SharedStruct[] {
 				existing.fields = s.fields;
 			}
 			existing.prelude = existing.prelude ?? s.prelude;
+			existing.iteratorItem = existing.iteratorItem ?? s.iteratorItem;
 		}
 	}
 
@@ -801,6 +814,19 @@ export function parseStdJsonFile(): StdParseResult {
 			if (!vecMethodNames.has(method.name)) {
 				vecStruct.methods.push({ ...method, structName: 'Vec' });
 				vecMethodNames.add(method.name);
+			}
+		}
+	}
+
+	// Add String's inherent methods to str, since it defers to it anyway
+	const strStruct = structs.find(s => s.name === 'str');
+	const stringStruct = structs.find(s => s.name === 'String');
+	if (strStruct && stringStruct) {
+		const stringMethodNames = new Set(stringStruct.methods.map(m => m.name));
+		for (const method of strStruct.methods) {
+			if (!stringMethodNames.has(method.name)) {
+				stringStruct.methods.push({ ...method, structName: 'String' });
+				stringMethodNames.add(method.name);
 			}
 		}
 	}

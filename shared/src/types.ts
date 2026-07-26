@@ -125,6 +125,7 @@ export interface Struct {
 	methods: Function[];
 	path: string[]; // Full path for matching against user imports, e.g., ["std", "collections", "HashSet"]
 	traits: Trait[];
+	iteratorItem?: Type; // Iterator::Item, i.e. the element type yielded when iterated (e.g. char for Chars)
 }
 
 export interface Trait {
@@ -203,4 +204,5 @@ export interface SharedStruct {
 	traits: Trait[];
 	impls?: any[]; // Store raw impl data for later processing
 	prelude?: boolean; // True if automatically imported via the Rust prelude
+	iteratorItem?: Type; // Iterator::Item, i.e. the element type yielded when iterated (e.g. char for Chars)
 }

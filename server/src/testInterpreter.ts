@@ -83,7 +83,7 @@ function matchesSubset(source: Type, subset: Partial<Type>): boolean {
   });
 }
 
-function runTest(testcase: {rustCode: string, expectedHoles: { line: number; type: Type; suggestionNames: string[] }[]}) {
+function runTest(testcase: {rustCode: string, expectedHoles: { line: number; type: Type; suggestionNames: string[]; wrongSuggestionNames?: string[] }[]}) {
 	const result = parseDocument(testcase.rustCode);
 	result.forEach(hole => printHoleSuggestionContext(hole));
 	// Automated test for holes
@@ -98,6 +98,10 @@ function runTest(testcase: {rustCode: string, expectedHoles: { line: number; typ
 		const expectedNames = expected.suggestionNames;
 		for (const name of expectedNames) {
 			assert.ok(actualNames.includes(name), `Hole ${i} suggestion name missing: ${name}`);
+		}
+		const wrongNames = expected.wrongSuggestionNames ?? [];
+		for (const name of wrongNames) {
+			assert.ok(!actualNames.includes(name), `Hole ${i} suggestion name should not be present: ${name}`);
 		}
 	}
 
