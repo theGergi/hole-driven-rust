@@ -3,7 +3,7 @@ import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpres
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
 import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct, Trait, getAllMethods, FunctionOrigin, INTEGER_TYPE_NAMES, FLOAT_TYPE_NAMES, structNamesCompatible } from '../../shared/out/types.js';
-import { toType, primitiveType, getSourceLocationKey, getLocation, cloneVariable, cloneFunction, cloneParam } from './utils';
+import { toType, primitiveType, getSourceLocationKey, getLocation, cloneType, cloneVariable, cloneFunction, cloneParam } from './utils';
 import { parseStdJsonFile, StdParseResult } from './stdParser';
 
 
@@ -18,6 +18,30 @@ function typesEqual(a: Type | undefined, b: Type | undefined): boolean {
 
 function isIntegerType(type: Type | undefined): boolean {
     return type?.valType === ValType.STRUCT && INTEGER_TYPE_NAMES.includes(type.structName ?? '');
+}
+
+// Substitute self with the correct struct name
+function resolveSelfType(type: Type | undefined, structName: string): Type | undefined {
+    if (!type) return type;
+    if (type.structName !== 'Self' && !type.elementType) return type;
+
+    const resolved = cloneType(type);
+    if (resolved.structName === 'Self') {
+        resolved.structName = structName;
+    }
+    resolved.elementType = resolveSelfType(resolved.elementType, structName);
+    return resolved;
+}
+
+// A copy of the function with Self replaced by correct struct name
+function resolveSelfInFunction(func: Function, structName: string): Function {
+    if (structName === 'Self') return func;
+
+    return {
+        ...func,
+        type: resolveSelfType(func.type, structName),
+        params: func.params.map(p => ({ ...p, type: resolveSelfType(p.type, structName)! })),
+    };
 }
 
 // Primitive groups for as casts
@@ -58,6 +82,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     private stdTraits: Trait[] = [];
     private traits: Trait[] = [];
     private holes: Hole[] = [];
+
+    // Type error list
+    public typeErrors: { location: SourceLocation; message: string }[] = [];
 
     private static readonly MAX_METHOD_CHAIN_DEPTH = 1;
 
@@ -315,17 +342,26 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
     }
 
+    private reportTypeError(location: SourceLocation, message: string): void {
+        console.log("Type error:", message);
+        this.typeErrors.push({ location, message });
+    }
+
+    private methodsOf(struct: Struct): Function[] {
+        return getAllMethods(struct).map(m => resolveSelfInFunction(m, struct.name));
+    }
+
     getBoundMethod(structName: string, identifier: string): Function | null {
         const struct = this.structs.find(s => s.name === structName);
         if (struct) {
             const method = getAllMethods(struct).findLast(m => m.name === identifier);
-            if (method) return method;
+            if (method) return resolveSelfInFunction(method, structName);
         }
 
         for (const s of this.structs) { // TODO Separate into function
             const trait = s.traits.find(t => t.name === structName);
             const method = trait?.methods.find(m => m.name === identifier);
-            if (method) return method;
+            if (method) return resolveSelfInFunction(method, structName);
         }
 
         return null;
@@ -698,8 +734,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             (inferedType.valType === ValType.HOLE || inferedType.elementType?.valType === ValType.HOLE)) {
             inferedType = declaredType;
         } else if (!typesEqual(declaredType, inferedType)) {
-            throw new Error("Declared type is different from infered type: "
+            this.reportTypeError(getLocation(ctx), "Declared type is different from infered type: "
                 + declaredType.toTypeString() + " vs " + inferedType.toTypeString());
+            inferedType = declaredType;
         }
 
         if (recordVar) {
@@ -1713,7 +1750,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         const nextVisited = new Set(visitedStructNames);
         nextVisited.add(structType.structName);
 
-        getAllMethods(struct).forEach((method: Function) => {
+        this.methodsOf(struct).forEach((method: Function) => {
             // For reference receivers, skip methods that require an owned receiver (self by value)
             if (isReference && method.params.length > 0) {
                 if (method.params[0].type.valType !== ValType.REFERENCE) return;
@@ -1743,7 +1780,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         });
         
-        getAllMethods(struct).forEach((method: Function) => {
+        this.methodsOf(struct).forEach((method: Function) => {
             // console.log("Checking method:", method.name)
             const methodRefType = new Type();
             Object.assign(methodRefType, variable.type);
