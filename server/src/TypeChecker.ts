@@ -1,5 +1,5 @@
 import { RustParserVisitor } from './parser/RustParserVisitor';
-import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext, CompoundAssignmentExpressionContext, DereferenceExpressionContext } from './parser/RustParser';
+import { ArithmeticOrLogicalExpressionContext, CallExpressionContext, PathExpression_Context, PathExpressionContext, BorrowExpressionContext, IdentifierContext, GroupedExpressionContext, ArrayExpressionContext, IndexExpressionContext, TypeCastExpressionContext, HoleExpressionContext, SlicePatternContext, FieldExpressionContext, CompoundAssignmentExpressionContext, DereferenceExpressionContext, TupleExpressionContext } from './parser/RustParser';
 import { ParserRuleContext, ParseTree } from 'antlr4ng';
 import { UsageGraphListener } from './UsageListener';
 import { ValType, Borrow, Type, SourceLocation, Variable, Struct, Hole, Function, ReturnType, Param, Suggestion, SharedStruct, Trait, getAllMethods, FunctionOrigin, INTEGER_TYPE_NAMES, FLOAT_TYPE_NAMES, structNamesCompatible } from '../../shared/out/types.js';
@@ -635,6 +635,38 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         return null;
     };
 
+    private visitTupleAssignment(left: any, right: any): ReturnType | null {
+        const leftElements: any[] = left.tupleElements()?.expression() ?? [];
+        const rightElements: any[] = right instanceof TupleExpressionContext
+            ? right.tupleElements()?.expression() ?? []
+            : [];
+
+        if (leftElements.length === 0 || leftElements.length !== rightElements.length) {
+            this.visit(right);
+            this.visit(left);
+            return null;
+        }
+
+        const rightTypes = rightElements.map(element => this.visit(element)?.type ?? toType({valType: ValType.UNKNOWN}));
+
+        leftElements.forEach((element, i) => {
+            const target = this.getBoundVariable(element.getText());
+            if (target && !target.type.mutable && !target.type.mutableReference) {
+                this.reportTypeError(getLocation(element), `Cannot modify immutable variable ${element.getText()}`);
+            }
+
+            this.typeStack.push(rightTypes[i]);
+            this.visit(element);
+            this.typeStack.pop();
+
+            if (target) {
+                target.location = getLocation(element);
+            }
+        });
+
+        return null;
+    }
+
     visitAssignmentExpression = (ctx: any): ReturnType | null => {
         console.log("Assignment expression")
         const leftHandExpression = ctx.expression(0);
@@ -651,6 +683,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return null
         }
         
+        if (leftHandExpression instanceof TupleExpressionContext) {
+            return this.visitTupleAssignment(leftHandExpression, rightHandExpression);
+        }
+
         if (leftHandExpression instanceof FieldExpressionContext) {
             variable = this.getBoundVariable(leftHandExpression.expression().getText());
             varType = variable ? this.getBoundField(variable.type.structName!, leftHandExpression.identifier().getText()).type : toType({valType: ValType.UNKNOWN})
@@ -658,6 +694,16 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             const baseName = leftHandExpression.expression(0)!.getText();
             variable = this.getBoundVariable(baseName);
             varType = variable?.type.elementType ?? toType({valType: ValType.UNKNOWN});
+
+            if (!variable) {
+                varType = this.visit(leftHandExpression.expression(0)!)?.type?.elementType ?? varType;
+            }
+            const indexExpression = leftHandExpression.expression(1);
+            if (indexExpression) {
+                this.typeStack.push(primitiveType('usize'));
+                this.visit(indexExpression);
+                this.typeStack.pop();
+            }
         } else if (leftHandExpression instanceof DereferenceExpressionContext) {
             variable = this.visit(leftHandExpression.expression())!.type!.owner
             varType = variable?.type ?? toType({valType: ValType.UNKNOWN});
@@ -801,43 +847,47 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         return null;
     }
 
+    private visitCallArguments(callParams: any, paramTypeAt: (index: number) => Type | undefined): void {
+        callParams?.expression().forEach((expr: any, i: number) => {
+            this.typeStack.push(paramTypeAt(i) ?? toType({valType: ValType.UNKNOWN}));
+            this.visit(expr);
+            if (expr instanceof PathExpression_Context) {
+                this.consume(expr.getText());
+            }
+            this.typeStack.pop();
+        });
+    }
+
     visitCallExpression = (ctx: any): ReturnType | null => {
         console.log("Call expression")
         let structName = null;
         let functionName = null;
 
-        if (ctx.expression().pathExpression().pathInExpression().pathExprSegment().length > 1) {
-            structName = ctx.expression().pathExpression().pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier().getText()
-            functionName = ctx.expression().pathExpression().pathInExpression()?.pathExprSegment(1)?.pathIdentSegment().identifier().getText()
-            
+        const pathSegments = ctx.expression()?.pathExpression?.()?.pathInExpression()?.pathExprSegment() ?? [];
+
+        if (pathSegments.length > 1) {
+            structName = pathSegments[0]?.pathIdentSegment()?.identifier()?.getText()
+            functionName = pathSegments[1]?.pathIdentSegment()?.identifier()?.getText()
+
         } else {
-            functionName = ctx.expression().pathExpression().pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier().getText()
+            functionName = pathSegments[0]?.pathIdentSegment()?.identifier()?.getText()
         }
 
         console.log("Function call:", functionName, "Struct:", structName)
-        let func = this.getBoundFunction(functionName, structName);
+        let func = functionName ? this.getBoundFunction(functionName, structName) : undefined;
 
         let matchedTraitName: string | null = null; // TODO Should go in bound function
-        if (!func && structName) {
+        if (!func && functionName && structName) {
             const implementors = this.structs.filter(s => s.traits.some(t => t.name === structName));
             func = this.functions.find(f => f.name === functionName && implementors.some(s => s.name === f.structName));
             if (func) matchedTraitName = structName;
         }
 
+        this.visitCallArguments(ctx.callParams(), i => func?.params[i]?.type);
+
         if (!func) {
             return { type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
         }
-
-        ctx.callParams()?.expression().forEach((expr: any, i: number) => {
-            const otherType = func!.params[i]?.type ?? toType({valType: ValType.UNKNOWN});
-
-            this.typeStack.push(otherType)
-            const type = this.visit(expr)?.type;
-            if (expr instanceof PathExpression_Context) {
-                this.consume(expr.getText())
-            }
-            this.typeStack.pop()
-        })
 
         if (matchedTraitName) {
             return { type: toType({valType: ValType.TRAIT, structName: matchedTraitName}), location: getLocation(ctx) };
@@ -893,31 +943,22 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             throw new Error("Unable to resolve method name for MethodCallExpression");
         }
 
-        if (!structName) {
-            return { type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
+        const func = structName ? this.getBoundMethod(structName, methodName) : null;
+
+        if (func) {
+            console.log("Method call:", func.name, "on struct", structName);
+
+            // Consume method receiver only if the method takes owned variable
+            if (func.params[0].type.valType !== ValType.REFERENCE) {
+                this.consume(receiver.getText())
+            }
         }
 
-        const func = this.getBoundMethod(structName, methodName);
+        this.visitCallArguments(ctx.callParams(), i => func?.params[i + 1]?.type);
+
         if (!func) {
             return { type: toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
         }
-        console.log("Method call:", func.name, "on struct", structName);
-
-        // Consume method receiver only if the method takes owned variable
-        if (func.params[0].type.valType !== ValType.REFERENCE) {
-            this.consume(receiver.getText())
-        }
-
-        ctx.callParams()?.expression().forEach((expr: any, i: number) => {
-            const paramType = func.params[i + 1]?.type || toType({valType: ValType.UNKNOWN});
-
-            this.typeStack.push(paramType);
-            this.visit(expr);
-            if (expr instanceof PathExpression_Context) {
-                this.consume(expr.getText());
-            }
-            this.typeStack.pop();
-        });
 
         return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
     }
