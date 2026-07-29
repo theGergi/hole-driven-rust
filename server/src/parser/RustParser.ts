@@ -2655,6 +2655,7 @@ export class RustParser extends RustParserBase {
             case RustParser.STAR:
             case RustParser.NOT:
             case RustParser.AND:
+            case RustParser.ANDAND:
             case RustParser.LT:
             case RustParser.UNDERSCORE:
             case RustParser.PATHSEP:
@@ -2914,7 +2915,7 @@ export class RustParser extends RustParserBase {
             this.state = 856;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 320875808) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5417) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 320875808) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140852105) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5417) !== 0)) {
                 {
                 this.state = 855;
                 this.tupleFields();
@@ -3356,7 +3357,7 @@ export class RustParser extends RustParserBase {
             this.state = 952;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 320875808) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5417) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 320875808) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140852105) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5417) !== 0)) {
                 {
                 this.state = 951;
                 this.tupleFields();
@@ -4417,7 +4418,7 @@ export class RustParser extends RustParserBase {
             this.state = 1196;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140852105) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
                 {
                 this.state = 1195;
                 this.whereClauseItem();
@@ -9313,7 +9314,7 @@ export class RustParser extends RustParserBase {
             this.state = 2088;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140852105) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
                 {
                 this.state = 2081;
                 this.errorHandler.sync(this);
@@ -9340,7 +9341,7 @@ export class RustParser extends RustParserBase {
                 this.state = 2086;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
+                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140852105) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
                     {
                     this.state = 2085;
                     this.type_();
@@ -9433,7 +9434,14 @@ export class RustParser extends RustParserBase {
             this.enterOuterAlt(localContext, 1);
             {
             this.state = 2102;
-            this.match(RustParser.AND);
+            _la = this.tokenStream.LA(1);
+            if(!(_la === 89 || _la === 91)) {
+            this.errorHandler.recoverInline(this);
+            }
+            else {
+                this.errorHandler.reportMatch(this);
+                this.consume();
+            }
             this.state = 2104;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
@@ -9532,7 +9540,7 @@ export class RustParser extends RustParserBase {
             this.state = 2122;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5417) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140852105) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5417) !== 0)) {
                 {
                 this.state = 2121;
                 this.functionParametersMaybeNamedVariadic();
@@ -11227,7 +11235,7 @@ export class RustParser extends RustParserBase {
             this.state = 2425;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140851081) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 318778656) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 132120641) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 1140852105) !== 0) || ((((_la - 119)) & ~0x1F) === 0 && ((1 << (_la - 119)) & 5409) !== 0)) {
                 {
                 this.state = 2424;
                 this.typePathInputs();
@@ -12586,7 +12594,7 @@ export class RustParser extends RustParserBase {
         2091,5,130,0,0,2091,297,1,0,0,0,2092,2093,5,127,0,0,2093,2094,3,
         288,144,0,2094,2095,5,117,0,0,2095,2096,3,154,77,0,2096,2097,5,128,
         0,0,2097,299,1,0,0,0,2098,2099,5,127,0,0,2099,2100,3,288,144,0,2100,
-        2101,5,128,0,0,2101,301,1,0,0,0,2102,2104,5,89,0,0,2103,2105,3,338,
+        2101,5,128,0,0,2101,301,1,0,0,0,2102,2104,7,2,0,0,2103,2105,3,338,
         169,0,2104,2103,1,0,0,0,2104,2105,1,0,0,0,2105,2107,1,0,0,0,2106,
         2108,5,20,0,0,2107,2106,1,0,0,0,2107,2108,1,0,0,0,2108,2109,1,0,
         0,0,2109,2110,3,290,145,0,2110,303,1,0,0,0,2111,2112,5,84,0,0,2112,
@@ -20504,11 +20512,14 @@ export class ReferenceTypeContext extends antlr.ParserRuleContext {
     public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    public AND(): antlr.TerminalNode {
-        return this.getToken(RustParser.AND, 0)!;
-    }
     public typeNoBounds(): TypeNoBoundsContext {
         return this.getRuleContext(0, TypeNoBoundsContext)!;
+    }
+    public AND(): antlr.TerminalNode | null {
+        return this.getToken(RustParser.AND, 0);
+    }
+    public ANDAND(): antlr.TerminalNode | null {
+        return this.getToken(RustParser.ANDAND, 0);
     }
     public lifetime(): LifetimeContext | null {
         return this.getRuleContext(0, LifetimeContext);

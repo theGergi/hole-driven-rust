@@ -467,6 +467,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             elementType = elementType.valType === ValType.UNKNOWN ? undefined : elementType
             return toType({valType: ValType.STRUCT, structName: typeString, elementType: elementType});
         }
+        
+        const nestedRefMatch = typeString.match(/^&\s*(mut\s+)?(&.*)$/);
+        if (nestedRefMatch) {
+            const elementType = this.parseStringType(nestedRefMatch[2]);
+            return toType({valType: ValType.REFERENCE, elementType: elementType, mutableReference: nestedRefMatch[1] !== undefined, structName: elementType.structName});
+        }
+
         const refMatch = typeString.match(/^(&)?\s*(mut)?\s*([a-zA-Z_][a-zA-Z0-9_]*)(?:<([^>]+)>)?$/);
 
         if (refMatch && refMatch[1] === '&') {
@@ -1114,7 +1121,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             const variableName = pattern.identifier().getText();
             const mutable = pattern.KW_MUT() != null;
 
-            const iteratorType = this.visit(ctx.expression())?.type || toType({valType: ValType.UNKNOWN});
+            const iteratorType = this.visitIterable(ctx.expression());
             let elementType = toType({valType: ValType.UNKNOWN});
 
             if ((iteratorType.valType === ValType.STRUCT && iteratorType.structName === "Vec") ||iteratorType.valType === ValType.VECTOR || iteratorType.valType === ValType.RANGE) {
@@ -1137,7 +1144,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             loopVariable.type.mutable = mutable;
             this.variables.push(loopVariable);
         } else if (tuplePattern) {
-            this.visit(ctx.expression()); // Unhandled for tuples
+            this.visitIterable(ctx.expression()); // Unhandled for tuples
             const subPatterns: any[] = tuplePattern.tuplePatternItems()?.pattern() ?? [];
             for (const subPat of subPatterns) {
                 const idPat = subPat.patternNoTopAlt(0)?.patternWithoutRange()?.identifierPattern?.();
@@ -1152,7 +1159,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 }
             }
         } else {
-            this.visit(ctx.expression());
+            this.visitIterable(ctx.expression());
         }
 
         this.typeStack.push(toType({valType: ValType.VOID}))
@@ -1167,6 +1174,16 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             type: toType({valType: ValType.UNKNOWN}),
             location: getLocation(ctx)
         };
+    }
+
+    private visitIterable(expression: any): Type {
+        if (!expression) return toType({valType: ValType.UNKNOWN});
+
+        this.typeStack.push(toType({valType: ValType.TRAIT, structName: 'IntoIterator'}));
+        const visited = this.visit(expression)?.type;
+        this.typeStack.pop();
+
+        return visited ?? toType({valType: ValType.UNKNOWN});
     }
 
     visitFieldExpression = (ctx: any): ReturnType | null => {

@@ -885,7 +885,7 @@ sliceType
 
 // 10.1.13
 referenceType
-    : AND lifetime? KW_MUT? typeNoBounds
+    : (AND | ANDAND) lifetime? KW_MUT? typeNoBounds
     ;
 
 rawPointerType
