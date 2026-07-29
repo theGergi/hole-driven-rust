@@ -138,6 +138,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     // Type error list
     public typeErrors: { location: SourceLocation; message: string }[] = [];
 
+    // Holes with unknown type such as let x = ??;
+    private deferredHoles = new Map<number, { hole: Hole; observations: Type[]; scope: Variable[] }>();
+    private nextInferenceId = 0;
+
     private static readonly MAX_METHOD_CHAIN_DEPTH = 1;
 
     private blockStack: string[] = ['global']; // Stack to track nested blocks
@@ -398,6 +402,47 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     private reportTypeError(location: SourceLocation, message: string): void {
         console.log("Type error:", message);
         this.typeErrors.push({ location, message });
+    }
+
+    // Start tracking a hole as deferred, to be hopefully filled later
+    // e.g. let x = ??;
+    private deferHole(location: SourceLocation): number | undefined {
+        const key = getSourceLocationKey(location);
+        const hole = this.holes.find(h => getSourceLocationKey(h.location) === key);
+        if (!hole) return undefined;
+
+        const id = this.nextInferenceId++;
+        
+        this.deferredHoles.set(id, { hole, observations: [], scope: this.variables.map(cloneVariable) });
+        return id;
+    }
+
+    // Check if variable used is deferred and record new type if yes
+    private observeDeferredUse(variableType: Type | undefined, type: Type | undefined): void {
+        if (variableType?.inferenceId === undefined || variableType.valType !== ValType.UNKNOWN) return;
+
+        const deferred = this.deferredHoles.get(variableType.inferenceId);
+        const observed = type?.reportAs ?? type;
+        if (!deferred || !observed) return;
+
+        const uninformative = [ValType.UNKNOWN, ValType.VOID, ValType.HOLE, ValType.ROOT];
+        if (uninformative.includes(observed.valType)) return;
+
+        deferred.observations.push(observed);
+    }
+
+    // Re-resolve deferred holes based on new types and context snapshot
+    private resolveDeferredHoles(): void {
+        for (const { hole, observations, scope } of this.deferredHoles.values()) {
+            const inferred = observations[0];
+            if (!inferred) continue;
+
+            const outerScope = this.variables;
+            this.variables = scope;
+            hole.type = toType({...inferred, inferenceId: undefined, methodCall: false});
+            this.computeHoleSuggestions(hole);
+            this.variables = outerScope;
+        }
     }
 
     private methodsOf(struct: Struct, receiverType?: Type): Function[] {
@@ -876,8 +921,16 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         if (expression) {
             inferedType = toType({valType: ValType.UNKNOWN, ...this.visit(expression)?.type});
         }
+        
+        // Defer unknown holes
+        let deferredId: number | undefined;
         if (inferedType.valType === ValType.HOLE && declaredType.valType == ValType.UNKNOWN) {
-            recordVar = false;
+            deferredId = this.deferHole(getLocation(expression));
+            if (deferredId === undefined) {
+                recordVar = false;
+            } else {
+                inferedType = toType({valType: ValType.UNKNOWN, inferenceId: deferredId});
+            }
         }
         
         if(expression instanceof PathExpression_Context && expression?.pathExpression()?.pathInExpression()?.pathExprSegment(0)?.pathIdentSegment().identifier()) { // a variable is being assigned
@@ -905,7 +958,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 && (inferredElement === undefined || inferredElement.valType === ValType.UNKNOWN);
 
             let valType = inferedType;
-            if (inferedType.valType === ValType.UNKNOWN || declarationIsMoreSpecific) {
+            if (deferredId === undefined && (inferedType.valType === ValType.UNKNOWN || declarationIsMoreSpecific)) {
                 valType = declaredType;
             }
             
@@ -978,8 +1031,11 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     private visitCallArguments(callParams: any, paramTypeAt: (index: number) => Type | undefined): void {
         callParams?.expression().forEach((expr: any, i: number) => {
-            this.typeStack.push(paramTypeAt(i) ?? toType({valType: ValType.UNKNOWN}));
-            this.visit(expr);
+            const paramType = paramTypeAt(i);
+            this.typeStack.push(paramType ?? toType({valType: ValType.UNKNOWN}));
+            const argumentType = this.visit(expr)?.type;
+            
+            this.observeDeferredUse(argumentType, paramType);
             if (expr instanceof PathExpression_Context) {
                 this.consume(expr.getText());
             }
@@ -1132,6 +1188,8 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             receiverType = visitedReceiver?.type || receiverType;
 
         }
+
+        this.observeDeferredUse(receiverType, this.currentParentType);
         this.typeStack.pop();
 
         const structName = receiverType?.structName;
@@ -1658,7 +1716,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         this.typeStack.pop();
-        
+
+        this.observeDeferredUse(left.type, right.type);
+        this.observeDeferredUse(right.type, left.type);
 
         let type: Type;
 
@@ -2055,6 +2115,14 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             methods: getAllMethods(struct).map(cloneFunction)
         };
         this.holes.push(hole);
+    }
+
+    visitCrate = (ctx: any): ReturnType | null => {
+        this.visitChildren(ctx);
+
+        // Resolve deferred unknown holes
+        this.resolveDeferredHoles();
+        return null;
     }
 
     public getFinalResult() {

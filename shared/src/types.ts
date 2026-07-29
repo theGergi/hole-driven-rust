@@ -64,7 +64,9 @@ export class Type {
 
 	// For more than one type, e.g. tuples
 	elementTypes?: Type[];
-	
+
+	inferenceId?: number;
+
 	genericName?: string;
 	candidateTypes?: Type[];
 
