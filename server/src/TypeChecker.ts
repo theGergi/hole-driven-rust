@@ -12,8 +12,36 @@ function typesEqual(a: Type | undefined, b: Type | undefined): boolean {
     if (!a || !b) return true;
     if (a.valType === ValType.UNKNOWN || b.valType === ValType.UNKNOWN) return true;
     if (a.valType !== b.valType) return false;
+    if (a.valType === ValType.TUPLE) {
+        const aMembers = a.elementTypes ?? [];
+        const bMembers = b.elementTypes ?? [];
+        return aMembers.length === bMembers.length
+            && aMembers.every((member, i) => typesEqual(member, bMembers[i]));
+    }
     if (!structNamesCompatible(a.structName, b.structName)) return false;
     return typesEqual(a.elementType, b.elementType);
+}
+
+// Split text on separator, ignoring separators nested inside brackets
+function splitTopLevel(text: string, separator: string): string[] {
+    const parts: string[] = [];
+    let depth = 0;
+    let current = '';
+
+    for (const ch of text) {
+        if (ch === '(' || ch === '[' || ch === '<') depth++;
+        else if (ch === ')' || ch === ']' || ch === '>') depth--;
+
+        if (ch === separator && depth === 0) {
+            parts.push(current);
+            current = '';
+        } else {
+            current += ch;
+        }
+    }
+    parts.push(current);
+
+    return parts.filter(p => p.trim().length > 0);
 }
 
 // Split a list of tokens on separator
@@ -481,6 +509,13 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return toType({valType: ValType.STRUCT, structName: typeString, elementType: elementType});
         }
         
+        if (typeString.startsWith('(') && typeString.endsWith(')') && typeString.length > 2) {
+            const members = splitTopLevel(typeString.slice(1, -1), ',');
+            if (members.length > 1) {
+                return toType({valType: ValType.TUPLE, elementTypes: members.map(m => this.parseStringType(m.trim()))});
+            }
+        }
+
         const nestedRefMatch = typeString.match(/^&\s*(mut\s+)?(&.*)$/);
         if (nestedRefMatch) {
             const elementType = this.parseStringType(nestedRefMatch[2]);
@@ -553,6 +588,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return true;
         }
         
+        if (assignee.valType === ValType.TUPLE || assigned.valType === ValType.TUPLE) {
+            return typesEqual(assignee, assigned);
+        }
+
         if (assignee.valType === assigned.valType 
                 || (assigned.structName === 'String' && assignee.structName === 'str')
                 || (assignee.valType === ValType.REFERENCE && assignee.methodCall)
@@ -717,6 +756,26 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         });
 
         return null;
+    }
+
+    visitTupleExpression = (ctx: TupleExpressionContext): ReturnType => {
+        console.log("Tuple expression")
+
+        const elements: any[] = ctx.tupleElements()?.expression() ?? [];
+        const expected = this.currentParentType;
+        const expectedMembers = expected?.valType === ValType.TUPLE ? expected.elementTypes ?? [] : [];
+
+        const elementTypes = elements.map((element, i) => {
+            this.typeStack.push(expectedMembers[i] ?? toType({valType: ValType.UNKNOWN}));
+            const visited = this.visit(element)?.type;
+            this.typeStack.pop();
+            return visited ?? toType({valType: ValType.UNKNOWN});
+        });
+
+        return {
+            type: toType({valType: ValType.TUPLE, elementTypes: elementTypes}),
+            location: getLocation(ctx)
+        };
     }
 
     visitAssignmentExpression = (ctx: any): ReturnType | null => {

@@ -10,6 +10,7 @@ export enum ValType {
 	STRUCT = "struct",
 	TRAIT = "trait",
 	RANGE = "range",
+	TUPLE = "tuple",
 	VOID = "()"
 }
 
@@ -61,6 +62,9 @@ export class Type {
 	structName?: string; // For struct types
 	methodCall?: boolean; // Hack for case of x.keys() where keys(&self)
 
+	// For more than one type, e.g. tuples
+	elementTypes?: Type[];
+	
 	genericName?: string;
 	candidateTypes?: Type[];
 
@@ -83,6 +87,8 @@ export function constructTypeString(type: Type): string {
 			if (type.elementType) {
 				typeString += constructTypeString(type.elementType);
 			}
+		} else if (type.valType === 'tuple') {
+			typeString += "(" + (type.elementTypes ?? []).map(constructTypeString).join(", ") + ")";
 		} else if (type.valType === 'Vec') {
 			typeString += "Vec<" + (type.elementType ? constructTypeString(type.elementType) : "?") + ">";
 		} else if (type.valType === 'struct' || type.valType === 'trait') {

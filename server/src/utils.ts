@@ -46,6 +46,9 @@ export function cloneType(type: Type | undefined): Type | undefined {
 	if (type.elementType) {
 		cloned.elementType = cloneType(type.elementType);
 	}
+	if (type.elementTypes) {
+		cloned.elementTypes = type.elementTypes.map(t => cloneType(t));
+	}
 	// owner intentionally kept as a shallow reference (not deep-cloned): checkBorrows()
 	// compares `variable.type.owner === owner` by identity, and owner graphs can be cyclic.
 	return cloned;
