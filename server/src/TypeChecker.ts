@@ -21,26 +21,37 @@ function isIntegerType(type: Type | undefined): boolean {
 }
 
 // Substitute self with the correct struct name
-function resolveSelfType(type: Type | undefined, structName: string): Type | undefined {
+function substituteType(type: Type | undefined, structName: string, bindings: Record<string, Type>, selfArgument?: Type): Type | undefined {
     if (!type) return type;
+
+    const bound = type.genericName ? bindings[type.genericName] : undefined;
+    if (bound) return cloneType(bound);
+
     if (type.structName !== 'Self' && !type.elementType) return type;
 
     const resolved = cloneType(type);
     if (resolved.structName === 'Self') {
         resolved.structName = structName;
+        if (!resolved.elementType && selfArgument) {
+            resolved.elementType = cloneType(selfArgument);
+        }
     }
-    resolved.elementType = resolveSelfType(resolved.elementType, structName);
+    resolved.elementType = substituteType(resolved.elementType, structName, bindings, selfArgument);
+    
+    if (resolved.valType === ValType.REFERENCE && resolved.elementType) {
+        resolved.structName = resolved.elementType.structName;
+    }
     return resolved;
 }
 
 // A copy of the function with Self replaced by correct struct name
-function resolveSelfInFunction(func: Function, structName: string): Function {
-    if (structName === 'Self') return func;
+function substituteInFunction(func: Function, structName: string, bindings: Record<string, Type> = {}, selfArgument?: Type): Function {
+    if (structName === 'Self' && Object.keys(bindings).length === 0) return func;
 
     return {
         ...func,
-        type: resolveSelfType(func.type, structName),
-        params: func.params.map(p => ({ ...p, type: resolveSelfType(p.type, structName)! })),
+        type: substituteType(func.type, structName, bindings, selfArgument),
+        params: func.params.map(p => ({ ...p, type: substituteType(p.type, structName, bindings, selfArgument)! })),
     };
 }
 
@@ -130,6 +141,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                     path: struct.path ?? [],
                     traits: struct.traits.map(t => ({ ...t, methods: [...t.methods] })),
                     iteratorItem: struct.iteratorItem,
+                    genericParams: struct.genericParams,
                 });
             }
 
@@ -347,21 +359,41 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         this.typeErrors.push({ location, message });
     }
 
-    private methodsOf(struct: Struct): Function[] {
-        return getAllMethods(struct).map(m => resolveSelfInFunction(m, struct.name));
+    private methodsOf(struct: Struct, receiverType?: Type): Function[] {
+        const bindings = this.genericBindings(struct, receiverType);
+        const selfArgument = this.typeArgumentOf(receiverType);
+        return getAllMethods(struct).map(m => substituteInFunction(m, struct.name, bindings, selfArgument));
     }
 
-    getBoundMethod(structName: string, identifier: string): Function | null {
+    
+    private genericBindings(struct: Struct | undefined, receiverType: Type | undefined): Record<string, Type> {
+        const firstParam = struct?.genericParams?.[0];
+        const argument = this.typeArgumentOf(receiverType);
+        if (!firstParam || !argument) return {};
+
+        return { [firstParam]: argument };
+    }
+
+    private typeArgumentOf(receiverType: Type | undefined): Type | undefined {
+        const receiver = receiverType?.valType === ValType.REFERENCE ? receiverType.elementType : receiverType;
+        const argument = receiver?.elementType;
+        return argument && argument.valType !== ValType.UNKNOWN ? argument : undefined;
+    }
+
+    getBoundMethod(structName: string, identifier: string, receiverType?: Type): Function | null {
         const struct = this.structs.find(s => s.name === structName);
+        const bindings = this.genericBindings(struct, receiverType);
+        const selfArgument = this.typeArgumentOf(receiverType);
+
         if (struct) {
             const method = getAllMethods(struct).findLast(m => m.name === identifier);
-            if (method) return resolveSelfInFunction(method, structName);
+            if (method) return substituteInFunction(method, structName, bindings, selfArgument);
         }
 
         for (const s of this.structs) { // TODO Separate into function
             const trait = s.traits.find(t => t.name === structName);
             const method = trait?.methods.find(m => m.name === identifier);
-            if (method) return resolveSelfInFunction(method, structName);
+            if (method) return substituteInFunction(method, structName, bindings, selfArgument);
         }
 
         return null;
@@ -786,8 +818,15 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         if (recordVar) {
+            // The annotation wins whenever it says more than the expression did
+            const declaredElement = declaredType.elementType;
+            const inferredElement = inferedType.elementType;
+            const declarationIsMoreSpecific = declaredElement !== undefined
+                && declaredElement.valType !== ValType.UNKNOWN
+                && (inferredElement === undefined || inferredElement.valType === ValType.UNKNOWN);
+
             let valType = inferedType;
-            if ( inferedType.valType === ValType.UNKNOWN || (inferedType.elementType?.valType === ValType.UNKNOWN && declaredType.elementType && declaredType.elementType.valType !== ValType.UNKNOWN) ) {
+            if (inferedType.valType === ValType.UNKNOWN || declarationIsMoreSpecific) {
                 valType = declaredType;
             }
             
@@ -896,6 +935,83 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         return { type: func.type || toType({valType: ValType.UNKNOWN}), location: getLocation(ctx) };
     }
 
+    // Get the structs that implement a trait
+    private expandTraitType(type: Type): Type[] {
+        const traitType = type.valType === ValType.REFERENCE ? type.elementType : type;
+        if (traitType?.valType !== ValType.TRAIT) return [];
+
+        return [...this.structs, ...this.stdStructs]
+            .filter(s => s.traits.some(t => t.name === traitType.structName))
+            .map(s => toType({...traitType, valType: ValType.STRUCT, structName: s.name, candidateTypes: undefined}));
+    }
+
+    // Candidates for the method receiver type ranked by expected result and available bindings of the type
+    private receiverCandidates(methodName: string, expectedResultType: Type | undefined): { expected: Type; reported: Type }[] {
+        const inScope = this.variables.filter(v => !v.type.consumed);
+
+        const scored = this.structs.flatMap(struct => {
+            const method = this.methodsOf(struct).find(m => m.name === methodName);
+            if (!method || method.params.length === 0) return [];
+
+            const traitName = struct.methods.some(m => m.name === methodName)
+                ? undefined
+                : struct.traits.find(t => t.methods.some(m => m.name === methodName))?.name;
+            const receiverStructType = traitName
+                ? toType({valType: ValType.TRAIT, structName: traitName})
+                : toType({valType: ValType.STRUCT, structName: struct.name});
+
+            const selfParam = method.params[0].type;
+            const expected = selfParam.valType === ValType.REFERENCE
+                ? toType({methodCall: true, valType: ValType.REFERENCE, elementType: receiverStructType, mutable: selfParam.mutable, mutableReference: selfParam.mutableReference})
+                : toType({methodCall: true, valType: receiverStructType.valType, structName: receiverStructType.structName, mutable: selfParam.mutable});
+
+            const resultFits = expectedResultType && expectedResultType.valType !== ValType.UNKNOWN && method.type
+                && this.canBeAssigned(expectedResultType, method.type, null, false);
+            const resultScore = resultFits ? 1 : 0;
+
+            if (receiverStructType.valType === ValType.TRAIT) {
+                const evidence = Math.max(0, ...inScope.map(v => this.receiverMatch(receiverStructType, v.type)));
+                return [{ expected, reported: receiverStructType, score: evidence + resultScore }];
+            }
+
+            const matches = inScope
+                .map(v => ({ variable: v, evidence: this.receiverMatch(receiverStructType, v.type) }))
+                .filter(m => m.evidence > 0)
+                .sort((a, b) => b.evidence - a.evidence);
+
+            if (matches.length === 0) {
+                return [{ expected, reported: receiverStructType, score: resultScore }];
+            }
+
+            const seen = new Set<string>();
+            return matches.flatMap(({ variable, evidence }) => {
+                const reported = toType({...variable.type, owner: undefined, consumed: false, mutable: false});
+                const key = reported.toTypeString();
+                if (seen.has(key)) return [];
+                seen.add(key);
+                return [{ expected, reported, score: evidence + resultScore }];
+            });
+        });
+
+        // Stable within a score, so the existing declaration order still breaks ties.
+        return scored.sort((a, b) => b.score - a.score);
+    }
+
+    private receiverMatch(receiverStructType: Type, variableType: Type): number {
+        const actual = variableType.valType === ValType.REFERENCE ? variableType.elementType : variableType;
+        if (!actual?.structName) return 0;
+
+        if (receiverStructType.valType === ValType.TRAIT) {
+            const struct = [...this.structs, ...this.stdStructs].find(s => s.name === actual.structName);
+            return struct?.traits.some(t => t.name === receiverStructType.structName) ? 2 : 0;
+        }
+
+        if (structNamesCompatible(receiverStructType.structName, actual.structName)) return 4;
+
+        const derefsTo: Record<string, string> = { String: 'str', Vec: 'slice' };
+        return derefsTo[actual.structName] === receiverStructType.structName ? 2 : 0;
+    }
+
     visitMethodCallExpression = (ctx: any): ReturnType | null => {
         console.log("MethodCallExpression");
         
@@ -907,24 +1023,14 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         this.visit(methodSegment?.pathIdentSegment()?.identifier())
 
-        let struct = this.structs.filter(s => getAllMethods(s).some(m => m.name === methodName))[0];
+        const candidates = this.receiverCandidates(methodName, this.currentParentType);
 
-        if (struct) {
-            const method = getAllMethods(struct).filter(m => m.name === methodName)[0]; // TODO separate traits and structs
-            const mutable = method.params[0].type.mutable;
-            const mutableReference = method.params[0].type.mutableReference;
-            
-            const traitName = struct.methods.some(m => m.name === methodName)
-                ? undefined
-                : struct.traits.find(t => t.methods.some(m => m.name === methodName))?.name;
-            const guessedType = traitName
-                ? toType({valType: ValType.TRAIT, structName: traitName})
-                : toType({valType: ValType.STRUCT, structName: struct.name});
-            if (method.params[0].type.valType === ValType.REFERENCE) {
-                this.typeStack.push(toType({methodCall: true, valType: ValType.REFERENCE, elementType: guessedType, mutable: mutable, mutableReference: mutableReference}));
-            } else {
-                this.typeStack.push(toType({methodCall: true, valType: guessedType.valType, structName: guessedType.structName, mutable: mutable}));
-            }
+        if (candidates.length > 0) {
+            const [best, ...rest] = candidates;
+            const expected = cloneType(best.expected);
+            expected.reportAs = best.reported;
+            expected.candidateTypes = rest.map(c => c.reported);
+            this.typeStack.push(expected);
         } else {
             this.typeStack.push(toType({valType: ValType.UNKNOWN}));
         }
@@ -943,7 +1049,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             throw new Error("Unable to resolve method name for MethodCallExpression");
         }
 
-        const func = structName ? this.getBoundMethod(structName, methodName) : null;
+        const func = structName ? this.getBoundMethod(structName, methodName, receiverType) : null;
 
         if (func) {
             console.log("Method call:", func.name, "on struct", structName);
@@ -1765,13 +1871,16 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return (a.suggestionNameWithoutTypes?.length ?? 0) - (b.suggestionNameWithoutTypes?.length ?? 0); // rank by size
         });
 
-        if (hole.type.valType === ValType.TRAIT) {
-            const matchinStructs = [...this.structs, ...this.stdStructs].filter(s => s.traits.some(t => t.name === hole.type.structName))
-            hole.subTypes = matchinStructs.map(s => toType({...hole.type, valType: ValType.STRUCT, structName: s.name}))
-        }
+        // Hole candidates if more than one
+        hole.subTypes = [
+            ...this.expandTraitType(hole.type),
+            ...(hole.type.candidateTypes ?? []),
+        ];
 
-        if (hole.type.methodCall && hole.type.valType === ValType.REFERENCE && hole.type.elementType) {
-            hole.type = hole.type.elementType;
+        if (hole.subTypes.length === 0) delete hole.subTypes;
+
+        if (hole.type.reportAs) {
+            hole.type = hole.type.reportAs;
         }
 
         hole.suggestions = holeSuggestions;
@@ -1791,7 +1900,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         const nextVisited = new Set(visitedStructNames);
         nextVisited.add(structType.structName);
 
-        this.methodsOf(struct).forEach((method: Function) => {
+        this.methodsOf(struct, receiverType).forEach((method: Function) => {
             // For reference receivers, skip methods that require an owned receiver (self by value)
             if (isReference && method.params.length > 0) {
                 if (method.params[0].type.valType !== ValType.REFERENCE) return;
@@ -1821,7 +1930,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             }
         });
         
-        this.methodsOf(struct).forEach((method: Function) => {
+        this.methodsOf(struct, variable.type).forEach((method: Function) => {
             // console.log("Checking method:", method.name)
             const methodRefType = new Type();
             Object.assign(methodRefType, variable.type);

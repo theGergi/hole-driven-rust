@@ -46,6 +46,7 @@ interface EvalResult {
 	hole_type_compile_error?: string;
 	expected_type?: string;
 	matched_type?: boolean;
+	matched_top_type?: boolean;
 	exact_match_rank?: number | null;
 }
 
@@ -98,16 +99,19 @@ function normalizeType(type: string): string {
 			.replace(/<[^>]*>/g, ""); // TODO: Maybe this is too weak
 }
 
-function typesMatch(foundType: string, expectedType: string, holeSupTypes?: string[]): boolean {
+// Whether the reported type matches
+function topTypeMatches(foundType: string, expectedType: string): boolean {
 	if (normalizeType(expectedType) === "&str" && normalizeType(foundType) === "&String") {
 		return true;
 	}
 
-	if (holeSupTypes) {
-		return holeSupTypes.some(st => normalizeType(st) === normalizeType(expectedType));
-	}
-
 	return normalizeType(foundType) === normalizeType(expectedType);
+}
+
+// Whether any type matches
+function typesMatch(foundType: string, expectedType: string, holeSupTypes?: string[]): boolean {
+	return topTypeMatches(foundType, expectedType)
+		|| (holeSupTypes?.some(st => topTypeMatches(st, expectedType)) ?? false);
 }
 
 function evaluateHole(
@@ -166,6 +170,7 @@ let totalHoleTypesTested = 0;
 let totalHoleTypesCompile = 0;
 let totalTypesTested = 0;
 let totalTypesMatched = 0;
+let totalTopTypesMatched = 0;
 
 console.log(`Evaluating ${cases.length} test cases in dataset "${dataset}"...`);
 
@@ -222,10 +227,13 @@ for (const tc of cases) {
 	}
 
 	let matched_type: boolean | undefined;
+	let matched_top_type: boolean | undefined;
 	if (meta.type && holeType) {
 		matched_type = typesMatch(holeType, meta.type, holeSubTypes);
+		matched_top_type = topTypeMatches(holeType, meta.type);
 		totalTypesTested++;
 		if (matched_type) totalTypesMatched++;
+		if (matched_top_type) totalTopTypesMatched++;
 	}
 
 	results.push({
@@ -243,6 +251,7 @@ for (const tc of cases) {
 		hole_type_compile_error,
 		expected_type: meta.type,
 		matched_type,
+		matched_top_type,
 		exact_match_rank,
 	});
 	counts[category]++;
@@ -304,9 +313,12 @@ if (compileTypes) {
 
 console.log(`\nTypes tested against expected: ${totalTypesTested}`);
 console.log(`Types matched:                 ${totalTypesMatched}`);
+console.log(`Types matched (reported type): ${totalTopTypesMatched}`);
 if (totalTypesTested > 0) {
 	const pct = ((totalTypesMatched / totalTypesTested) * 100).toFixed(1);
+	const topPct = ((totalTopTypesMatched / totalTypesTested) * 100).toFixed(1);
 	console.log(`Match rate:                    ${pct}%`);
+	console.log(`Match rate (reported type):    ${topPct}%`);
 }
 
 type FitBucket = 'failed_with_error' | 'failed' | 'fit_incorrect' | 'fit_correct';

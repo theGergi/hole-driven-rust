@@ -61,6 +61,11 @@ export class Type {
 	structName?: string; // For struct types
 	methodCall?: boolean; // Hack for case of x.keys() where keys(&self)
 
+	genericName?: string;
+	candidateTypes?: Type[];
+
+	reportAs?: Type;
+
 	traits: Trait[] = [];
 
 	toTypeString(): string {
@@ -126,6 +131,7 @@ export interface Struct {
 	path: string[]; // Full path for matching against user imports, e.g., ["std", "collections", "HashSet"]
 	traits: Trait[];
 	iteratorItem?: Type; // Iterator::Item, i.e. the element type yielded when iterated (e.g. char for Chars)
+	genericParams?: string[]; // The struct's own type parameters in order, e.g. ["T"] for Vec<T>
 }
 
 export interface Trait {
@@ -205,4 +211,5 @@ export interface SharedStruct {
 	impls?: any[]; // Store raw impl data for later processing
 	prelude?: boolean; // True if automatically imported via the Rust prelude
 	iteratorItem?: Type; // Iterator::Item, i.e. the element type yielded when iterated (e.g. char for Chars)
+	genericParams?: string[]; // The struct's own type parameters in order, e.g. ["T"] for Vec<T>
 }

@@ -41,6 +41,7 @@ function createType(overrides: Partial<Type>): Type {
 	type.borrows = overrides.borrows ?? Borrow.BFree;
 	type.owner = overrides.owner;
 	type.structName = overrides.structName;
+	type.genericName = overrides.genericName;
 	return type;
 }
 
@@ -99,20 +100,33 @@ function parsePrimitiveType(name: string): Type {
 // typed as that trait rather than falling back to UNKNOWN.
 function buildGenericBounds(generics: any): Record<string, string> {
 	const bounds: Record<string, string> = {};
-	const params = generics?.params;
-	if (!Array.isArray(params)) return bounds;
 
-	for (const param of params) {
-		const name = param?.name;
-		const traitBounds = param?.kind?.type?.bounds;
-		if (typeof name !== 'string' || !Array.isArray(traitBounds)) continue;
-
+	const firstTraitOf = (traitBounds: any): string | undefined => {
+		if (!Array.isArray(traitBounds)) return undefined;
 		for (const bound of traitBounds) {
 			const traitPath = bound?.trait_bound?.trait?.path;
-			if (typeof traitPath === 'string') {
-				bounds[name] = normalizePathName(traitPath);
-				break;
-			}
+			if (typeof traitPath === 'string') return normalizePathName(traitPath);
+		}
+		return undefined;
+	};
+
+	const params = generics?.params;
+	if (Array.isArray(params)) {
+		for (const param of params) {
+			const name = param?.name;
+			if (typeof name !== 'string') continue;
+			const trait = firstTraitOf(param?.kind?.type?.bounds);
+			if (trait) bounds[name] = trait;
+		}
+	}
+
+	const wherePredicates = generics?.where_predicates;
+	if (Array.isArray(wherePredicates)) {
+		for (const predicate of wherePredicates) {
+			const name = predicate?.bound_predicate?.type?.generic;
+			if (typeof name !== 'string' || bounds[name]) continue;
+			const trait = firstTraitOf(predicate?.bound_predicate?.bounds);
+			if (trait) bounds[name] = trait;
 		}
 	}
 
@@ -155,9 +169,9 @@ function parseTypeDesc(typeDesc: any, genericBounds?: Record<string, string>): T
 		}
 		const boundTrait = genericBounds?.[typeDesc.generic];
 		if (boundTrait) {
-			return createType({ valType: ValType.TRAIT, structName: boundTrait });
+			return createType({ valType: ValType.TRAIT, structName: boundTrait, genericName: typeDesc.generic });
 		}
-		return createType({ valType: ValType.UNKNOWN });
+		return createType({ valType: ValType.UNKNOWN, genericName: typeDesc.generic });
 	}
 
 	if ('borrowed_ref' in typeDesc && typeof typeDesc.borrowed_ref === 'object') {
@@ -461,6 +475,20 @@ function parseStructEntry(entry: any, index: Record<string, any>, id: string, pa
 	};
 }
 
+
+function recordGenericParams(struct: SharedStruct, implEntry: any): void {
+	if (struct.genericParams?.length) return;
+
+	const params = implEntry?.generics?.params;
+	if (!Array.isArray(params)) return;
+
+	const names = params
+		.filter((p: any) => typeof p?.name === 'string' && p?.kind?.type)
+		.map((p: any) => p.name as string);
+
+	if (names.length > 0) struct.genericParams = names;
+}
+
 function parseImplEntry(
 	entry: any,
 	index: Record<string, any>,
@@ -508,6 +536,10 @@ function parseImplEntry(
 	}
 
 	const applyTo = (s: SharedStruct) => {
+		if (!traitName) {
+			recordGenericParams(s, implEntry);
+		}
+
 		if (!traitName) {
 			implEntry.items.forEach((itemId: any) => {
 				const itemEntry = index[String(itemId)];
@@ -695,6 +727,7 @@ function mergeStructsByName(structLists: SharedStruct[][]): SharedStruct[] {
 			}
 			existing.prelude = existing.prelude ?? s.prelude;
 			existing.iteratorItem = existing.iteratorItem ?? s.iteratorItem;
+			existing.genericParams = existing.genericParams ?? s.genericParams;
 		}
 	}
 
