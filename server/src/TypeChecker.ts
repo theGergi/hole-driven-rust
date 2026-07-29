@@ -16,6 +16,19 @@ function typesEqual(a: Type | undefined, b: Type | undefined): boolean {
     return typesEqual(a.elementType, b.elementType);
 }
 
+// Split a list of tokens on separator
+function splitOn(tokens: any[], separator: string): any[][] {
+    const groups: any[][] = [[]];
+    for (const token of tokens) {
+        if (token.getText() === separator) {
+            groups.push([]);
+        } else {
+            groups[groups.length - 1].push(token);
+        }
+    }
+    return groups.filter(g => g.length > 0);
+}
+
 function isIntegerType(type: Type | undefined): boolean {
     return type?.valType === ValType.STRUCT && INTEGER_TYPE_NAMES.includes(type.structName ?? '');
 }
@@ -850,34 +863,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     visitMacroInvocation = (ctx: any): ReturnType | null => {
         console.log("Macro invocation")
         if (ctx.simplePath().getText() === "vec") {
-            let type : Type = toType({valType: ValType.VECTOR, elementType: toType({valType: ValType.UNKNOWN})});
-            const tokens = ctx.delimTokenTree().tokenTree(0)?.tokenTreeToken();
-            // if (!tokens) {
-            //     return {
-            //         type: toType({valType: ValType.VECTOR, elementType: toType({valType: ValType.UNKNOWN})}),
-            //         location: getLocation(ctx)
-            //     }
-            // }
-            if (tokens) {
-                if (tokens.every((val:any, i:number) => (i % 2 === 1 ? val.getText() === ',' : true))) { // List vec macro like vec![1, 2, 3]
-                    tokens.forEach((token: any, i: number) => {
-                        if (i % 2 === 0) {
-                            const elType = this.visit(token)!.type!;
-                            if (type.elementType?.valType === ValType.UNKNOWN) {
-                                type = toType({valType: ValType.VECTOR, elementType: elType});
-                            } else if (!typesEqual(type.elementType, elType)) {
-                                throw Error("All elements in vec must be of same type")
-                            }
-                        }
-                    })
-                } else if (tokens.length === 3 && tokens[1].getText() === ";") { // Repeat vec macro like vec![0; 10]
-                    const elType = this.visit(tokens[0])!.type!;
-                    this.visit(tokens[2]); // visit count for side effects, type is irrelevant
-                    type = toType({valType: ValType.VECTOR, elementType: elType});
-                } else {
-                    throw Error("Only simple vec macros with commas are supported")
-                }
-            }
+            const type = toType({valType: ValType.VECTOR, elementType: this.vecMacroElementType(ctx)});
 
             if (this.structs.find(s => s.name === "Vec")) {
                 type.structName = "Vec";
@@ -891,6 +877,44 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         }
 
         return null;
+    }
+
+    // Parse a vector macro and return element type
+    private vecMacroElementType(ctx: any): Type {
+        const unknown = toType({valType: ValType.UNKNOWN});
+        
+        // Too complicated; out of scope
+        if (ctx.delimTokenTree().tokenTree().length !== 1) return unknown;
+
+        const tokens = ctx.delimTokenTree().tokenTree(0)?.tokenTreeToken();
+        if (!tokens || tokens.length === 0) return unknown;
+
+        // vec![element; count]
+        const semicolon = tokens.findIndex((t: any) => t.getText() === ';');
+        const elements = semicolon >= 0
+            ? [tokens.slice(0, semicolon)]
+            : splitOn(tokens, ',');
+        if (semicolon >= 0) {
+            tokens.slice(semicolon + 1).forEach((t: any) => this.visit(t));
+        }
+
+        // vec![] or vec![element1, element2, ...]
+        let elementType: Type = unknown;
+        for (const element of elements) {
+            if (element.length !== 1) return unknown;
+
+            const visited = this.visit(element[0])?.type;
+            if (!visited || visited.valType === ValType.UNKNOWN) continue;
+
+            if (elementType.valType === ValType.UNKNOWN) {
+                elementType = visited;
+            } else if (!typesEqual(elementType, visited)) {
+                this.reportTypeError(getLocation(ctx), "All elements in vec must be of same type");
+                return unknown;
+            }
+        }
+
+        return elementType;
     }
 
     private visitCallArguments(callParams: any, paramTypeAt: (index: number) => Type | undefined): void {
