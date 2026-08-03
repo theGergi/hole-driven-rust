@@ -16,13 +16,22 @@ import {
 	evalCargoDir,
 	evalLibPath,
 	frac,
+	avg,
 	categoriesOf,
+	metaCategories,
 	isExactMatch,
 	renderTextTable,
 	renderMarkdownTable,
 } from './evalShared';
 
 const MAX_SUGGESTIONS_TO_COMPILE = 5;
+
+const maxSuggestionsArg = process.argv.find(a => a.startsWith('--max-suggestions='));
+const maxSuggestionsRaw = maxSuggestionsArg?.slice('--max-suggestions='.length);
+const MAX_RECORDED_SUGGESTIONS =
+	maxSuggestionsRaw === undefined ? 25
+	: maxSuggestionsRaw === 'all' ? Infinity
+	: parseInt(maxSuggestionsRaw, 10) || Infinity;
 
 type EvalCategory = 'failed_with_error' | 'found_type' | 'found_suggestions' | 'exact_match' | 'failed';
 
@@ -38,10 +47,14 @@ interface EvalResult {
 	holeCategories: string[];
 	error?: string;
 	suggestion_count?: number;
+	suggestions?: string[];
+	// The suggestion at exact_match_rank, so a hit stays visible past the cap.
+	matched_suggestion?: string;
 	suggestion_compile_results?: SuggestionCompileResult[];
 	any_suggestion_compiles?: boolean;
 	suggestions_with_holes?: string[];
 	hole_type?: string;
+	hole_sub_types?: string[];
 	hole_type_compiles?: boolean;
 	hole_type_compile_error?: string;
 	expected_type?: string;
@@ -226,6 +239,10 @@ for (const tc of cases) {
 		exact_match_rank = idx >= 0 ? idx : null;
 	}
 
+	// Ranks are the array indices, so the recorded list has to stay a prefix.
+	const recorded_suggestions = suggestions?.slice(0, MAX_RECORDED_SUGGESTIONS);
+	const matched_suggestion = exact_match_rank !== null ? suggestions![exact_match_rank] : undefined;
+
 	let matched_type: boolean | undefined;
 	let matched_top_type: boolean | undefined;
 	if (meta.type && holeType) {
@@ -240,13 +257,16 @@ for (const tc of cases) {
 		task: tc.task,
 		hole: tc.hole,
 		category,
-		holeCategories: meta.categories,
+		holeCategories: metaCategories(meta),
 		error,
 		suggestion_count,
+		suggestions: recorded_suggestions,
+		matched_suggestion,
 		suggestion_compile_results,
 		any_suggestion_compiles,
 		suggestions_with_holes,
 		hole_type: holeType,
+		hole_sub_types: holeSubTypes,
 		hole_type_compiles,
 		hole_type_compile_error,
 		expected_type: meta.type,
@@ -338,21 +358,33 @@ interface CategoryStats extends Record<FitBucket, number> {
 	exactMatch: number;
 	matchedType: number;
 	validSuggestion: number;
+	suggestionSum: number;
+	suggestionHoles: number;
+	rankSum: number;
+	rankHits: number;
 }
 const newCategoryStats = (): CategoryStats => ({
 	failed_with_error: 0, failed: 0, fit_incorrect: 0, fit_correct: 0,
 	exactMatch: 0, matchedType: 0, validSuggestion: 0,
+	suggestionSum: 0, suggestionHoles: 0, rankSum: 0, rankHits: 0,
 });
+
+// The tool's rank for a hole, 1 based
+const rankOf = (r: EvalResult): number | undefined =>
+	r.exact_match_rank === null || r.exact_match_rank === undefined ? undefined : r.exact_match_rank + 1;
 
 const categoryTable: Record<string, CategoryStats> = {};
 for (const r of results) {
 	const bucket = fitBucketOf(r);
+	const rank = rankOf(r);
 	for (const cat of categoriesOf(r.holeCategories)) {
 		const s = (categoryTable[cat] ??= newCategoryStats());
 		s[bucket]++;
 		if (r.category === 'exact_match') s.exactMatch++;
 		if (r.matched_type) s.matchedType++;
 		if (r.any_suggestion_compiles) s.validSuggestion++;
+		if (r.suggestion_count !== undefined) { s.suggestionSum += r.suggestion_count; s.suggestionHoles++; }
+		if (rank !== undefined) { s.rankSum += rank; s.rankHits++; }
 	}
 }
 
@@ -370,15 +402,37 @@ const table1Rows: string[][] = sortedCategories.map(([cat, s]) => {
 });
 const table1TotalRow = ['Total', frac(counts.failed_with_error, grandTotal), frac(counts.failed, grandTotal), frac(totalFitIncorrect, grandTotal), frac(totalFitCorrect, grandTotal), String(grandTotal)];
 
-const table2Headers = ['category', 'exact_match', 'matched_type', 'valid_suggestion'];
+const holesWithSuggestions = results.filter(r => r.suggestion_count !== undefined);
+const totalSuggestionSum = holesWithSuggestions.reduce((sum, r) => sum + r.suggestion_count!, 0);
+const ranks = results.map(rankOf).filter((rank): rank is number => rank !== undefined);
+const totalRankSum = ranks.reduce((sum, rank) => sum + rank, 0);
+
+const table2Headers = ['category', 'exact_match', 'matched_type', 'valid_suggestion', 'avg_suggestions', 'avg_rank'];
 const table2Rows: string[][] = sortedCategories.map(([cat, s]) => {
 	const total = catTotal(s);
-	return [cat, frac(s.exactMatch, total), frac(s.matchedType, total), frac(s.validSuggestion, total)];
+	return [
+		cat,
+		frac(s.exactMatch, total),
+		frac(s.matchedType, total),
+		frac(s.validSuggestion, total),
+		avg(s.suggestionSum, s.suggestionHoles),
+		avg(s.rankSum, s.rankHits),
+	];
 });
-const table2TotalRow = ['Total', frac(counts.exact_match, grandTotal), frac(totalTypesMatched, grandTotal), frac(totalHolesWithValidSuggestion, grandTotal)];
+const table2TotalRow = [
+	'Total',
+	frac(counts.exact_match, grandTotal),
+	frac(totalTypesMatched, grandTotal),
+	frac(totalHolesWithValidSuggestion, grandTotal),
+	avg(totalSuggestionSum, holesWithSuggestions.length),
+	avg(totalRankSum, ranks.length),
+];
+
+const table2Subtitle = '(avg_suggestions = mean list length over holes that produced suggestions; '
+	+ 'avg_rank = mean 1-based rank of the ground truth, over the holes where it was suggested at all)';
 
 const table1Lines = ['\n=== Results by Hole Category (failed / fit correctness) ===', ...renderTextTable(table1Headers, table1Rows, table1TotalRow)];
-const table2Lines = ['\n=== Results by Hole Category (match quality) ===', ...renderTextTable(table2Headers, table2Rows, table2TotalRow)];
+const table2Lines = ['\n=== Results by Hole Category (match quality) ===', table2Subtitle, ...renderTextTable(table2Headers, table2Rows, table2TotalRow)];
 const tableLines = [...table1Lines, ...table2Lines];
 for (const line of tableLines) console.log(line);
 
@@ -390,11 +444,11 @@ const tablePath = path.join(generatedDir, 'eval_table.txt');
 fs.writeFileSync(tablePath, tableLines.join('\n') + '\n');
 console.log(`Table written to ${tablePath}`);
 
-const markdownSection = (title: string, headers: string[], rows: string[][], totalRow: string[]): string[] =>
-	[`### ${title}`, '', ...renderMarkdownTable(headers, rows, totalRow.map(c => `**${c}**`)), ''];
+const markdownSection = (title: string, headers: string[], rows: string[][], totalRow: string[], subtitle?: string): string[] =>
+	[`### ${title}`, '', ...(subtitle ? [subtitle, ''] : []), ...renderMarkdownTable(headers, rows, totalRow.map(c => `**${c}**`)), ''];
 const mdLines = [
 	...markdownSection('Results by Hole Category (failed / fit correctness)', table1Headers, table1Rows, table1TotalRow),
-	...markdownSection('Results by Hole Category (match quality)', table2Headers, table2Rows, table2TotalRow),
+	...markdownSection('Results by Hole Category (match quality)', table2Headers, table2Rows, table2TotalRow, table2Subtitle),
 ];
 const mdPath = path.join(generatedDir, 'eval_table.md');
 fs.writeFileSync(mdPath, mdLines.join('\n') + '\n');

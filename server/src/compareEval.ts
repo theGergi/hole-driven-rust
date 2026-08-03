@@ -37,7 +37,13 @@ for (const p of [toolPath, raPath]) {
 }
 
 const toolResults: ToolResult[] = JSON.parse(fs.readFileSync(toolPath, 'utf8'));
-const raResults: RaResult[] = JSON.parse(fs.readFileSync(raPath, 'utf8'));
+
+// raEvaluator now writes `{ meta, results }`; older result files are a bare array.
+const raFile = JSON.parse(fs.readFileSync(raPath, 'utf8'));
+const raResults: RaResult[] = Array.isArray(raFile) ? raFile : raFile.results;
+if (!Array.isArray(raFile) && raFile.meta) {
+	console.log(`rust-analyzer baseline: ${raFile.meta.rust_analyzer?.version} (${raFile.meta.generated_at})`);
+}
 
 const key = (r: { task: string; hole: string }) => `${r.task}/${r.hole}`;
 const raByKey = new Map(raResults.map((r) => [key(r), r]));

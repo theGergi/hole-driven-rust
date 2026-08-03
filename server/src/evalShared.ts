@@ -10,9 +10,18 @@ export interface TestCaseMeta {
 	column_start: number;
 	column_end: number;
 	original: string;
-	categories: string[];
 	imports: string[];
 	type?: string;
+	categories?: string[];
+	form?: string;
+	tags?: string[];
+	line_end?: number;
+	type_checked?: boolean;
+}
+
+export function metaCategories(meta: TestCaseMeta): string[] {
+	if (meta.categories) return meta.categories;
+	return [...(meta.form ? [meta.form] : []), ...(meta.tags ?? [])];
 }
 
 export interface TestCase {
@@ -72,6 +81,10 @@ export function frac(x: number, total: number, digits = 1): string {
 	return `${x}/${total} (${pct.toFixed(digits)}%)`;
 }
 
+export function avg(sum: number, count: number, digits = 1): string {
+	return count > 0 ? (sum / count).toFixed(digits) : '-';
+}
+
 export function hitAny(rank: number | null | undefined): boolean {
 	return rank !== null && rank !== undefined;
 }
@@ -80,8 +93,8 @@ export function hitAtK(rank: number | null | undefined, k: number): boolean {
 	return hitAny(rank) && (rank as number) < k;
 }
 
-export function categoriesOf(holeCategories: string[]): string[] {
-	return holeCategories.length > 0 ? holeCategories : ['(none)'];
+export function categoriesOf(holeCategories: string[] | undefined): string[] {
+	return holeCategories && holeCategories.length > 0 ? holeCategories : ['(none)'];
 }
 
 // ---------------------------------------------------------------------------

@@ -10,9 +10,11 @@ import {
 	evalCargoDir,
 	evalLibPath,
 	frac,
+	avg,
 	hitAtK,
 	hitAny,
 	categoriesOf,
+	metaCategories,
 	isExactMatch,
 	renderTextTable,
 	renderMarkdownTable,
@@ -22,14 +24,45 @@ import {
 // Config
 // ---------------------------------------------------------------------------
 
-const DEFAULT_RA_BIN = path.join(
-	os.homedir(),
-	'.vscode/extensions/rust-lang.rust-analyzer-0.3.2981-linux-x64/server/rust-analyzer'
-);
-const RA_BIN = process.env.RA_BIN || DEFAULT_RA_BIN;
+// Version sorting key
+function raVersionKey(dirName: string): number[] {
+	const m = /rust-analyzer-(\d+)\.(\d+)\.(\d+)/.exec(dirName);
+	return m ? [+m[1], +m[2], +m[3]] : [-1, -1, -1];
+}
+
+// Find the rust-analyzer binary in a VSCode extension install
+function findVscodeRaBin(): string | undefined {
+	const extRoot = path.join(os.homedir(), '.vscode', 'extensions');
+	let entries: string[];
+	try { entries = fs.readdirSync(extRoot); } catch { return undefined; }
+
+	return entries
+		.filter((name) => name.startsWith('rust-lang.rust-analyzer-'))
+		.sort((a, b) => {
+			const [ka, kb] = [raVersionKey(a), raVersionKey(b)];
+			for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return kb[i] - ka[i];
+			return 0;
+		})
+		.map((name) => path.join(extRoot, name, 'server', 'rust-analyzer'))
+		.find((bin) => fs.existsSync(bin));
+}
+
+// Falls back to whatever is on PATH if no extension copy is installed.
+const RA_BIN = process.env.RA_BIN || findVscodeRaBin() || 'rust-analyzer';
 
 // K cutoffs reported in the summary tables.
 const K_CUTOFFS = [1, 5, 10];
+
+// Search budget handed to rust-analyzer's term search (default is 200).
+const TERM_SEARCH_FUEL = 1000;
+
+// rust-analyzer returns an empty list while it is still analysing a freshly
+// opened document, so completions are retried before being treated as a miss.
+const COMPLETION_ATTEMPTS = 4;
+const COMPLETION_RETRY_MS = 400;
+
+// Prepended to every hole program so warnings don't crowd out completions.
+const SOURCE_HEADER = '#![allow(warnings)]\n';
 
 const evalLibUri = pathToFileURL(evalLibPath).toString();
 
@@ -38,9 +71,28 @@ const { dataset, datasetDir: generatedDir } = resolveDataset('assignments_no_typ
 const limitArg = process.argv.find((arg) => arg.startsWith('--limit='));
 const limit = limitArg ? parseInt(limitArg.slice('--limit='.length), 10) : Infinity;
 
+// How many of rust-analyzer's returned completions to record per hole.
+const maxItemsArg = process.argv.find((arg) => arg.startsWith('--max-items='));
+const maxItemsRaw = maxItemsArg?.slice('--max-items='.length);
+const MAX_RECORDED_ITEMS =
+	maxItemsRaw === undefined ? 25
+	: maxItemsRaw === 'all' ? Infinity
+	: parseInt(maxItemsRaw, 10) || Infinity;
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+
+// One completion as rust-analyzer returned it
+interface RecordedCompletion {
+	rank: number;
+	label: string;
+	insertion: string;
+	kind?: string;
+	detail?: string;
+	sortText?: string;
+	matched?: boolean;
+}
 
 interface RaResult {
 	task: string;
@@ -50,8 +102,8 @@ interface RaResult {
 	expected_type?: string;
 	error?: string;
 	completion_count: number;
-	// 0-indexed rank in sortText display order, or null if no match.
 	exact_rank: number | null;
+	completions: RecordedCompletion[];
 }
 
 // ---------------------------------------------------------------------------
@@ -70,6 +122,11 @@ class LspClient {
 		this.proc = spawn(bin, [], { cwd, stdio: ['pipe', 'pipe', 'pipe'] });
 		this.proc.stdout.on('data', (chunk: Buffer) => this.onData(chunk));
 		this.proc.stderr.on('data', () => {/* rust-analyzer logs; ignore */});
+		// RA_BIN may be a bare name resolved off PATH, so spawn itself can fail.
+		this.proc.on('error', (err) => {
+			for (const { reject } of this.pending.values()) reject(err);
+			this.pending.clear();
+		});
 		this.proc.on('exit', (code) => {
 			for (const { reject } of this.pending.values()) reject(new Error(`rust-analyzer exited (${code})`));
 			this.pending.clear();
@@ -136,7 +193,6 @@ class LspClient {
 		this.send({ jsonrpc: '2.0', method, params });
 	}
 
-	/** Resolve once no `$/progress` has arrived for `quietMs`, or after `capMs`. */
 	async waitUntilIdle(quietMs = 4000, capMs = 180000): Promise<void> {
 		const startedAt = Date.now();
 		this.lastProgress = Date.now();
@@ -178,6 +234,34 @@ function insertionOf(item: any): string {
 	return item.label ?? '';
 }
 
+// LSP CompletionItemKind, so the recorded list is readable without a spec lookup.
+const COMPLETION_ITEM_KINDS = [
+	'Text', 'Method', 'Function', 'Constructor', 'Field', 'Variable', 'Class', 'Interface',
+	'Module', 'Property', 'Unit', 'Value', 'Enum', 'Keyword', 'Snippet', 'Color', 'File',
+	'Reference', 'Folder', 'EnumMember', 'Constant', 'Struct', 'Event', 'Operator', 'TypeParameter',
+];
+
+function kindName(kind: unknown): string | undefined {
+	if (typeof kind !== 'number') return undefined;
+	return COMPLETION_ITEM_KINDS[kind - 1] ?? String(kind);
+}
+
+function recordCompletions(items: any[], exactRank: number | null): RecordedCompletion[] {
+	const project = (item: any, rank: number): RecordedCompletion => ({
+		rank,
+		label: item.label ?? '',
+		insertion: insertionOf(item),
+		kind: kindName(item.kind),
+		detail: item.detail,
+		sortText: item.sortText,
+		...(rank === exactRank ? { matched: true } : {}),
+	});
+
+	const kept = items.slice(0, MAX_RECORDED_ITEMS).map(project);
+	if (exactRank !== null && exactRank >= kept.length) kept.push(project(items[exactRank], exactRank));
+	return kept;
+}
+
 function bestRank(items: any[], predicate: (insertion: string, label: string) => boolean): number | null {
 	for (let i = 0; i < items.length; i++) {
 		const insertion = insertionOf(items[i]);
@@ -212,8 +296,7 @@ async function evalHoleWithRa(
 	const pos = holePositionAndText(rustCode);
 	if (!pos) return { error: 'no ?? marker in source', count: 0, items: [], line: 0, character: 0 };
 
-	const header = '#![allow(warnings)]\n';
-	const text = header + pos.text;
+	const text = SOURCE_HEADER + pos.text;
 	const line = pos.line + 1;
 	const character = pos.character;
 
@@ -225,7 +308,7 @@ async function evalHoleWithRa(
 	let result: any;
 	let items: any[] = [];
 	try {
-		for (let attempt = 0; attempt < 4; attempt++) {
+		for (let attempt = 0; attempt < COMPLETION_ATTEMPTS; attempt++) {
 			result = await client.request('textDocument/completion', {
 				textDocument: { uri: evalLibUri },
 				position: { line, character },
@@ -233,7 +316,7 @@ async function evalHoleWithRa(
 			});
 			items = Array.isArray(result) ? result : result?.items ?? [];
 			if (items.length > 0) break;
-			await delay(400);
+			await delay(COMPLETION_RETRY_MS);
 		}
 	} catch (e: any) {
 		client.notify('textDocument/didClose', { textDocument: { uri: evalLibUri } });
@@ -252,6 +335,27 @@ async function evalHoleWithRa(
 }
 
 // ---------------------------------------------------------------------------
+// Run metadata
+// ---------------------------------------------------------------------------
+
+function evalCargoDependencies(): Record<string, string> {
+	const deps: Record<string, string> = {};
+	let toml: string;
+	try { toml = fs.readFileSync(path.join(evalCargoDir, 'Cargo.toml'), 'utf8'); } catch { return deps; }
+
+	let inDeps = false;
+	for (const raw of toml.split('\n')) {
+		const line = raw.trim();
+		if (line.startsWith('[')) { inDeps = line === '[dependencies]'; continue; }
+		if (!inDeps || !line || line.startsWith('#')) continue;
+		const eq = line.indexOf('=');
+		if (eq === -1) continue;
+		deps[line.slice(0, eq).trim()] = line.slice(eq + 1).trim().replace(/^"|"$/g, '');
+	}
+	return deps;
+}
+
+// ---------------------------------------------------------------------------
 // Reporting
 // ---------------------------------------------------------------------------
 
@@ -259,12 +363,16 @@ interface CatStats {
 	total: number;
 	exact: { any: number; k: Record<number, number> };
 	errors: number;
+	items: { sum: number; holes: number };
+	rank: { sum: number; hits: number };
 }
 function newCatStats(): CatStats {
 	return {
 		total: 0,
 		exact: { any: 0, k: Object.fromEntries(K_CUTOFFS.map((k) => [k, 0])) },
 		errors: 0,
+		items: { sum: 0, holes: 0 },
+		rank: { sum: 0, hits: 0 },
 	};
 }
 
@@ -275,7 +383,12 @@ function buildTable(results: RaResult[]): { txt: string[]; md: string[] } {
 	const accumulate = (s: CatStats, r: RaResult) => {
 		s.total++;
 		if (r.error) s.errors++;
-		if (hitAny(r.exact_rank)) s.exact.any++;
+		else { s.items.sum += r.completion_count; s.items.holes++; }
+		if (hitAny(r.exact_rank)) {
+			s.exact.any++;
+			s.rank.sum += (r.exact_rank as number) + 1;
+			s.rank.hits++;
+		}
 		for (const k of K_CUTOFFS) {
 			if (hitAtK(r.exact_rank, k)) s.exact.k[k]++;
 		}
@@ -289,13 +402,15 @@ function buildTable(results: RaResult[]): { txt: string[]; md: string[] } {
 		}
 	}
 
-	const headers = ['category', 'exact@1', 'exact@5', 'exact@10', 'exact@any', 'errors', 'total'];
+	const headers = ['category', 'exact@1', 'exact@5', 'exact@10', 'exact@any', 'avg_items', 'avg_rank', 'errors', 'total'];
 	const rowFor = (name: string, s: CatStats): string[] => [
 		name,
 		frac(s.exact.k[1], s.total, 2),
 		frac(s.exact.k[5], s.total, 2),
 		frac(s.exact.k[10], s.total, 2),
 		frac(s.exact.any, s.total, 2),
+		avg(s.items.sum, s.items.holes),
+		avg(s.rank.sum, s.rank.hits),
 		frac(s.errors, s.total, 2),
 		String(s.total),
 	];
@@ -305,7 +420,9 @@ function buildTable(results: RaResult[]): { txt: string[]; md: string[] } {
 		.map(([cat, s]) => rowFor(cat, s));
 	const totalRow = rowFor('TOTAL', total);
 
-	const subtitle = `(hit@K = correct item within rust-analyzer's top-K; @any = anywhere in list)`;
+	const subtitle = `(hit@K = correct item within rust-analyzer's top-K; @any = anywhere in list; `
+		+ `avg_items = mean list length over holes that returned one; `
+		+ `avg_rank = mean 1-based rank of the correct item, over the exact@any holes only)`;
 	const txt = [
 		'\n=== rust-analyzer baseline: completion hit-rate by hole category ===',
 		subtitle,
@@ -328,7 +445,7 @@ function buildTable(results: RaResult[]): { txt: string[]; md: string[] } {
 // ---------------------------------------------------------------------------
 
 async function main() {
-	if (!fs.existsSync(RA_BIN)) {
+	if (RA_BIN.includes(path.sep) && !fs.existsSync(RA_BIN)) {
 		console.error(`rust-analyzer binary not found at ${RA_BIN}. Set RA_BIN=/path/to/rust-analyzer.`);
 		process.exit(1);
 	}
@@ -347,29 +464,40 @@ async function main() {
 
 	const client = new LspClient(RA_BIN, evalCargoDir);
 
-	await client.request('initialize', {
+	const clientCapabilities = {
+		textDocument: {
+			completion: {
+				// Term-search results are rendered as snippets, so rust-analyzer drops
+				// them entirely unless the client advertises snippet support. See
+				// stripSnippet() for how the placeholders are removed before matching.
+				completionItem: { snippetSupport: true },
+				contextSupport: true,
+			},
+		},
+		window: { workDoneProgress: true },
+	};
+	const initializationOptions = {
+		cargo: { buildScripts: { enable: true } },
+		procMacro: { enable: true },
+		checkOnSave: false,
+		completion: {
+			autoimport: { enable: true },
+			// Term search is rust-analyzer's own type-directed expression synthesis
+			termSearch: { enable: true, fuel: TERM_SEARCH_FUEL },
+		},
+	};
+
+	const initResult = await client.request<any>('initialize', {
 		processId: process.pid,
 		rootUri: pathToFileURL(evalCargoDir).toString(),
-		capabilities: {
-			textDocument: {
-				completion: {
-					completionItem: { snippetSupport: true },
-					contextSupport: true,
-				},
-			},
-			window: { workDoneProgress: true },
-		},
-		initializationOptions: {
-			cargo: { buildScripts: { enable: true } },
-			procMacro: { enable: true },
-			checkOnSave: false,
-			completion: {
-				autoimport: { enable: false },
-				termSearch: { enable: true, fuel: 1000 },
-			},
-		},
+		capabilities: clientCapabilities,
+		initializationOptions,
 	});
 	client.notify('initialized', {});
+
+	const raVersion = initResult?.serverInfo?.version ?? 'unknown';
+	console.log(`rust-analyzer version: ${raVersion}`);
+	console.log(`term search fuel: ${TERM_SEARCH_FUEL}`);
 
 	console.log('Waiting for rust-analyzer to finish indexing the project...');
 	await client.waitUntilIdle();
@@ -396,12 +524,13 @@ async function main() {
 		results.push({
 			task: tc.task,
 			hole: tc.hole,
-			holeCategories: meta.categories,
+			holeCategories: metaCategories(meta),
 			original: meta.original,
 			expected_type: meta.type,
 			error,
 			completion_count: count,
 			exact_rank,
+			completions: recordCompletions(items, exact_rank),
 		});
 
 		done++;
@@ -413,8 +542,40 @@ async function main() {
 	// Restore the scratch lib so the tool's evaluator is unaffected.
 	fs.writeFileSync(evalLibPath, originalLib, 'utf8');
 
+	const runMeta = {
+		generated_at: new Date().toISOString(),
+		rust_analyzer: {
+			version: raVersion,
+			binary: RA_BIN,
+		},
+		dataset,
+		holes_evaluated: results.length,
+		limit: Number.isFinite(limit) ? limit : null,
+		workspace: {
+			cargo_dir: evalCargoDir,
+			dependencies: evalCargoDependencies(),
+		},
+		initialization_options: initializationOptions,
+		client_capabilities: clientCapabilities,
+		completion_request: {
+			trigger_kind: 1,
+			attempts: COMPLETION_ATTEMPTS,
+			retry_delay_ms: COMPLETION_RETRY_MS,
+			source_header: SOURCE_HEADER,
+			ranked_by: 'sortText',
+		},
+		recorded_completions: {
+			max_per_hole: Number.isFinite(MAX_RECORDED_ITEMS) ? MAX_RECORDED_ITEMS : null,
+			note: 'first N items in display order, plus the matched item when it ranks past N',
+		},
+		scoring: {
+			k_cutoffs: K_CUTOFFS,
+			match_rule: 'literal equality, or call shape (arguments stripped)',
+		},
+	};
+
 	const jsonPath = path.join(generatedDir, 'ra_eval_results.json');
-	fs.writeFileSync(jsonPath, JSON.stringify(results, null, 2));
+	fs.writeFileSync(jsonPath, JSON.stringify({ meta: runMeta, results }, null, 2));
 
 	const { txt, md } = buildTable(results);
 	for (const line of txt) console.log(line);
