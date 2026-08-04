@@ -570,7 +570,6 @@ async function main() {
 		},
 		scoring: {
 			k_cutoffs: K_CUTOFFS,
-			match_rule: 'literal equality, or call shape (arguments stripped)',
 		},
 	};
 

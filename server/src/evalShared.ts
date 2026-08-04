@@ -118,10 +118,30 @@ export function callShape(expr: string): string | undefined {
 	return IDENT_PATH.test(shape) ? shape : undefined;
 }
 
+const INDEXED_PATH = /^&?[A-Za-z_][A-Za-z0-9_]*(?:(?:::|\.)[A-Za-z_][A-Za-z0-9_]*)*(?:\[\])+$/;
+
+
+export function indexShape(expr: string): string | undefined {
+	if (!expr.includes('[')) return undefined;
+
+	let out = '';
+	let depth = 0;
+	for (const ch of expr) {
+		if (ch === '[') { if (depth === 0) out += '[]'; depth++; continue; }
+		if (ch === ']') { depth = Math.max(0, depth - 1); continue; }
+		if (depth === 0) out += ch;
+	}
+
+	const shape = out.replace(/\s+/g, '');
+	return INDEXED_PATH.test(shape) ? shape : undefined;
+}
+
 export function isExactMatch(suggestion: string, original: string): boolean {
 	if (suggestion === original) return true;
-	const suggestionShape = callShape(suggestion);
-	return suggestionShape !== undefined && suggestionShape === callShape(original);
+	const suggestionCall = callShape(suggestion);
+	if (suggestionCall !== undefined && suggestionCall === callShape(original)) return true;
+	const suggestionIndex = indexShape(suggestion);
+	return suggestionIndex !== undefined && suggestionIndex === indexShape(original);
 }
 
 // ---------------------------------------------------------------------------
