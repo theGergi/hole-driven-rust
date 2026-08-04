@@ -21,7 +21,7 @@ export interface TestCaseMeta {
 
 export function metaCategories(meta: TestCaseMeta): string[] {
 	if (meta.categories) return meta.categories;
-	return [...(meta.form ? [meta.form] : []), ...(meta.tags ?? [])];
+	return meta.form ? [meta.form] : [];
 }
 
 export interface TestCase {
@@ -136,12 +136,29 @@ export function indexShape(expr: string): string | undefined {
 	return INDEXED_PATH.test(shape) ? shape : undefined;
 }
 
+
+export function rangeShape(expr: string): string | undefined {
+	let depth = 0;
+	for (let i = 0; i < expr.length; i++) {
+		const ch = expr[i];
+		if (ch === '(' || ch === '[') { depth++; continue; }
+		if (ch === ')' || ch === ']') { depth = Math.max(0, depth - 1); continue; }
+		if (depth === 0 && ch === '.' && expr[i + 1] === '.') {
+			return expr[i + 2] === '=' ? '..=' : '..';
+		}
+	}
+	return undefined;
+}
+
+
 export function isExactMatch(suggestion: string, original: string): boolean {
 	if (suggestion === original) return true;
 	const suggestionCall = callShape(suggestion);
 	if (suggestionCall !== undefined && suggestionCall === callShape(original)) return true;
 	const suggestionIndex = indexShape(suggestion);
-	return suggestionIndex !== undefined && suggestionIndex === indexShape(original);
+	if (suggestionIndex !== undefined && suggestionIndex === indexShape(original)) return true;
+	const suggestionRange = rangeShape(suggestion);
+	return suggestionRange !== undefined && suggestionRange === rangeShape(original);
 }
 
 // ---------------------------------------------------------------------------

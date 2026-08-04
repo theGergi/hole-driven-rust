@@ -511,7 +511,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return
         }
 
-        if (variable.type.primitive || variable.type.valType === ValType.REFERENCE) {
+        if (variable.type.primitive || variable.type.valType === ValType.REFERENCE || variable.type.valType === ValType.UNKNOWN) {
             return
         }
         if (variable.type.consumed) {
@@ -1982,6 +1982,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 if (isIndexable && variable.type.elementType?.valType === hole.type.valType) {
                     holeSuggestions.push({suggestionType: 'index', suggestion: {...variable, name: variable.name + "[??]"}});
                 }
+                if (isIndexable && variable.type.elementType) {
+                    this.pushReferencedExpressionSuggestion(hole, holeSuggestions, 'index', variable.type.elementType, {...variable, name: variable.name + "[??]"}, variable);
+                    this.pushReferencedExpressionSuggestion(hole, holeSuggestions, 'slice', variable.type, {...variable, name: variable.name + "[??..??]"}, variable);
+                }
             }
         });
 
@@ -1989,7 +1993,24 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             if (func.type && this.canBeAssigned(hole.type, func.type, null, false)) {
                 holeSuggestions.push({suggestionType: 'function', suggestion: {...func, name: func.name, location: func.location}});
             }
+            this.pushReferencedExpressionSuggestion(hole, holeSuggestions, 'function', func.type, {...func, name: func.name, location: func.location});
         })
+
+        const rangeTraits = ['IntoIterator', 'Iterator', 'SliceIndex'];
+        const expectsRange = hole.type.valType === ValType.RANGE
+            || (hole.type.valType === ValType.TRAIT && rangeTraits.includes(hole.type.structName ?? ''));
+        if (expectsRange) {
+            const elementType = hole.type.valType === ValType.RANGE && hole.type.elementType
+                ? hole.type.elementType
+                : primitiveType(hole.type.structName === 'SliceIndex' ? 'usize' : 'i32');
+            for (const name of ['??..??', '??..=??']) {
+                holeSuggestions.push({suggestionType: 'range', suggestion: {
+                    name: name,
+                    type: toType({valType: ValType.RANGE, elementType: elementType}),
+                    location: hole.location
+                }});
+            }
+        }
 
         holeSuggestions.forEach(s => {
             if (s.suggestionType === 'function') {
@@ -2014,6 +2035,12 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
                 s.suggestionNameWithTypes = s.suggestion.name;
                 s.suggestionNameWithoutTypes = s.suggestion.name;
                 s.suggestionNameNoParams = s.suggestion.name;
+            }
+            const referencePrefix = s.suggestion.referencePrefix;
+            if (referencePrefix) {
+                s.suggestionNameWithTypes = referencePrefix + s.suggestionNameWithTypes;
+                s.suggestionNameWithoutTypes = referencePrefix + s.suggestionNameWithoutTypes;
+                s.suggestionNameNoParams = referencePrefix + s.suggestionNameNoParams;
             }
         });
 
@@ -2046,6 +2073,19 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
         hole.suggestions = holeSuggestions;
     }
 
+    private pushReferencedExpressionSuggestion(hole: Hole, holeSuggestions: Suggestion[], suggestionType: string, producedType: Type | undefined, suggestion: { name: string, location: SourceLocation }, owner: Variable | null = null) {
+        if (hole.type.valType !== ValType.REFERENCE || !hole.type.elementType) return;
+        if (hole.type.methodCall) return;
+        if (!producedType || producedType.valType === ValType.REFERENCE) return;
+        if (hole.type.mutableReference && owner && !owner.type.mutable) return;
+        if (!this.canBeAssigned(hole.type.elementType, producedType, null, false)) return;
+        holeSuggestions.push({suggestionType, suggestion: {
+            ...suggestion,
+            referencePrefix: hole.type.mutableReference ? "&mut " : "&",
+            type: toType({valType: ValType.REFERENCE, elementType: producedType, structName: producedType.structName, mutableReference: hole.type.mutableReference}),
+        }});
+    }
+
     private collectMethodChainSuggestions(hole: Hole, receiverType: Type, receiverName: string, receiverLocation: SourceLocation, holeSuggestions: Suggestion[], depth: number, visitedStructNames: Set<string> = new Set()) {
         if (depth <= 0 || !receiverType) return;
 
@@ -2071,6 +2111,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             if (this.canBeAssigned(hole.type, method.type, null, false)) {
                 holeSuggestions.push({suggestionType: 'method', suggestion: {...method, name: methodName, location: receiverLocation}});
             }
+            this.pushReferencedExpressionSuggestion(hole, holeSuggestions, 'method', method.type, {...method, name: methodName, location: receiverLocation});
 
             // Chain further method calls off this method's return type
             this.collectMethodChainSuggestions(hole, method.type, methodName, receiverLocation, holeSuggestions, depth - 1, nextVisited);

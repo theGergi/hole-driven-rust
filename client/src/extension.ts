@@ -72,7 +72,7 @@ export function activate(context: ExtensionContext) {
 					replacement = formatVariable(s.suggestion);
 				} else if (s.suggestionType === 'function') {
 					replacement = formatFunction(s.suggestion);
-				} else if (s.suggestionType === 'method' || s.suggestionType === 'field' || s.suggestionType === 'slice' || s.suggestionType === 'index') {
+				} else if (s.suggestionType === 'method' || s.suggestionType === 'field' || s.suggestionType === 'slice' || s.suggestionType === 'index' || s.suggestionType === 'range') {
 					replacement = s.suggestion.name;
 				}
 				if (!replacement) return '';
