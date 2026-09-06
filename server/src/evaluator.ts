@@ -65,6 +65,9 @@ interface EvalResult {
 
 const stdParseResult = parseStdJsonFile();
 
+// Toggle ownership on or off
+const OWNERSHIP = !process.argv.includes('--no-ownership');
+
 function parseDocument(code: string): Hole[] {
 	const inputStream = CharStream.fromString(code);
 	const lexer = new RustLexer(inputStream);
@@ -73,7 +76,7 @@ function parseDocument(code: string): Hole[] {
 	const tree = parser.crate();
 	const listener = new UsageGraphListener();
 	ParseTreeWalker.DEFAULT.walk(listener, tree);
-	const interpreter = new TypeChecker(listener, stdParseResult) as any;
+	const interpreter = new TypeChecker(listener, stdParseResult, OWNERSHIP) as any;
 	interpreter.visit(tree);
 	return interpreter.holes;
 }

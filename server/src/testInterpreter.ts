@@ -15,7 +15,9 @@ import { constructTypeString, formatFunction, formatVariable } from '../../share
 
 const stdParseResult = parseStdJsonFile();
 
-function parseDocument(code: string): Hole[] {
+const OWNERSHIP = !process.argv.includes('--no-ownership');
+
+function parseDocument(code: string, ownership: boolean = OWNERSHIP): Hole[] {
 	const inputStream = CharStream.fromString(code);
 	
 	// 1. Lexer: Breaks text into tokens
@@ -31,7 +33,7 @@ function parseDocument(code: string): Hole[] {
 	ParseTreeWalker.DEFAULT.walk(listener, tree);
 	console.log(listener.getUsages());
 
-	const interpreter = new TypeChecker(listener, stdParseResult) as any;
+	const interpreter = new TypeChecker(listener, stdParseResult, ownership) as any;
 	interpreter.visit(tree)
 
 	const result = interpreter.holes;
@@ -83,8 +85,20 @@ function matchesSubset(source: Type, subset: Partial<Type>): boolean {
   });
 }
 
-function runTest(testcase: {rustCode: string, expectedHoles: { line: number; type: Type; suggestionNames: string[]; wrongSuggestionNames?: string[] }[]}) {
-	const result = parseDocument(testcase.rustCode);
+type ExpectedHole = { line: number; type: Type; suggestionNames: string[]; wrongSuggestionNames?: string[] };
+
+type ExpectedFile = ExpectedHole[] | { ownership?: boolean; holes: ExpectedHole[] };
+
+function readExpected(raw: string): { expectedHoles: ExpectedHole[]; ownership: boolean } {
+	const parsed = JSON.parse(raw) as ExpectedFile;
+	if (Array.isArray(parsed)) {
+		return { expectedHoles: parsed, ownership: OWNERSHIP };
+	}
+	return { expectedHoles: parsed.holes, ownership: parsed.ownership ?? OWNERSHIP };
+}
+
+function runTest(testcase: {rustCode: string, expectedHoles: ExpectedHole[], ownership: boolean}) {
+	const result = parseDocument(testcase.rustCode, testcase.ownership);
 	result.forEach(hole => printHoleSuggestionContext(hole));
 	// Automated test for holes
 	assert.strictEqual(result.length, testcase.expectedHoles.length, 'Should have the correct number of holes');
@@ -142,8 +156,8 @@ function collectTestCases(dir: string, rootDir: string = dir): Array<{ name: str
 
 const testCases = collectTestCases(testCasesDir);
 
-// Get test name filter from command line arguments (e.g., "Move/testCase2c")
-const testFilter = process.argv[2]; 
+// Get test name filter from command line arguments (e.g., "Move/testCase2c"), skipping flags
+const testFilter = process.argv.slice(2).find(a => !a.startsWith('--'));
 
 // Filter the cases if a name was provided
 const casesToRun = testFilter 
@@ -162,8 +176,8 @@ for (const testCaseDef of casesToRun) {
     console.log(`Running test for ${testCaseDef.name}`);
     try {
         const rustCode = fs.readFileSync(testCaseDef.rustFile, 'utf8');
-        const expectedHoles = JSON.parse(fs.readFileSync(testCaseDef.expectedFile, 'utf8')) as any;
-        runTest({ rustCode, expectedHoles });
+        const { expectedHoles, ownership } = readExpected(fs.readFileSync(testCaseDef.expectedFile, 'utf8'));
+        runTest({ rustCode, expectedHoles, ownership });
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         console.error(`Test failed for ${testCaseDef.name}: ${message}`);

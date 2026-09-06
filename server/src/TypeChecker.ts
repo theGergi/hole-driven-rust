@@ -155,9 +155,12 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
     private usageListener: UsageGraphListener;
 
-    constructor(usageListener: UsageGraphListener, stdParseResult?: StdParseResult) {
+    private ownership: boolean;
+
+    constructor(usageListener: UsageGraphListener, stdParseResult?: StdParseResult, ownership: boolean = true) {
         super();
         this.usageListener = usageListener;
+        this.ownership = ownership;
 
         this.loadStdLibrary(stdParseResult);
     }
@@ -491,13 +494,15 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return variable;
         }
 
-        if (variable.type?.borrows === Borrow.BFree) {
-            variable.type.borrows = mutable ? Borrow.BMut : Borrow.BImmut
-        } else if (variable.type?.borrows === Borrow.BMut && !this.checkBorrows(variable.type.owner!, location)) {
-            throw Error("Cannot borrow, already mutably borrowed")
-        } else {
-            if (mutable && !this.checkBorrows(variable.type.owner!, location)) {
-                throw Error("Cannot mutably borrow, already immutably borrowed")
+        if (this.ownership) {
+            if (variable.type?.borrows === Borrow.BFree) {
+                variable.type.borrows = mutable ? Borrow.BMut : Borrow.BImmut
+            } else if (variable.type?.borrows === Borrow.BMut && !this.checkBorrows(variable.type.owner!, location)) {
+                throw Error("Cannot borrow, already mutably borrowed")
+            } else {
+                if (mutable && !this.checkBorrows(variable.type.owner!, location)) {
+                    throw Error("Cannot mutably borrow, already immutably borrowed")
+                }
             }
         }
         variable.type.mutableReference = mutable;
@@ -505,6 +510,10 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     }
 
     consume(variableName: string) {
+        if (!this.ownership) {
+            return
+        }
+
         const variable = this.getBoundVariable(variableName)
 
         if (!variable) {
@@ -590,6 +599,9 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
     }
 
     checkBorrows(owner: Variable, location: SourceLocation, variableName: string | null = null): boolean {
+        if (!this.ownership) {
+            return true;
+        }
 
         if (owner) {
             const borrows = this.variables.filter(v => v.type.owner === owner && v !== owner)

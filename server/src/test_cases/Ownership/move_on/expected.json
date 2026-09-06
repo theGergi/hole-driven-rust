@@ -1,0 +1,11 @@
+{
+	"ownership": true,
+	"holes": [
+		{
+			"line": 12,
+			"type": { "valType": "struct", "structName": "Widget" },
+			"suggestionNames": ["b", "owner"],
+			"wrongSuggestionNames": ["a"]
+		}
+	]
+}

@@ -1,0 +1,11 @@
+{
+	"ownership": true,
+	"holes": [
+		{
+			"line": 13,
+			"type": { "valType": "reference", "elementType": { "valType": "struct", "structName": "String" } },
+			"suggestionNames": [],
+			"wrongSuggestionNames": ["&mut s"]
+		}
+	]
+}

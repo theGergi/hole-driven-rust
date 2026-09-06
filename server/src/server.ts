@@ -73,6 +73,9 @@ function findHoleAt(uri: string, line: number, character: number) {
     return results.get(key) ?? null;
 }
 
+// Toggle ownership on or off
+const OWNERSHIP = !process.argv.includes('--no-ownership');
+
 function parseDocument(code: string) {
     const inputStream = CharStream.fromString(code);
     
@@ -89,7 +92,7 @@ function parseDocument(code: string) {
     ParseTreeWalker.DEFAULT.walk(listener, tree);
     
 
-    const interpreter = new TypeChecker(listener, stdParseResult) as any;
+    const interpreter = new TypeChecker(listener, stdParseResult, OWNERSHIP) as any;
     interpreter.visit(tree)
     return interpreter.getFinalResult();
 }
