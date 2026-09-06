@@ -1,0 +1,8 @@
+[
+	{
+		"line": 8,
+		"type": { "valType": "struct", "structName": "Vec", "elementType": { "valType": "struct", "primitive": true, "structName": "i32" } },
+		"suggestionNames": ["l2", "res"],
+		"wrongSuggestionNames": ["l1"]
+	}
+]
