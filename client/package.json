@@ -1,5 +1,6 @@
 {
-	"name": "lsp-sample-client",
+	"name": "@toy-lang/client",
+	"private": true,
 	"description": "VSCode part of a language server",
 	"author": "Microsoft Corporation",
 	"license": "MIT",

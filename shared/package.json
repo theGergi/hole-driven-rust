@@ -1,5 +1,6 @@
 {
   "name": "@toy-lang/shared",
+  "private": true,
   "version": "1.0.0",
   "main": "./out/types.js",
   "types": "./out/types.d.ts",

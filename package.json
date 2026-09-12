@@ -1,6 +1,10 @@
 {
   "name": "toy-language-extension",
-  "workspaces": ["*"],
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
   "version": "1.0.0",
   "description": "",
   "keywords": [],
@@ -44,12 +48,11 @@
     "compile": "tsc -b",
     "watch": "tsc -b -w",
     "lint": "eslint",
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "sh ./scripts/e2e.sh",
     "testAntlr": "npm run compile && node ./server/out/testInterpreter.js",
     "evaluate": "npm run compile && node ./server/out/evaluator.js",
     "evaluateRa": "tsc server/src/raEvaluator.ts --module NodeNext --moduleResolution NodeNext --target ES2024 --lib ES2024 --strict --skipLibCheck --outDir server/out && node ./server/out/raEvaluator.js",
-    "compareEval": "tsc server/src/compareEval.ts --module NodeNext --moduleResolution NodeNext --target ES2024 --lib ES2024 --strict --skipLibCheck --outDir server/out && node ./server/out/compareEval.js",
+    "compareEval": "tsc server/src/compareEval.ts --module NodeNext --moduleResolution NodeNext --target ES2024 --lib ES2024 --strict --skipLibCheck --outDir server/out && node ./server/out/compareEval.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
@@ -57,13 +60,12 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^22",
     "eslint": "^9.13.0",
-    "mocha": "^11.7.5",
+    "mocha": "^12.0.1",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.0"
   },
   "dependencies": {
     "antlr4ng": "^3.0.16",
-    "npm": "^11.6.0",
     "vscode-languageclient": "^9.0.1",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"
