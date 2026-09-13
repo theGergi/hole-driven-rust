@@ -2072,8 +2072,7 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         // Hole candidates if more than one
         hole.subTypes = [
-            ...this.expandTraitType(hole.type),
-            ...(hole.type.candidateTypes ?? []),
+            ...this.expandTraitType(hole.type)
         ];
 
         if (hole.subTypes.length === 0) delete hole.subTypes;

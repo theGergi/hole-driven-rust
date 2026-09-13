@@ -74,7 +74,7 @@ function findHoleAt(uri: string, line: number, character: number) {
 }
 
 // Toggle ownership on or off
-const OWNERSHIP = !process.argv.includes('--no-ownership');
+const OWNERSHIP = !process.argv.includes('--no-ownership') && process.env.NO_OWNERSHIP !== '1';
 
 function parseDocument(code: string) {
     const inputStream = CharStream.fromString(code);
