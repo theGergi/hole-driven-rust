@@ -1,0 +1,19 @@
+
+use std::{slice::Iter, cmp::{max, self}, mem::replace, collections::{HashSet, HashMap}, ops::Index, ascii::AsciiExt};
+use rand::Rng;
+use regex::Regex;
+use md5;
+use std::any::{Any, TypeId};
+
+fn string_sequence(n:i32) -> String{
+
+
+    let mut res:String = String::new();
+
+    for number in 0..n + 1{
+        res = res + &?? + " ";
+    }
+    
+    return res.trim_end().to_string();
+
+}

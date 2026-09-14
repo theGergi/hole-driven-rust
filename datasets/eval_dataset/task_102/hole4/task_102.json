@@ -1,0 +1,21 @@
+{
+  "line": 14,
+  "column_start": 12,
+  "line_end": 14,
+  "column_end": 13,
+  "original": "x",
+  "form": "variable_use",
+  "tags": [
+    "function_param",
+    "primitive"
+  ],
+  "imports": [
+    "use std::{slice::Iter, cmp::{max, self}, mem::replace, collections::{HashSet, HashMap}, ops::Index, ascii::AsciiExt};",
+    "use rand::Rng;",
+    "use regex::Regex;",
+    "use md5;",
+    "use std::any::{Any, TypeId};"
+  ],
+  "type_checked": true,
+  "type": "i32"
+}

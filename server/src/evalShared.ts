@@ -65,7 +65,7 @@ export function collectTestCases(dir: string, rootDir: string = dir): TestCase[]
 export function resolveDataset(defaultDataset: string): { dataset: string; datasetDir: string } {
 	const arg = process.argv.find(a => a.startsWith('--dataset='));
 	const dataset = arg ? arg.slice('--dataset='.length) : defaultDataset;
-	const datasetDir = path.resolve(process.cwd(), 'server', 'src', 'datasets', dataset);
+	const datasetDir = path.resolve(process.cwd(), 'datasets', dataset);
 	return { dataset, datasetDir };
 }
 

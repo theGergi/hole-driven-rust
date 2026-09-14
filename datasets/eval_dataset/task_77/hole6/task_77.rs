@@ -1,0 +1,16 @@
+
+use std::{slice::Iter, cmp::{max, self}, mem::replace, collections::{HashSet, HashMap}, ops::Index, ascii::AsciiExt};
+use rand::Rng;
+use regex::Regex;
+use md5;
+use std::any::{Any, TypeId};
+
+fn iscuber(a:i32) -> bool{
+
+
+    let a1: f64 = i32::abs(a) as f64;
+    let sqrt_3 = f64::powf(a1, 1.0 / 3.0).ceil();
+
+    return ?? == a1 as i32;
+}
+

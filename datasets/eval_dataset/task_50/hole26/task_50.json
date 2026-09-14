@@ -1,0 +1,20 @@
+{
+  "line": 32,
+  "column_start": 25,
+  "line_end": 32,
+  "column_end": 32,
+  "original": "c_shift",
+  "form": "variable_use",
+  "tags": [
+    "string_like"
+  ],
+  "imports": [
+    "use std::{slice::Iter, cmp::{max, self}, mem::replace, collections::{HashSet, HashMap}, ops::Index, ascii::AsciiExt};",
+    "use rand::Rng;",
+    "use regex::Regex;",
+    "use md5;",
+    "use std::any::{Any, TypeId};"
+  ],
+  "type_checked": true,
+  "type": "std::string::String"
+}

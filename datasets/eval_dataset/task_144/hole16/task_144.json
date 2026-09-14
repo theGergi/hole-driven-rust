@@ -1,0 +1,18 @@
+{
+  "line": 33,
+  "column_start": 11,
+  "line_end": 33,
+  "column_end": 20,
+  "original": "n.chars()",
+  "form": "method_call",
+  "tags": [],
+  "imports": [
+    "use std::{slice::Iter, cmp::{max, self}, mem::replace, collections::{HashSet, HashMap}, ops::Index, ascii::AsciiExt};",
+    "use rand::Rng;",
+    "use regex::Regex;",
+    "use md5;",
+    "use std::any::{Any, TypeId};"
+  ],
+  "type_checked": true,
+  "type": "std::str::Chars<'_>"
+}
