@@ -5,5 +5,6 @@
   "column_end": 22,
   "original": "n",
   "form": "variable_use",
-  "type_checked": false
+  "type_checked": true,
+  "type": "i32"
 }

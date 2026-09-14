@@ -5,5 +5,6 @@
   "column_end": 32,
   "original": "res.values()",
   "form": "method_call",
-  "type_checked": false
+  "type_checked": true,
+  "type": "std::collections::hash_map::Values<'_, char, i32>"
 }

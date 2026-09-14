@@ -5,5 +5,6 @@
   "column_end": 33,
   "original": "res",
   "form": "variable_use",
-  "type_checked": false
+  "type_checked": true,
+  "type": "std::collections::HashMap<char, i32>"
 }

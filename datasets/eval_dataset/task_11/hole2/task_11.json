@@ -1,0 +1,10 @@
+{
+  "line": 10,
+  "column_start": 11,
+  "line_end": 10,
+  "column_end": 12,
+  "original": "a",
+  "form": "variable_use",
+  "type_checked": true,
+  "type": "std::string::String"
+}

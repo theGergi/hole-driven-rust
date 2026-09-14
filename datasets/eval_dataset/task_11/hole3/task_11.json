@@ -1,0 +1,10 @@
+{
+  "line": 10,
+  "column_start": 37,
+  "line_end": 10,
+  "column_end": 46,
+  "original": "b.chars()",
+  "form": "method_call",
+  "type_checked": true,
+  "type": "std::str::Chars<'_>"
+}

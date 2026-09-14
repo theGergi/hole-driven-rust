@@ -5,5 +5,6 @@
   "column_end": 31,
   "original": "c.chars()",
   "form": "method_call",
-  "type_checked": false
+  "type_checked": true,
+  "type": "std::str::Chars<'_>"
 }

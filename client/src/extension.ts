@@ -16,6 +16,14 @@ import {
 
 let client: LanguageClient;
 
+function escapeHtml(text: string): string {
+	return String(text)
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
+}
+
 export function activate(context: ExtensionContext) {
 	// The server is implemented in node
 	const serverModule = context.asAbsolutePath(
@@ -33,7 +41,8 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(
 		commands.registerCommand('myExtension.showHoleInfo', async (location: { uri: string; line: number; character: number }) => {
-			const holeInfo: any = await client.sendRequest('toy/getHoleInfo', location);
+			const uri = Uri.parse(location.uri).toString();
+			const holeInfo: any = await client.sendRequest('toy/getHoleInfo', { ...location, uri });
 			if (!holeInfo) {
 				window.showInformationMessage('No hole information available at this position.');
 				return;
@@ -66,25 +75,19 @@ export function activate(context: ExtensionContext) {
 
 			// const possibleValues = result.possibleValues.map((v: any) => `<li> ${v.name || v} </li>`);
 
-			const suggestionsHtml = result.suggestions.map((s: any) => {
-				let replacement = '';
-				if (s.suggestionType === 'variable') {
-					replacement = formatVariable(s.suggestion);
-				} else if (s.suggestionType === 'function') {
-					replacement = formatFunction(s.suggestion);
-				} else if (s.suggestionType === 'method' || s.suggestionType === 'field' || s.suggestionType === 'slice' || s.suggestionType === 'index' || s.suggestionType === 'range') {
-					replacement = s.suggestion.name;
-				}
-				if (!replacement) return '';
-				const escapedReplacement = replacement.replace(/'/g, "\\'").replace(/"/g, '\\"');
-				return `<li><a href="#" onclick="apply('${escapedReplacement}')">${replacement}</a></li>`;
+			// Same text as the hover: show the typed form, insert the untyped form
+			const fits = result.suggestions.filter((s: any) => s.suggestionNameWithoutTypes);
+			const replacements: string[] = fits.map((s: any) => s.suggestionNameWithoutTypes);
+			const suggestionsHtml = fits.map((s: any, i: number) => {
+				const display = s.suggestionNameWithTypes ?? s.suggestionNameWithoutTypes;
+				return `<li><a href="#" data-index="${i}">${escapeHtml(display)}</a></li>`;
 			}).join('');
 
 			const formattedVariables = result.variables
-				.map((v: any) => formatVariable(v))
+				.map((v: any) => escapeHtml(formatVariable(v)))
 				.join('<br>');
 			const formattedFunctions = result.functions
-				.map((f: any) => formatFunction(f))
+				.map((f: any) => escapeHtml(formatFunction(f)))
 				.join('<br>');
 
 			panel.webview.html = `
@@ -99,7 +102,7 @@ export function activate(context: ExtensionContext) {
 				</head>
 				<body>
 					<h3>Type:</h3>
-					<div class="context">${result.typeString}</div>
+					<div class="context">${escapeHtml(result.typeString)}</div>
 					<h3>Current Full Context:</h3>
 					<h4>Variables:</h4>
 					<div class="context">${formattedVariables}</div>
@@ -109,6 +112,13 @@ export function activate(context: ExtensionContext) {
 					<ul>${suggestionsHtml}</ul>
 					<script>
 						const vscode = acquireVsCodeApi();
+						const replacements = ${JSON.stringify(replacements).replace(/</g, '\\u003c')};
+						document.querySelectorAll('a[data-index]').forEach((link) => {
+							link.addEventListener('click', (event) => {
+								event.preventDefault();
+								apply(replacements[Number(link.dataset.index)]);
+							});
+						});
 						function apply(replacement) {
 							vscode.postMessage({
 								command: 'applySuggestion',

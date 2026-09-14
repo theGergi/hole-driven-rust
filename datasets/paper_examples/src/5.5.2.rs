@@ -1,14 +1,14 @@
 struct Container {
-    value: integer,
+    value: i32,
 }
 
-fn process(reader: &Container, writer: &mut Container) -> integer {
+fn process(reader: &Container, writer: &mut Container) -> i32 {
     writer.value = reader.value;
     writer.value
 }
 
 fn print_value(borrow: &Container) {
-    println!("Loading bytes from {}...", borrow.value);
+    println!("Printing {}...", borrow.value);
 }
 
 fn main() {
