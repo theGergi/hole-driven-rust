@@ -1,0 +1,8 @@
+[
+	{
+		"line": 19,
+		"type": { "valType": "struct", "structName": "Circle" },
+		"suggestionNames": ["c"],
+		"wrongSuggestionNames": ["name", "main()"]
+	}
+]

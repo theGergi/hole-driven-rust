@@ -17,9 +17,10 @@ impl ImageBuffer {
         }
     }
 
-    pub fn new(&self) -> Self {
-        Self {
-            path: path.to_string(),
+    pub fn to_image_buffer(&self) -> ImageBuffer {
+        println!("Loading bytes from {}...", self.path);
+        ImageBuffer {
+            raw_data: vec![255, 128, 64],
         }
     }
 }
@@ -30,7 +31,7 @@ pub struct FilePath {
 }
 
 impl FilePath {
-    pub fn new(&self) -> Self {
+    pub fn new(path: &str) -> Self {
         Self {
             path: path.to_string(),
         }
@@ -60,7 +61,11 @@ fn main() {
     // 3. Transform ImageBuffer -> GrayscaleImage
     let obj_3 = obj_2.to_grayscale();
 
-    ??
+    let x:i32 = 3;
+
+    ??.abs()
+
+    ??.to_image_buffer();
 
     run_edge_detection(??);
 }

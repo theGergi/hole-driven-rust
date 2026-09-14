@@ -649,9 +649,15 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
             return typesEqual(assignee, assigned);
         }
 
-        if (assignee.valType === assigned.valType 
+        if (assignee.valType === ValType.REFERENCE && assignee.methodCall) {
+            if (assignee.mutableReference && !assigned.mutableReference) {
+                return false;
+            }
+            return assignee.elementType !== undefined && this.receiverMatch(assignee.elementType, assigned) > 0;
+        }
+
+        if (assignee.valType === assigned.valType
                 || (assigned.structName === 'String' && assignee.structName === 'str')
-                || (assignee.valType === ValType.REFERENCE && assignee.methodCall)
             ) {    // TODO hacky string coercion
             if (assignee.valType === ValType.VECTOR ) {
                 return typesEqual(assignee.elementType, assigned.elementType);
