@@ -16,7 +16,7 @@ fn compare_one<'a>(a:&'a dyn Any, b:&'a dyn Any) -> RtnType<String,f64,i32>{
     }
 
     if a_f64 < b_f64 {
-        return original_type(b);
+        return original_type(??);
     } else {
         return RtnType::String("None".to_string());
     }
@@ -34,7 +34,7 @@ fn Any_to_f64(a: &dyn Any) -> f64 {
     let mut a_f64 = 0.0;
 
     if a.downcast_ref::<f64>() == None {
-        match ??.downcast_ref::<&str>() {
+        match a.downcast_ref::<&str>() {
             Some(as_string) => {
                 a_f64 = as_string.parse::<f64>().unwrap();
             }

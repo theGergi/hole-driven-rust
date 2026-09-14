@@ -51,14 +51,14 @@ fn Any_to_f64(a: &dyn Any) -> f64 {
         a_f64 = *a.downcast_ref::<f64>().unwrap();
     }
 
-    return a_f64;
+    return ??;
 }
 
 fn original_type(a: &dyn Any) -> RtnType<String, f64, i32> {
     let mut res = RtnType::Empty();
     match a.downcast_ref::<&str>() {
         Some(as_string) => {
-            res = RtnType::String(??.parse::<String>().unwrap());
+            res = RtnType::String(as_string.parse::<String>().unwrap());
         }
         None => {}
     }

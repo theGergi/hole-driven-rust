@@ -15,10 +15,10 @@ fn rolling_max(numbers:Vec<i32>) -> Vec<i32>{
             running_max = Some(n);
 
         }else{
-            running_max = max(running_max, Some(??));
+            running_max = max(running_max, Some(n));
         }
 
-        result.push(running_max.unwrap());
+        ??.push(running_max.unwrap());
     }
     return result;
 

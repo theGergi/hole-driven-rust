@@ -1945,12 +1945,16 @@ export default class TypeChecker extends RustParserVisitor<ReturnType | null> {
 
         variables.forEach((variable: Variable) => {
             // console.log("Checking variable:", variable.name, "of type", variable.type)
+            let suggestedAsIs = false;
             if (variable.type && this.canBeAssigned(hole.type, variable.type, variable, false) && !variable.type.consumed) {
                 if (this.checkBorrows(variable.type.owner!, hole.location, variable.name)) {
                     holeSuggestions.push({suggestionType: 'variable', suggestion: variable});
+                    suggestedAsIs = true;
                 }
             }
-            if (hole.type.valType === ValType.REFERENCE && this.canBeAssigned(hole.type.elementType!, variable.type, null, false) && !variable.type.consumed) {
+
+            const duplicateReceiver = hole.type.methodCall && suggestedAsIs;
+            if (hole.type.valType === ValType.REFERENCE && !duplicateReceiver && this.canBeAssigned(hole.type.elementType!, variable.type, null, false) && !variable.type.consumed) {
                 if (hole.type.mutableReference) {
                     if (variable.type.mutable) {
                         if (variable.type.borrows === Borrow.BFree) {

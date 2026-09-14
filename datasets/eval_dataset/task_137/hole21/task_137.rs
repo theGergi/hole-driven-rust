@@ -63,9 +63,9 @@ fn original_type(a: &dyn Any) -> RtnType<String, f64, i32> {
         None => {}
     }
 
-    match a.downcast_ref::<i32>() {
+    match ??.downcast_ref::<i32>() {
         Some(as_i32) => {
-            res = RtnType::Int(*??);
+            res = RtnType::Int(*as_i32);
         }
         None => {}
     }

@@ -36,14 +36,14 @@ fn Any_to_f64(a: &dyn Any) -> f64 {
     if a.downcast_ref::<f64>() == None {
         match a.downcast_ref::<&str>() {
             Some(as_string) => {
-                a_f64 = as_string.parse::<f64>().unwrap();
+                a_f64 = ??.parse::<f64>().unwrap();
             }
             None => {}
         }
 
         match a.downcast_ref::<i32>() {
             Some(as_i32) => {
-                a_f64 = *?? as f64;
+                a_f64 = *as_i32 as f64;
             }
             None => {}
         }

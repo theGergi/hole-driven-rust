@@ -33,10 +33,10 @@ pub enum RtnType<S, F, I> {
 fn Any_to_f64(a: &dyn Any) -> f64 {
     let mut a_f64 = 0.0;
 
-    if a.downcast_ref::<f64>() == None {
+    if ??.downcast_ref::<f64>() == None {
         match a.downcast_ref::<&str>() {
             Some(as_string) => {
-                a_f64 = ??.parse::<f64>().unwrap();
+                a_f64 = as_string.parse::<f64>().unwrap();
             }
             None => {}
         }

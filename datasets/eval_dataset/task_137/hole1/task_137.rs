@@ -8,7 +8,7 @@ use std::any::{Any, TypeId};
 fn compare_one<'a>(a:&'a dyn Any, b:&'a dyn Any) -> RtnType<String,f64,i32>{
 
 
-    let a_f64 = Any_to_f64(??);
+    let a_f64 = ??;
     let b_f64 = Any_to_f64(b);
 
     if a_f64 > b_f64 {

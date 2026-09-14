@@ -23,8 +23,8 @@ fn find_closest_elements(numbers:Vec<f32>) -> (f32,f32){
                     }
 
                 }else{
-                    let new_distance:f32= (?? - elem2).abs();
-                    if new_distance < distance.unwrap(){
+                    let new_distance:f32= (elem - elem2).abs();
+                    if new_distance < ??{
                         distance = Some(new_distance);
 
                         if *elem < *elem2{

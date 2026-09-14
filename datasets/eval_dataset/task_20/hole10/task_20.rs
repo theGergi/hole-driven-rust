@@ -16,14 +16,14 @@ fn find_closest_elements(numbers:Vec<f32>) -> (f32,f32){
             if idx != idx2 {
                 if distance == None {
                     distance = Some((elem - elem2).abs());
-                    if *?? < *elem2{
+                    if *elem < *elem2{
                         closest_pair = (*elem, *elem2);
                     }else{
                         closest_pair = (*elem2, *elem);
                     }
 
                 }else{
-                    let new_distance:f32= (elem - elem2).abs();
+                    let new_distance:f32= (?? - elem2).abs();
                     if new_distance < distance.unwrap(){
                         distance = Some(new_distance);
 

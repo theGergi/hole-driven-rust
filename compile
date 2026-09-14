@@ -1,2 +1,0 @@
-cd thesis
-pandoc --lua-filter=include-files.lua thesis.md --citeproc --pdf-engine=xelatex -o thesis.pdf --toc --number-sections --variable documentclass=report --metadata date="$(LC_TIME=en_US.UTF-8 date +'%B %d, %Y')"

@@ -43,7 +43,7 @@ fn Any_to_f64(a: &dyn Any) -> f64 {
 
         match a.downcast_ref::<i32>() {
             Some(as_i32) => {
-                a_f64 = *as_i32 as f64;
+                a_f64 = *?? as f64;
             }
             None => {}
         }
@@ -51,7 +51,7 @@ fn Any_to_f64(a: &dyn Any) -> f64 {
         a_f64 = *a.downcast_ref::<f64>().unwrap();
     }
 
-    return ??;
+    return a_f64;
 }
 
 fn original_type(a: &dyn Any) -> RtnType<String, f64, i32> {

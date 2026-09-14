@@ -18,8 +18,8 @@ fn rolling_max(numbers:Vec<i32>) -> Vec<i32>{
             running_max = max(running_max, Some(n));
         }
 
-        ??.push(running_max.unwrap());
+        result.push(running_max.unwrap());
     }
-    return result;
+    return ??;
 
 }

@@ -15,8 +15,8 @@ fn find_closest_elements(numbers:Vec<f32>) -> (f32,f32){
         for (idx2, elem2) in  numbers.iter().enumerate() {
             if idx != idx2 {
                 if distance == None {
-                    distance = Some((?? - elem2).abs());
-                    if *elem < *elem2{
+                    distance = Some((elem - elem2).abs());
+                    if *elem < *??{
                         closest_pair = (*elem, *elem2);
                     }else{
                         closest_pair = (*elem2, *elem);

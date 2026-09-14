@@ -117,6 +117,9 @@ function runTest(testcase: {rustCode: string, expectedHoles: ExpectedHole[], own
 		for (const name of wrongNames) {
 			assert.ok(!actualNames.includes(name), `Hole ${i} suggestion name should not be present: ${name}`);
 		}
+		const variableNames = hole.suggestions.filter(s => s.suggestionType === 'variable').map(s => s.suggestionNameNoParams);
+		const duplicateNames = variableNames.filter((name, index) => variableNames.indexOf(name) !== index);
+		assert.deepStrictEqual(duplicateNames, [], `Hole ${i} has duplicate variable suggestions`);
 	}
 
 	console.log('Test passed!');

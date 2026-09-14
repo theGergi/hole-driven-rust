@@ -12,13 +12,13 @@ fn rolling_max(numbers:Vec<i32>) -> Vec<i32>{
 
     for n in numbers{
         if running_max == None {
-            running_max = Some(??);
+            running_max = Some(n);
 
         }else{
             running_max = max(running_max, Some(n));
         }
 
-        result.push(running_max.unwrap());
+        ??;
     }
     return result;
 

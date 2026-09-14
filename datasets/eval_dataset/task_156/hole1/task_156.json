@@ -5,16 +5,6 @@
   "column_end": 35,
   "original": "String::new()",
   "form": "function_call",
-  "tags": [
-    "string_like"
-  ],
-  "imports": [
-    "use std::{slice::Iter, cmp::{max, self}, mem::replace, collections::{HashSet, HashMap}, ops::Index, ascii::AsciiExt};",
-    "use rand::Rng;",
-    "use regex::Regex;",
-    "use md5;",
-    "use std::any::{Any, TypeId};"
-  ],
   "type_checked": true,
   "type": "std::string::String"
 }

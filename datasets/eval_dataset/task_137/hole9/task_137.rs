@@ -15,8 +15,8 @@ fn compare_one<'a>(a:&'a dyn Any, b:&'a dyn Any) -> RtnType<String,f64,i32>{
         return original_type(a);
     }
 
-    if a_f64 < b_f64 {
-        return ??;
+    if ?? < b_f64 {
+        return original_type(b);
     } else {
         return RtnType::String("None".to_string());
     }

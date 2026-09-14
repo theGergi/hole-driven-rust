@@ -71,8 +71,8 @@ fn original_type(a: &dyn Any) -> RtnType<String, f64, i32> {
     }
 
     match a.downcast_ref::<f64>() {
-        Some(as_f64) => res = RtnType::Float(*??),
+        Some(as_f64) => res = RtnType::Float(*as_f64),
         None => {}
     }
-    return res;
+    return ??;
 }
